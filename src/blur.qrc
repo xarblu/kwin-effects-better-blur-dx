@@ -12,6 +12,8 @@
   <file>shaders/noise_core.frag</file>
   <file>shaders/texture.frag</file>
   <file>shaders/texture_core.frag</file>
+  <file>shaders/refraction.frag</file>
+  <file>shaders/refraction_core.frag</file>
   <file>shaders/upsample.frag</file>
   <file>shaders/upsample_core.frag</file>
   <file>shaders/vertex.vert</file>

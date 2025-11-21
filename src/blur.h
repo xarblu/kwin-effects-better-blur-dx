@@ -183,12 +183,6 @@ private:
         int antialiasingLocation;
         int blurSizeLocation;
         int opacityLocation;
-
-        int edgeSizePixelsLocation;
-        int refractionStrengthLocation;
-        int refractionNormalPowLocation;
-        int refractionRGBFringingLocation;
-        int refractionTextureRepeatModeLocation;
     } m_upsamplePass;
 
     struct
@@ -201,6 +195,22 @@ private:
         qreal noiseTextureScale = 1.0;
         int noiseTextureStength = 0;
     } m_noisePass;
+
+    struct
+    {
+        std::unique_ptr<GLShader> shader;
+        int mvpMatrixLocation;
+        int offsetLocation;
+        int halfpixelLocation;
+        int textureLocation;
+
+        int blurSizeLocation;
+        int edgeSizePixelsLocation;
+        int refractionStrengthLocation;
+        int refractionNormalPowLocation;
+        int refractionRGBFringingLocation;
+        int refractionTextureRepeatModeLocation;
+    } m_refractionPass;
 
     struct
     {
