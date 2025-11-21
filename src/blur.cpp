@@ -860,12 +860,13 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
         ? w->opacity() * data.opacity()
         : data.opacity();
 
+    // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
     QList<QRectF> effectiveShape;
     effectiveShape.reserve(blurShape.rectCount());
     if (region != infiniteRegion()) {
         for (const QRect &clipRect : region) {
             const QRectF deviceClipRect = snapToPixelGridF(scaledRect(clipRect, viewport.scale()))
-                    .translated(-deviceBackgroundRect.topLeft());
+                                              .translated(-deviceBackgroundRect.topLeft());
             for (const QRect &shapeRect : blurShape) {
                 const QRectF deviceShapeRect = snapToPixelGridF(scaledRect(shapeRect.translated(-backgroundRect.topLeft()), viewport.scale()));
                 if (const QRectF intersected = deviceClipRect.intersected(deviceShapeRect); !intersected.isEmpty()) {
@@ -924,8 +925,8 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             || renderInfo.textures[0]->internalFormat() != textureFormat)) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
-        glClearColor(0, 0, 0, 0);
 
+        glClearColor(0, 0, 0, 0);
         for (size_t i = 0; i <= m_iterationCount; ++i) {
             // For very small windows, the width and/or height of the last blur texture may be 0. Creation of
             // and/or usage of invalid textures to create framebuffers appears to cause performance issues.
@@ -954,7 +955,6 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
             context->pushFramebuffer(framebuffer.get());
             glClear(GL_COLOR_BUFFER_BIT);
             context->popFramebuffer();
-
             renderInfo.textures.push_back(std::move(texture));
             renderInfo.framebuffers.push_back(std::move(framebuffer));
         }
@@ -1074,34 +1074,36 @@ void BlurEffect::blur(BlurRenderData &renderInfo, const RenderTarget &renderTarg
     vbo->bindArrays();
 
     if (staticBlurTexture) {
-    ShaderManager::instance()->pushShader(m_texture.shader.get());
+    {
+        ShaderManager::instance()->pushShader(m_texture.shader.get());
 
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix = viewport.projectionMatrix();
-    projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
+        QMatrix4x4 projectionMatrix;
+        projectionMatrix = viewport.projectionMatrix();
+        projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
 
-    QRectF screenGeometry;
-    if (m_currentView) {
-        screenGeometry = scaledRect(m_currentView->output()->geometryF(), viewport.scale());
+        QRectF screenGeometry;
+        if (m_currentView) {
+            screenGeometry = scaledRect(m_currentView->output()->geometryF(), viewport.scale());
+        }
+
+        m_texture.shader->setUniform(m_texture.mvpMatrixLocation, projectionMatrix);
+        m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(staticBlurTexture->size().width(), staticBlurTexture->size().height()));
+        m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(deviceBackgroundRect.x() - screenGeometry.x(), deviceBackgroundRect.y() - screenGeometry.y()));
+        m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
+        m_texture.shader->setUniform(m_texture.topCornerRadiusLocation, topCornerRadius);
+        m_texture.shader->setUniform(m_texture.bottomCornerRadiusLocation, bottomCornerRadius);
+        m_texture.shader->setUniform(m_texture.antialiasingLocation, m_settings.roundedCorners.antialiasing);
+        m_texture.shader->setUniform(m_texture.opacityLocation, static_cast<float>(opacity));
+
+        staticBlurTexture->bind();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        vbo->draw(GL_TRIANGLES, 6, vertexCount);
+
+        glDisable(GL_BLEND);
+        ShaderManager::instance()->popShader();
     }
-
-    m_texture.shader->setUniform(m_texture.mvpMatrixLocation, projectionMatrix);
-    m_texture.shader->setUniform(m_texture.textureSizeLocation, QVector2D(staticBlurTexture->size().width(), staticBlurTexture->size().height()));
-    m_texture.shader->setUniform(m_texture.texStartPosLocation, QVector2D(deviceBackgroundRect.x() - screenGeometry.x(), deviceBackgroundRect.y() - screenGeometry.y()));
-    m_texture.shader->setUniform(m_texture.blurSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
-    m_texture.shader->setUniform(m_texture.topCornerRadiusLocation, topCornerRadius);
-    m_texture.shader->setUniform(m_texture.bottomCornerRadiusLocation, bottomCornerRadius);
-    m_texture.shader->setUniform(m_texture.antialiasingLocation, m_settings.roundedCorners.antialiasing);
-    m_texture.shader->setUniform(m_texture.opacityLocation, static_cast<float>(opacity));
-
-    staticBlurTexture->bind();
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    vbo->draw(GL_TRIANGLES, 6, vertexCount);
-
-    glDisable(GL_BLEND);
-    ShaderManager::instance()->popShader();
     } // staticBlurTexture
     else {
     // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
