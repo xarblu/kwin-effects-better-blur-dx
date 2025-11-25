@@ -186,7 +186,14 @@ The classes of windows to blur can be specified in the effect settings. You can 
   - Run ``qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo`` and click on the window. You can use either *resourceClass* or *resourceName*.
   - Right click on the titlebar, go to *More Options* and *Configure Special Window/Application Settings*. The class can be found at *Window class (application)*. If there is a space, for example *Navigator firefox*, you can use either *Navigator* or *firefox*.
 
-# High cursor latency or stuttering on Wayland
+# Known Issues
+## Incompatibility with other effects
+This effect has some compatibility issues with some other effects.
+
+- "Blur" from KWin - Because we effectively replace the KWin blur you shouldn't use both in parallel. Some windows might get double blurred and "look off" if you do.
+- "Wobbly Windows" from KWin - We're blurring a square region behind the window. Either that square will bleed out of the deformed window or KWin will skip the blur entirely while the "wobble effect" is active.
+
+## High cursor latency or stuttering on Wayland
 This effect can be very resource-intensive if you have a lot of windows open. On Wayland, high GPU load may result in higher cursor latency or even stuttering. If that bothers you, set the following environment variable: ``KWIN_DRM_NO_AMS=1``. If that's not enough, try enabling or disabling the software cursor by also setting ``KWIN_FORCE_SW_CURSOR=0`` or ``KWIN_FORCE_SW_CURSOR=1``.
 
 Intel GPUs use software cursor by default due to [this bug](https://gitlab.freedesktop.org/drm/intel/-/issues/9571), however it doesn't seem to affect all GPUs.
