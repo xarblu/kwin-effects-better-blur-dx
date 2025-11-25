@@ -125,12 +125,6 @@ BlurEffect::BlurEffect()
         m_upsamplePass.mvpMatrixLocation = m_upsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
         m_upsamplePass.offsetLocation = m_upsamplePass.shader->uniformLocation("offset");
         m_upsamplePass.halfpixelLocation = m_upsamplePass.shader->uniformLocation("halfpixel");
-        m_upsamplePass.textureLocation = m_upsamplePass.shader->uniformLocation("texUnit");
-        m_upsamplePass.topCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("topCornerRadius");
-        m_upsamplePass.bottomCornerRadiusLocation = m_upsamplePass.shader->uniformLocation("bottomCornerRadius");
-        m_upsamplePass.antialiasingLocation = m_upsamplePass.shader->uniformLocation("antialiasing");
-        m_upsamplePass.blurSizeLocation = m_upsamplePass.shader->uniformLocation("blurSize");
-        m_upsamplePass.opacityLocation = m_upsamplePass.shader->uniformLocation("opacity");
     }
 
     m_noisePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -587,10 +581,6 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 {
     // this effect relies on prePaintWindow being called in the bottom to top order
 
-    // in case this window has regions to be blurred
-    const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
-
-
     effects->prePaintWindow(w, data, presentTime);
 
     const QRegion oldOpaque = data.opaque;
@@ -606,11 +596,14 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
         m_currentBlur -= newOpaque;
     }
 
-    // if we have to paint a non-opaque part of this window that hasWindowBehind with the
+    // if we have to paint a non-opaque part of this window that intersects with the
     // currently blurred region we have to redraw the whole region
     if ((data.paint - oldOpaque).intersects(m_currentBlur)) {
         data.paint += m_currentBlur;
     }
+
+    // in case this window has regions to be blurred
+    const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
 
     // if this window or a window underneath the blurred area is painted again we have to
     // blur everything
@@ -786,24 +779,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     }
 
-    float topCornerRadius = 0;
-    float bottomCornerRadius = 0;
-    if (w && !(w->isDock() && !isDockFloating(w, blurShape))) {
-        const bool isMaximized = effects->clientArea(MaximizeArea, effects->activeScreen(), effects->currentDesktop()) == w->frameGeometry();
-        if (isMenu(w)) {
-            topCornerRadius = bottomCornerRadius = m_settings.roundedCorners.menuRadius;
-        } else if (w->isDock()) {
-            topCornerRadius = bottomCornerRadius = m_settings.roundedCorners.dockRadius;
-        } else if ((!w->isFullScreen() && !isMaximized) || m_settings.roundedCorners.roundMaximized) {
-            if (!w->decoration() || (w->decoration() && m_settings.forceBlur.blurDecorations)) {
-                topCornerRadius = m_settings.roundedCorners.windowTopRadius;
-            }
-            bottomCornerRadius = m_settings.roundedCorners.windowBottomRadius;
-        }
-        topCornerRadius = topCornerRadius * viewport.scale();
-        bottomCornerRadius = bottomCornerRadius * viewport.scale();
-    }
-
     // Maybe reallocate offscreen render targets. Keep in mind that the first one contains
     // original background behind the window, it's not blurred.
     GLenum textureFormat = GL_RGBA8;
@@ -811,9 +786,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         textureFormat = renderTarget.texture()->internalFormat();
     }
 
-    if (renderInfo.framebuffers.size() != (m_iterationCount + 1)
-            || renderInfo.textures[0]->size() != deviceBackgroundRect.size()
-            || renderInfo.textures[0]->internalFormat() != textureFormat) {
+    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != deviceBackgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
 
@@ -996,8 +969,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         QMatrix4x4 projectionMatrix;
         projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
 
-        m_upsamplePass.shader->setUniform(m_upsamplePass.topCornerRadiusLocation, static_cast<float>(0));
-        m_upsamplePass.shader->setUniform(m_upsamplePass.bottomCornerRadiusLocation, static_cast<float>(0));
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
         m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));
 

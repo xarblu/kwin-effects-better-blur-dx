@@ -46,13 +46,6 @@ void BlurSettings::read()
     forceBlur.blurDecorations = BlurConfig::blurDecorations();
     forceBlur.blurMenus = BlurConfig::blurMenus();
     forceBlur.blurDocks = BlurConfig::blurDocks();
-
-    roundedCorners.windowTopRadius = BlurConfig::topCornerRadius();
-    roundedCorners.windowBottomRadius = BlurConfig::bottomCornerRadius();
-    roundedCorners.menuRadius = BlurConfig::menuCornerRadius();
-    roundedCorners.dockRadius = BlurConfig::dockCornerRadius();
-    roundedCorners.antialiasing = BlurConfig::roundedCornersAntialiasing();
-    roundedCorners.roundMaximized = BlurConfig::roundCornersOfMaximizedWindows();
 }
 
 }

@@ -1,15 +1,5 @@
 add_subdirectory(kcm)
 
-function(replace_shader_include input output)
-    file(READ shaders/roundedcorners.glsl ROUNDEDCORNERS_SHADER)
-    file(READ "${input}" SHADER)
-    string(REPLACE "#include \"roundedcorners.glsl\"" "${ROUNDEDCORNERS_SHADER}" SHADER "${SHADER}")
-    file(WRITE "${output}" "${SHADER}")
-endfunction()
-
-replace_shader_include(shaders/upsample.glsl shaders/upsample.frag)
-replace_shader_include(shaders/upsample_core.glsl shaders/upsample_core.frag)
-
 set(better_blur_dx_SOURCES
     blur.cpp
     blur.qrc

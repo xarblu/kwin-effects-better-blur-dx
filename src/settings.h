@@ -32,22 +32,11 @@ struct ForceBlurSettings
     bool blurDocks;
 };
 
-struct RoundedCornersSettings
-{
-    float windowTopRadius;
-    float windowBottomRadius;
-    float menuRadius;
-    float dockRadius;
-    float antialiasing;
-    bool roundMaximized;
-};
-
 class BlurSettings
 {
 public:
     GeneralSettings general{};
     ForceBlurSettings forceBlur{};
-    RoundedCornersSettings roundedCorners{};
 
     void read();
 };
