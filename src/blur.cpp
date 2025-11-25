@@ -30,7 +30,6 @@
 #include "wayland/surface.h"
 
 #include <QGuiApplication>
-#include <QImage>
 #include <QMatrix4x4>
 #include <QScreen>
 #include <QTime>
@@ -147,7 +146,7 @@ BlurEffect::BlurEffect()
     }
 #endif
 
-    if (effects->waylandDisplay()) {
+#ifndef BETTERBLUR_X11
     if (!s_blurManagerRemoveTimer) {
         s_blurManagerRemoveTimer = new QTimer(QCoreApplication::instance());
         s_blurManagerRemoveTimer->setSingleShot(true);
@@ -173,7 +172,7 @@ BlurEffect::BlurEffect()
     if (!s_contrastManager) {
         s_contrastManager = new ContrastManagerInterface(effects->waylandDisplay(), s_contrastManagerRemoveTimer);
     }
-    } // effects->waylandDisplay()
+#endif
 
     connect(effects, &EffectsHandler::windowAdded, this, &BlurEffect::slotWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &BlurEffect::slotWindowDeleted);
@@ -510,6 +509,25 @@ bool BlurEffect::eventFilter(QObject *watched, QEvent *event)
 
 bool BlurEffect::enabledByDefault()
 {
+#if BETTERBLUR_NOT_NEEDED
+    const auto context = effects->openglContext();
+    if (!context || context->isSoftwareRenderer()) {
+        return false;
+    }
+    GLPlatform *gl = context->glPlatform();
+
+    if (gl->isIntel() && gl->chipClass() < SandyBridge) {
+        return false;
+    }
+    if (gl->isPanfrost() && gl->chipClass() <= MaliT8XX) {
+        return false;
+    }
+    // The blur effect works, but is painfully slow (FPS < 5) on Mali and VideoCore
+    if (gl->isLima() || gl->isVideoCore4() || gl->isVideoCore3D()) {
+        return false;
+    }
+    return true;
+#endif
     return false;
 }
 

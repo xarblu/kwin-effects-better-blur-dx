@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "core/output.h"
 #include "effect/effect.h"
 #include "opengl/glutils.h"
+
 #include "scene/item.h"
 #include "scene/scene.h"
 
@@ -52,8 +52,6 @@ struct BlurEffectData
 
     std::optional<qreal> contrast;
     std::optional<qreal> saturation;
-
-    bool hasWindowBehind;
 };
 
 class BlurEffect : public KWin::Effect
@@ -102,21 +100,8 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
-
-    /*
-     * @param w The pointer to the window being blurred, nullptr if an image is being blurred.
-     */
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
-    void blur(GLTexture *texture);
-
     GLTexture *ensureNoiseTexture();
-
-    /**
-     * @remark This method shall not be called outside of BlurEffect::blur.
-     * @return A pointer to a texture containing the wallpaper of the specified desktop, or nullptr if an error
-     * occurred. The texture will contain icons and widgets, if there are any.
-     */
-    GLTexture *wallpaper(EffectWindow *desktop, const qreal &scale, const GLenum &textureFormat);
 
 private:
     struct
@@ -154,13 +139,6 @@ private:
         int mvpMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
-        int textureLocation;
-
-        int topCornerRadiusLocation;
-        int bottomCornerRadiusLocation;
-        int antialiasingLocation;
-        int blurSizeLocation;
-        int opacityLocation;
     } m_upsamplePass;
 
     struct
@@ -212,7 +190,6 @@ private:
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
-    QMap<Output *, QMetaObject::Connection> screenChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     static BlurManagerInterface *s_blurManager;
