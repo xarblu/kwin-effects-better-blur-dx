@@ -42,22 +42,12 @@ struct RoundedCornersSettings
     bool roundMaximized;
 };
 
-struct RefractionSettings
-{
-    float edgeSizePixels;
-    float refractionStrength;
-    float refractionNormalPow;
-    float refractionRGBFringing;
-    int refractionTextureRepeatMode;
-};
-
 class BlurSettings
 {
 public:
     GeneralSettings general{};
     ForceBlurSettings forceBlur{};
     RoundedCornersSettings roundedCorners{};
-    RefractionSettings refraction{};
 
     void read();
 };

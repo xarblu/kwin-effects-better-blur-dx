@@ -9,8 +9,6 @@ endfunction()
 
 replace_shader_include(shaders/upsample.glsl shaders/upsample.frag)
 replace_shader_include(shaders/upsample_core.glsl shaders/upsample_core.frag)
-replace_shader_include(shaders/refraction.glsl shaders/refraction.frag)
-replace_shader_include(shaders/refraction_core.glsl shaders/refraction_core.frag)
 
 set(better_blur_dx_SOURCES
     blur.cpp

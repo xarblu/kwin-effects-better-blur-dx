@@ -144,25 +144,6 @@ BlurEffect::BlurEffect()
         m_noisePass.noiseTextureSizeLocation = m_noisePass.shader->uniformLocation("noiseTextureSize");
     }
 
-    m_refractionPass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
-                                                                         QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
-                                                                         QStringLiteral(":/effects/better_blur_dx/shaders/refraction.frag"));
-    if (!m_refractionPass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load refraction pass shader";
-        return;
-    } else {
-        m_refractionPass.mvpMatrixLocation = m_refractionPass.shader->uniformLocation("modelViewProjectionMatrix");
-        m_refractionPass.offsetLocation = m_refractionPass.shader->uniformLocation("offset");
-        m_refractionPass.halfpixelLocation = m_refractionPass.shader->uniformLocation("halfpixel");
-        m_refractionPass.textureLocation = m_refractionPass.shader->uniformLocation("texUnit");
-        m_refractionPass.blurSizeLocation = m_refractionPass.shader->uniformLocation("blurSize");
-        m_refractionPass.edgeSizePixelsLocation = m_refractionPass.shader->uniformLocation("edgeSizePixels");
-        m_refractionPass.refractionStrengthLocation = m_refractionPass.shader->uniformLocation("refractionStrength");
-        m_refractionPass.refractionNormalPowLocation = m_refractionPass.shader->uniformLocation("refractionNormalPow");
-        m_refractionPass.refractionRGBFringingLocation = m_refractionPass.shader->uniformLocation("refractionRGBFringing");
-        m_refractionPass.refractionTextureRepeatModeLocation = m_refractionPass.shader->uniformLocation("refractionTextureRepeatMode");
-    }
-
     initBlurStrengthValues();
     reconfigure(ReconfigureAll);
 
@@ -1038,48 +1019,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     const float modulation = opacity * opacity;
 
-    // TODO: refraction & contrast at the same time
-    if (m_settings.refraction.refractionStrength > 0) {
-        ShaderManager::instance()->pushShader(m_refractionPass.shader.get());
-
-        glUniform1i(m_refractionPass.textureLocation, 0);
-        glActiveTexture(GL_TEXTURE0);
-
-        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
-        projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
-
-        GLFramebuffer::popFramebuffer();
-        const auto &read = renderInfo.framebuffers[1];
-
-        const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
-                                  0.5 / read->colorAttachment()->height());
-
-        m_refractionPass.shader->setUniform(m_refractionPass.mvpMatrixLocation, projectionMatrix);
-        m_refractionPass.shader->setUniform(m_refractionPass.halfpixelLocation, halfpixel);
-        m_refractionPass.shader->setUniform(m_refractionPass.blurSizeLocation, QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
-        m_refractionPass.shader->setUniform(m_refractionPass.edgeSizePixelsLocation,
-            std::min(m_settings.refraction.edgeSizePixels, (float)std::min(deviceBackgroundRect.width() / 2, deviceBackgroundRect.height() / 2)));
-        m_refractionPass.shader->setUniform(m_refractionPass.refractionStrengthLocation, m_settings.refraction.refractionStrength);
-        m_refractionPass.shader->setUniform(m_refractionPass.refractionNormalPowLocation, m_settings.refraction.refractionNormalPow);
-        m_refractionPass.shader->setUniform(m_refractionPass.refractionRGBFringingLocation, m_settings.refraction.refractionRGBFringing);
-        m_refractionPass.shader->setUniform(m_refractionPass.refractionTextureRepeatModeLocation, m_settings.refraction.refractionTextureRepeatMode);
-
-        read->colorAttachment()->bind();
-
-        if (modulation < 1.0) {
-            glEnable(GL_BLEND);
-            glBlendColor(0, 0, 0, modulation);
-            glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
-        }
-
-        vbo->draw(GL_TRIANGLES, 6, vertexCount);
-
-        if (modulation < 1.0) {
-            glDisable(GL_BLEND);
-        }
-
-        ShaderManager::instance()->popShader();
-    } else
     if (const BorderRadius cornerRadius = w->window()->borderRadius(); !cornerRadius.isNull()) {
         ShaderManager::instance()->pushShader(m_roundedContrastPass.shader.get());
 

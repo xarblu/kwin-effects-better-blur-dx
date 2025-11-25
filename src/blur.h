@@ -174,22 +174,6 @@ private:
         int noiseTextureStength = 0;
     } m_noisePass;
 
-    struct
-    {
-        std::unique_ptr<GLShader> shader;
-        int mvpMatrixLocation;
-        int offsetLocation;
-        int halfpixelLocation;
-        int textureLocation;
-
-        int blurSizeLocation;
-        int edgeSizePixelsLocation;
-        int refractionStrengthLocation;
-        int refractionNormalPowLocation;
-        int refractionRGBFringingLocation;
-        int refractionTextureRepeatModeLocation;
-    } m_refractionPass;
-
     bool m_valid = false;
 #ifdef BETTERBLUR_X11
     long net_wm_blur_region = 0;

@@ -10,8 +10,6 @@
   <file>shaders/downsample_core.frag</file>
   <file>shaders/noise.frag</file>
   <file>shaders/noise_core.frag</file>
-  <file>shaders/refraction.frag</file>
-  <file>shaders/refraction_core.frag</file>
   <file>shaders/upsample.frag</file>
   <file>shaders/upsample_core.frag</file>
   <file>shaders/vertex.vert</file>
