@@ -451,7 +451,7 @@ void BlurEffect::slotWindowClosed(EffectWindow *w)
      * and at worst causes a blinding flash with bright background surfaces.
      * Clamp them to mostly work around the issue.
      */
-    if (w->isDeleted()) {
+    if (w && w->isDeleted()) {
         BlurEffectData &data = m_windows[w];
 
         const qreal saturation = data.saturation.value_or(m_settings.general.saturation);
