@@ -64,6 +64,19 @@ Currently supported versions: **6.5**
 
 **\* Unofficial package, use at your own risk.**
 
+<details>
+  <summary>Arch Linux (AUR)</summary>
+  <br>
+  
+  ```sh
+  yay -S kwin-effects-better-blur-dx-git
+  ```
+  
+  or use your AUR helper of choice
+</details>
+
+**\* Unofficial package, use at your own risk.**
+
 ## Manual
 > [!NOTE]
 > On Fedora Kinoite and other distributions based on it, the effect must be built in a container.
