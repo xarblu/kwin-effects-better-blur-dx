@@ -136,7 +136,7 @@
         </layout>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="labelConstantNoiseDescription">
+        <widget class="QLabel" name="labelTransparentBlurDescription">
          <property name="text">
           <string>Window opacity affects blur:</string>
          </property>
