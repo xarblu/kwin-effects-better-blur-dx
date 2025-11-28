@@ -62,10 +62,8 @@ Currently supported versions: **6.5**
   ```
 </details>
 
-**\* Unofficial package, use at your own risk.**
-
 <details>
-  <summary>Arch Linux (AUR)</summary>
+  <summary>Arch Linux (AUR)*</summary>
   <br>
   
   ```sh
