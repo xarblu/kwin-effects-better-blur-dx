@@ -37,36 +37,31 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
-    Gui
     Core
     DBus
-    UiTools
-    Widgets
-    OpenGL
+    Gui
     Network
-    Xml
+    OpenGL
+    Qml
+    Quick
+    Widgets
 )
 
 include_directories(${Qt6Widgets_INCLUDE_DIRS} ${Qt6Network_INCLUDE_DIRS} ${Qt6OpenGL_INCLUDE_DIRS} ${Qt6Xml_INCLUDE_DIRS})
 add_definitions(${Qt6Widgets_DEFINITIONS})
 
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
+    ColorScheme
     Config
     ConfigWidgets
     CoreAddons
-    Crash
-    GlobalAccel
     I18n
-    KIO
-    Service
-    #Init
-    Notifications
-    Service
+    KCMUtils
     WidgetsAddons
     WindowSystem
-    GuiAddons
-    KCMUtils
 )
+
+find_package(KDecoration3 REQUIRED)
 
 find_package(epoxy REQUIRED)
 
@@ -83,10 +78,8 @@ else()
 endif()
 
 if(${KWin_VERSION} VERSION_LESS 6.4)
-    message(FATAL_ERROR "Better Blur does not support your Plasma version (${KWin_VERSION}). See the README for more information.")
+    message(FATAL_ERROR "Better Blur DX does not support your Plasma version (${KWin_VERSION}). See the README for more information.")
 endif()
-
-find_package(KDecoration3 REQUIRED)
 
 add_subdirectory(src)
 
