@@ -46,7 +46,11 @@ struct BlurEffectData
      * The render data per render view, as they can have different
      *  color spaces and even different windows on them
      */
+#ifdef BETTERBLUR_X11
+    std::unordered_map<Output *, BlurRenderData> render;
+#else
     std::unordered_map<RenderView *, BlurRenderData> render;
+#endif
 
     ItemEffect windowEffect;
 
@@ -86,7 +90,11 @@ public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowClosed(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
+#ifdef BETTERBLUR_X11
+    void slotScreenRemoved(KWin::Output *view);
+#else
     void slotViewRemoved(KWin::RenderView *view);
+#endif
 #ifdef BETTERBLUR_X11
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
 #endif
@@ -159,7 +167,12 @@ private:
 #endif
     QRegion m_paintedArea; // keeps track of all painted areas (from bottom to top)
     QRegion m_currentBlur; // keeps track of currently blurred area of the windows (from bottom to top)
+
+#ifdef BETTERBLUR_X11
+    Output *m_currentView = nullptr;
+#else
     RenderView *m_currentView = nullptr;
+#endif
 
     size_t m_iterationCount; // number of times the texture will be downsized to half size
     int m_offset;

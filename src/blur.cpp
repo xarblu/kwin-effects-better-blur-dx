@@ -178,7 +178,11 @@ BlurEffect::BlurEffect()
     connect(effects, &EffectsHandler::windowAdded, this, &BlurEffect::slotWindowAdded);
     connect(effects, &EffectsHandler::windowClosed, this, &BlurEffect::slotWindowClosed);
     connect(effects, &EffectsHandler::windowDeleted, this, &BlurEffect::slotWindowDeleted);
+#ifdef BETTERBLUR_X11
+    connect(effects, &EffectsHandler::screenRemoved, this, &BlurEffect::slotScreenRemoved);
+#else
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
+#endif
 #ifdef BETTERBLUR_X11
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
@@ -486,7 +490,11 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     }
 }
 
+#ifdef BETTERBLUR_X11
+void BlurEffect::slotScreenRemoved(KWin::Output *view)
+#else
 void BlurEffect::slotViewRemoved(KWin::RenderView *view)
+#endif
 {
     for (auto &[window, data] : m_windows) {
         if (auto it = data.render.find(view); it != data.render.end()) {
