@@ -136,6 +136,13 @@
         </layout>
        </item>
        <item row="3" column="0">
+        <widget class="QLabel" name="labelConstantNoiseDescription">
+         <property name="text">
+          <string>Window opacity affects blur:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QCheckBox" name="kcfg_TransparentBlur">
@@ -144,9 +151,6 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Window opacity affects blur</string>
            </property>
           </widget>
          </item>
