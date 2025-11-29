@@ -21,6 +21,7 @@ struct GeneralSettings
     qreal brightness;
     qreal saturation;
     qreal contrast;
+    qreal cornerRadius;
 };
 
 struct ForceBlurSettings

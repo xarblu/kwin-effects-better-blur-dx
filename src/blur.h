@@ -18,6 +18,7 @@
 
 #include <QList>
 
+#include <effect/effectwindow.h>
 #include <unordered_map>
 
 namespace KWin
@@ -112,6 +113,7 @@ private:
     void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
+    BorderRadius getWindowBorderRadius(const EffectWindow *w) const;
 
 private:
     struct

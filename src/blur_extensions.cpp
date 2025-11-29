@@ -8,6 +8,7 @@
 #include "utils.h"
 
 #include <effect/effectwindow.h>
+#include <scene/borderradius.h>
 
 namespace KWin
 {
@@ -55,6 +56,20 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
         || m_settings.forceBlur.windowClasses.contains(w->window()->resourceClass());
     return (matches && m_settings.forceBlur.windowClassMatchingMode == WindowClassMatchingMode::Whitelist)
         || (!matches && m_settings.forceBlur.windowClassMatchingMode == WindowClassMatchingMode::Blacklist);
+}
+
+BorderRadius BlurEffect::getWindowBorderRadius(const EffectWindow *w) const
+{
+    const BorderRadius windowCornerRadius = w->window()->borderRadius();
+    if (!windowCornerRadius.isNull()) {
+        return windowCornerRadius;
+    }
+
+    if (qreal radius = m_settings.general.cornerRadius; radius > 0.0) {
+        return BorderRadius(radius);
+    } else {
+        return BorderRadius();
+    }
 }
 
 }

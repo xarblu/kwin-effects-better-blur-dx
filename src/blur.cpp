@@ -997,7 +997,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     const float modulation = opacity * opacity;
 
-    if (const BorderRadius cornerRadius = w->window()->borderRadius(); !cornerRadius.isNull()) {
+    if (const BorderRadius cornerRadius = getWindowBorderRadius(w); !cornerRadius.isNull()) {
         ShaderManager::instance()->pushShader(m_roundedContrastPass.shader.get());
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
