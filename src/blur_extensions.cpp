@@ -64,6 +64,11 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     // know what they're doing
     if (content.has_value()) return;
 
+    // don't touch KWin internal windows
+    // this includes the snapping assistant zones
+    // and they don't handle blur well at all
+    if (w->internalWindow()) return;
+
     if (!shouldForceBlur(w)) return;
 
     // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
