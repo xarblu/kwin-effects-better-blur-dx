@@ -334,6 +334,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     std::optional<QRegion> frame;
     std::optional<qreal> saturation;
     std::optional<qreal> contrast;
+    BlurType type;
 
 #ifdef BETTERBLUR_X11
     if (net_wm_blur_region != XCB_ATOM_NONE) {
@@ -358,6 +359,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     if (SurfaceInterface *surface = w->surface()) {
         if (surface->blur()) {
             content = surface->blur()->region();
+            type = BlurType::Requested;
         }
         if (surface->contrast()) {
             saturation = surface->contrast()->saturation();
@@ -369,6 +371,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         const auto property = internal->property("kwin_blur");
         if (property.isValid()) {
             content = property.value<QRegion>();
+            type = BlurType::Requested;
         }
     }
 
@@ -376,19 +379,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         frame = decorationBlurRegion(w);
     }
 
-    // Don't override blur region for menus that already have one. The window geometry could include shadows.
-    if (shouldForceBlur(w) && !((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
-        // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
-        // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
-        // blur region to be off on X11. The frame region is not translated, so it is used instead.
-        const auto isX11WithCSD = w->isX11Client() && w->frameGeometry() != w->bufferGeometry();
-        if (!isX11WithCSD) {
-            content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
-        }
-        if (isX11WithCSD || (m_settings.forceBlur.blurDecorations && w->decoration())) {
-            frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
-        }
-    }
+    updateForceBlurRegion(w, content, frame, type);
 
     if (content.has_value() || frame.has_value()) {
         BlurEffectData &data = m_windows[w];
@@ -397,6 +388,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         data.contrast = contrast;
         data.saturation = saturation;
         data.windowEffect = ItemEffect(w->windowItem());
+        data.type = type;
     } else if (!geometryChanged) { // Blur may disappear if this method is called when window geometry changes
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();

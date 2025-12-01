@@ -27,6 +27,12 @@ namespace KWin
 class BlurManagerInterface;
 class ContrastManagerInterface;
 
+enum BlurType {
+    Unknown,
+    Requested,
+    Forced
+};
+
 struct BlurRenderData
 {
     /// Temporary render targets needed for the Dual Kawase algorithm, the first texture
@@ -58,6 +64,8 @@ struct BlurEffectData
     std::optional<qreal> brightness;
     std::optional<qreal> contrast;
     std::optional<qreal> saturation;
+
+    BlurType type = BlurType::Unknown;
 };
 
 class BlurEffect : public KWin::Effect
@@ -111,6 +119,7 @@ private:
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     bool shouldForceBlur(const EffectWindow *w) const;
     void updateBlurRegion(EffectWindow *w, bool geometryChanged = false);
+    void updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
     BorderRadius getWindowBorderRadius(const EffectWindow *w) const;

@@ -58,6 +58,33 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
         || (!matches && m_settings.forceBlur.windowClassMatchingMode == WindowClassMatchingMode::Blacklist);
 }
 
+void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type)
+{
+    if (!shouldForceBlur(w)) return;
+
+    // we'll assume windows that set their own blur region
+    // know what they're doing
+    if (content.has_value()) return;
+
+    //if (isMenu(w) || w->isTooltip()) return;
+
+    // Don't override blur region for menus that already have one. The window geometry could include shadows.
+    //if (!((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
+
+    // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+    // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
+    // blur region to be off on X11. The frame region is not translated, so it is used instead.
+    const auto isX11WithCSD = w->isX11Client() && w->frameGeometry() != w->bufferGeometry();
+    if (!isX11WithCSD) {
+        content = w->contentsRect().translated(-w->contentsRect().topLeft()).toRect();
+    }
+    if (isX11WithCSD || (m_settings.forceBlur.blurDecorations && w->decoration())) {
+        frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
+    }
+
+    type = BlurType::Forced;
+}
+
 BorderRadius BlurEffect::getWindowBorderRadius(const EffectWindow *w) const
 {
     const BorderRadius windowCornerRadius = w->window()->borderRadius();
