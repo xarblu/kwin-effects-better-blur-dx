@@ -164,7 +164,7 @@ To build a version for KWin X11 add `-DBETTERBLUR_X11=ON` to the `cmake` invocat
   make -j$(nproc)
   cpack -V -G RPM
   exit # exit container
-  sudo rpm-ostree install kwin-effects-better-blur-dx/build/kwin-better-blur.rpm
+  sudo rpm-ostree install kwin-effects-better-blur-dx/build/kwin-better-blur-dx.rpm
   ```
 </details>
 
