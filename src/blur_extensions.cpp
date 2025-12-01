@@ -66,11 +66,6 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     // know what they're doing
     if (content.has_value()) return;
 
-    //if (isMenu(w) || w->isTooltip()) return;
-
-    // Don't override blur region for menus that already have one. The window geometry could include shadows.
-    //if (!((isMenu(w) || w->isTooltip()) && (content.has_value() || geometryChanged))) {
-
     // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
     // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
     // blur region to be off on X11. The frame region is not translated, so it is used instead.
