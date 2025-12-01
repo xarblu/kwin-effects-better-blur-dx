@@ -122,7 +122,7 @@ private:
     void updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
-    BorderRadius getWindowBorderRadius(const EffectWindow *w) const;
+    BorderRadius getWindowBorderRadius(EffectWindow *w);
 
 private:
     struct

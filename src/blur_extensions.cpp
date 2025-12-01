@@ -85,13 +85,24 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     type = BlurType::Forced;
 }
 
-BorderRadius BlurEffect::getWindowBorderRadius(const EffectWindow *w) const
+BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 {
+    // init of BlurEffect::blur() should w is in map
+    BlurEffectData &data = m_windows[w];
+
+    // always respect window provided radius
     const BorderRadius windowCornerRadius = w->window()->borderRadius();
     if (!windowCornerRadius.isNull()) {
         return windowCornerRadius;
     }
 
+    // assume the window knows what it's doing
+    // when it requested the blur
+    if (data.type == BlurType::Requested) {
+        return BorderRadius();
+    }
+
+    // fallback to configured radius
     if (qreal radius = m_settings.general.cornerRadius; radius > 0.0) {
         return BorderRadius(radius);
     } else {
