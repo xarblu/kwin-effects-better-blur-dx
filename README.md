@@ -147,6 +147,9 @@ make -j$(nproc)
 sudo make install
 ```
 
+By default this will build the effect for the regular (Wayland) KWin.
+To build a version for KWin X11 add `-DBETTERBLUR_X11=ON` to the `cmake` invocation.
+
 <details>
   <summary>Building on Fedora Kinoite</summary>
   <br>
