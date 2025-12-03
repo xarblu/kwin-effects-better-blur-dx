@@ -168,7 +168,7 @@
          <item>
           <widget class="QSlider" name="kcfg_Brightness">
            <property name="minimum">
-            <number>100</number>
+            <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
@@ -222,7 +222,7 @@
          <item>
           <widget class="QSlider" name="kcfg_Saturation">
            <property name="minimum">
-            <number>100</number>
+            <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
@@ -276,7 +276,7 @@
          <item>
           <widget class="QSlider" name="kcfg_Contrast">
            <property name="minimum">
-            <number>100</number>
+            <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
