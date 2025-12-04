@@ -19,6 +19,7 @@
 #include <QList>
 
 #include <effect/effectwindow.h>
+#include <optional>
 #include <unordered_map>
 
 namespace KWin
@@ -123,6 +124,7 @@ private:
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
     BorderRadius getWindowBorderRadius(EffectWindow *w);
+    qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
 
 private:
     struct

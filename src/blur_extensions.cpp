@@ -110,4 +110,13 @@ BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
     }
 }
 
+qreal BlurEffect::getContrastParam(std::optional<qreal> requested_value, qreal config_value) const
+{
+    if (m_settings.general.forceContrastParams) {
+        return config_value;
+    }
+
+    return requested_value.value_or(config_value);
+}
+
 }

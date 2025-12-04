@@ -276,7 +276,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
     QMatrix4x4 brightMatrix; // brightess
 
     // Saturation matrix
-    const qreal saturation = params.saturation.value_or(m_settings.general.saturation);
+    const qreal saturation = getContrastParam(params.saturation, m_settings.general.saturation);
     if (!qFuzzyCompare(saturation, 1.0)) {
         const qreal rval = (1.0 - saturation) * .2126;
         const qreal gval = (1.0 - saturation) * .7152;
@@ -289,7 +289,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
     }
 
     // Contrast Matrix
-    const qreal contrast = params.contrast.value_or(m_settings.general.contrast);
+    const qreal contrast = getContrastParam(params.contrast, m_settings.general.contrast);
     if (!qFuzzyCompare(contrast, 1.0)) {
         const float transl = (1.0 - contrast) / 2.0;
 
@@ -300,7 +300,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
     }
 
     // Brightness matrix
-    const qreal brightness = params.brightness.value_or(m_settings.general.brightness);
+    const qreal brightness = getContrastParam(params.brightness, m_settings.general.brightness);
     if (!qFuzzyCompare(brightness, 1.0)) {
         brightMatrix.scale(brightness, brightness, brightness);
     }
