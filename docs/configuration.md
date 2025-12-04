@@ -1,39 +1,79 @@
 # General
+
+### Blur Strength
+
+Like the default KWin blur setting.
+Adjusts how "sharp" the blurred background is.
+
+### Noise Strength
+
+Like the default KWin blur setting.
+Adjusts how strong the noise applied to the blurred background is.
+(Used to hide banding artifacts in smooth gradients.)
+
 ### Window opacity affects blur
-Since Plasma 6, window opacity now affects blur opacity with no option to disable it in the stock blur effect.
 
-Enabled (default):
-![image](https://github.com/taj-ny/kwin-effects-better_blur_dx/assets/79316397/525a3611-62f0-4c7e-b01c-253a05cbd3ca)
+Since Plasma 6, window opacity now affects blur opacity.
+This allows users to bring back the old behaviour.
 
-Disabled:
-![image](https://github.com/taj-ny/kwin-effects-better_blur_dx/assets/79316397/b4f35a24-e288-4c51-9707-494942abdaa0)
+### Brightness
+
+Part of the contrast pass.
+Adjusts how bright the blurred background is.
+
+### Saturation
+
+Part of the contrast pass.
+Adjusts how saturated the blurred background is.
+
+### Contrast
+
+Part of the contrast pass.
+Adjusts how strong the contrast of the blurred background is.
+
+### Force Contrast Parameters
+
+By default Better Blur DX respects when windows provide their
+own contrast pass parameters (brightness, saturation, contrast).
+
+E.g. [Plasma surfaces provide their own values](https://invent.kde.org/plasma/libplasma/-/blob/v6.5.3/src/desktoptheme/breeze/plasmarc)
+which may or may not look good to you.
+
+To force your settings to be respected for all windows enable this.
+
+### Corner Radius
+
+Round the corners of the blurred background by this amount.
+This is mainly useful to work around the infamous "korners" bug
+(square blur region leaking out behind rounded windows).
+
+> [!NOTE]
+> This setting is ignored for windows that provide their own blur region (e.g. Plasma surfaces).
+> We expect these to be set correctly by the window (and usually they are).
 
 # Force blur
-### Blur window decorations
-Whether to blur window decorations, including borders. Enable this if your window decoration doesn't support blur, or you want rounded top corners.
+
+### Classes of windows to force blur:
+
+Window classes that should be force blurred (or excluded if `Blur all except matching` is enabled).
+One window class per line.
+
+> [!NOTE]
+> Better Blur DX respects blur regions set by windows themselves (e.g. Plasma surfaces).
+> Force blur settings are ignored in these cases.
+
+### Blur window decorations as well
+
+Whether to blur window decorations, including borders.
+Enable this if your window decoration doesn't support blur.
 
 This option will override the blur region specified by the decoration.
 
-# Static blur
-When enabled, the blur texture will be cached and reused. The blurred areas of the window will be marked as opaque, resulting in KWin not painting anything behind them.
-Only one image per screen is cached at a time.
+### Blur menus / Blur docks
 
-Static blur is mainly intended for laptop users who want longer battery life while still having blur everywhere.
+Allows menus / docks to be blurred.
+By default these are filtered from the list of blurred windows.
 
-### Use real blur for windows that are in front of other windows
-By default, when two windows overlap, you won't be able to see the window behind.
-![image](https://github.com/taj-ny/kwin-effects-better_blur_dx/assets/79316397/e581b5c1-7b2c-41c4-b180-4da5306747e1)
-
-If this option is enabled, the effect will automatically switch to real blur when necessary. At very high blur strengths, there may be a slight difference in the texture.
-
-https://github.com/taj-ny/kwin-effects-better_blur_dx/assets/79316397/7bae6a16-6c78-4889-8df1-feb24005dabc
-
-### Image source
-The image to use for static blur.
-
-- Desktop wallpaper - A screenshot of the desktop is taken for every screen. Icons and widgets will be included. The cached texture is invalidated when the entire desktop is repainted,
-which can happen when the wallpaper changes, icons are interacted with or when widgets update.
-- Custom - The specified image is scaled for every screen without respecting the aspect ratio. Supported formats are JPEG and PNG.
-
-### Blur image
-Whether to blur the image used for static blur. This is only done once.
+> [!NOTE]
+> This only *allows* these to be blurred.
+> You still need to add them to the force blurred window classes or enable `Blur all except matching`.
