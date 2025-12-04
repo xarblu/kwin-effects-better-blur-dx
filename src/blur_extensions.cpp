@@ -93,4 +93,14 @@ qreal BlurEffect::getContrastParam(std::optional<qreal> requested_value, qreal c
     return requested_value.value_or(config_value);
 }
 
+qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data) const
+{
+    // default KWin case
+    if (w && m_settings.general.windowOpacityAffectsBlur) {
+        return w->opacity() * data.opacity();
+    }
+
+    return data.opacity();
+}
+
 }

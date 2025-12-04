@@ -124,6 +124,7 @@ private:
     GLTexture *ensureNoiseTexture();
     BorderRadius getWindowBorderRadius(EffectWindow *w);
     qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
+    qreal getOpacity(const EffectWindow *w, WindowPaintData &data) const;
 
 private:
     struct
