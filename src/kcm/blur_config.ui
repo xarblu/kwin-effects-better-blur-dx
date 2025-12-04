@@ -164,49 +164,66 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <layout class="QHBoxLayout" name="sliderBrightness">
          <item>
-          <widget class="QSlider" name="kcfg_Brightness">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QSlider" name="kcfg_Brightness">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="singleStep">
+              <number>25</number>
+             </property>
+             <property name="pageStep">
+              <number>25</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TickPosition::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLabel" name="labelBrightnessStrong">
+               <property name="text">
+                <string>None</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelBrightnessNone">
+               <property name="text">
+                <string>Strong</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinboxBrightness">
+           <property name="suffix">
+            <string> %</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
            </property>
-           <property name="singleStep">
-            <number>25</number>
-           </property>
-           <property name="pageStep">
-            <number>25</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TickPosition::TicksBelow</enum>
-           </property>
           </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="labelBrightnessStrong">
-             <property name="text">
-              <string>None</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="labelBrightnessNone">
-             <property name="text">
-              <string>Strong</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </item>
         </layout>
        </item>
@@ -218,49 +235,66 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QHBoxLayout" name="sliderSaturation">
          <item>
-          <widget class="QSlider" name="kcfg_Saturation">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QSlider" name="kcfg_Saturation">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="singleStep">
+              <number>25</number>
+             </property>
+             <property name="pageStep">
+              <number>25</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TickPosition::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="labelSaturationStrong">
+               <property name="text">
+                <string>None</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelSaturationNone">
+               <property name="text">
+                <string>Strong</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinboxSaturation">
+           <property name="suffix">
+            <string> %</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
            </property>
-           <property name="singleStep">
-            <number>25</number>
-           </property>
-           <property name="pageStep">
-            <number>25</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TickPosition::TicksBelow</enum>
-           </property>
           </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QLabel" name="labelSaturationStrong">
-             <property name="text">
-              <string>None</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="labelSaturationNone">
-             <property name="text">
-              <string>Strong</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </item>
         </layout>
        </item>
@@ -272,49 +306,66 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_6">
+        <layout class="QHBoxLayout" name="sliderContrast">
          <item>
-          <widget class="QSlider" name="kcfg_Contrast">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QSlider" name="kcfg_Contrast">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="singleStep">
+              <number>25</number>
+             </property>
+             <property name="pageStep">
+              <number>25</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TickPosition::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QLabel" name="labelContrastStrong">
+               <property name="text">
+                <string>None</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelContrastNone">
+               <property name="text">
+                <string>Strong</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinboxContrast">
+           <property name="suffix">
+            <string> %</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
            <property name="maximum">
             <number>500</number>
            </property>
-           <property name="singleStep">
-            <number>25</number>
-           </property>
-           <property name="pageStep">
-            <number>25</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TickPosition::TicksBelow</enum>
-           </property>
           </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="labelContrastStrong">
-             <property name="text">
-              <string>None</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="labelContrastNone">
-             <property name="text">
-              <string>Strong</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </item>
         </layout>
        </item>

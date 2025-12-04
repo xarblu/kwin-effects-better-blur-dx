@@ -37,6 +37,7 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     }
 
     setupContextualHelp();
+    setupSpinboxSliderSync();
 }
 
 BlurEffectConfig::~BlurEffectConfig()
@@ -68,6 +69,51 @@ void BlurEffectConfig::setupContextualHelp()
         QStringLiteral("Use <code>$$</code> for literal dollar sign.</p>"),
         ui.windowClassesBriefDescription
     );
+}
+
+void BlurEffectConfig::setupSpinboxSliderSync()
+{
+    connect(ui.kcfg_Brightness, &QSlider::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncBrightness);
+    connect(ui.spinboxBrightness, &QSpinBox::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncBrightness);
+    slotSpinboxSliderSyncBrightness(ui.kcfg_Brightness->value());
+
+    connect(ui.kcfg_Saturation, &QSlider::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncSaturation);
+    connect(ui.spinboxSaturation, &QSpinBox::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncSaturation);
+    slotSpinboxSliderSyncSaturation(ui.kcfg_Saturation->value());
+
+    connect(ui.kcfg_Contrast, &QSlider::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncContrast);
+    connect(ui.spinboxContrast, &QSpinBox::valueChanged, this, &BlurEffectConfig::slotSpinboxSliderSyncContrast);
+    slotSpinboxSliderSyncContrast(ui.kcfg_Contrast->value());
+}
+
+void BlurEffectConfig::slotSpinboxSliderSyncBrightness(int value)
+{
+    if (ui.kcfg_Brightness->value() != value) {
+        ui.kcfg_Brightness->setValue(value);
+    }
+    if (ui.spinboxBrightness->value() != value) {
+        ui.spinboxBrightness->setValue(value);
+    }
+}
+
+void BlurEffectConfig::slotSpinboxSliderSyncSaturation(int value)
+{
+    if (ui.kcfg_Saturation->value() != value) {
+        ui.kcfg_Saturation->setValue(value);
+    }
+    if (ui.spinboxSaturation->value() != value) {
+        ui.spinboxSaturation->setValue(value);
+    }
+}
+
+void BlurEffectConfig::slotSpinboxSliderSyncContrast(int value)
+{
+    if (ui.kcfg_Contrast->value() != value) {
+        ui.kcfg_Contrast->setValue(value);
+    }
+    if (ui.spinboxContrast->value() != value) {
+        ui.spinboxContrast->setValue(value);
+    }
 }
 
 void BlurEffectConfig::save()
