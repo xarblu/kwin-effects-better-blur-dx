@@ -13,32 +13,6 @@
 namespace KWin
 {
 
-void BlurEffect::slotWindowClosed(EffectWindow *w)
-{
-    /*
-     * Some windows (e.g. the foot terminal) like to
-     * close by simply deleting themselves.
-     * This causes e.g. the "scale" window close effect
-     * to blur and apply contrast to a fully transparent area.
-     *
-     * With modified contrast/saturation this at best looks bad
-     * and at worst causes a blinding flash with bright background surfaces.
-     * Clamp them to mostly work around the issue.
-     */
-    if (w && w->isDeleted()) {
-        BlurEffectData &data = m_windows[w];
-
-        const qreal brightness = data.brightness.value_or(m_settings.general.brightness);
-        data.brightness = std::min(brightness, 1.0);
-
-        const qreal saturation = data.saturation.value_or(m_settings.general.saturation);
-        data.saturation = std::min(saturation, 1.0);
-
-        const qreal contrast = data.contrast.value_or(m_settings.general.contrast);
-        data.contrast = std::min(contrast, 1.0);
-    }
-}
-
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
     const auto windowClass = w->window()->resourceClass();

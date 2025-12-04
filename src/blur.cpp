@@ -176,7 +176,6 @@ BlurEffect::BlurEffect()
 #endif
 
     connect(effects, &EffectsHandler::windowAdded, this, &BlurEffect::slotWindowAdded);
-    connect(effects, &EffectsHandler::windowClosed, this, &BlurEffect::slotWindowClosed);
     connect(effects, &EffectsHandler::windowDeleted, this, &BlurEffect::slotWindowDeleted);
 #ifdef BETTERBLUR_X11
     connect(effects, &EffectsHandler::screenRemoved, this, &BlurEffect::slotScreenRemoved);

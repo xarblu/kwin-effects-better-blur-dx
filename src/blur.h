@@ -99,7 +99,6 @@ public:
 
 public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
-    void slotWindowClosed(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
 #ifdef BETTERBLUR_X11
     void slotScreenRemoved(KWin::Output *view);
