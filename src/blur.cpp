@@ -333,7 +333,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     std::optional<QRegion> frame;
     std::optional<qreal> saturation;
     std::optional<qreal> contrast;
-    BlurType type;
+    BlurType type = BlurType::Unknown;
 
 #ifdef BETTERBLUR_X11
     if (net_wm_blur_region != XCB_ATOM_NONE) {
