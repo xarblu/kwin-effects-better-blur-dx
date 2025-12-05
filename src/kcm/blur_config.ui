@@ -136,37 +136,16 @@
         </layout>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="labelTransparentBlurDescription">
-         <property name="text">
-          <string>Window opacity affects blur:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QCheckBox" name="kcfg_TransparentBlur">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="4" column="0">
         <widget class="QLabel" name="labelBrightness">
          <property name="text">
           <string>Brightness:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="sliderBrightness">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <widget class="QSlider" name="kcfg_Brightness">
              <property name="minimum">
@@ -190,7 +169,7 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
               <widget class="QLabel" name="labelBrightnessStrong">
                <property name="text">
@@ -227,17 +206,17 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="labelSaturation">
          <property name="text">
           <string>Saturation:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="4" column="1">
         <layout class="QHBoxLayout" name="sliderSaturation">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="QSlider" name="kcfg_Saturation">
              <property name="minimum">
@@ -261,7 +240,7 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
               <widget class="QLabel" name="labelSaturationStrong">
                <property name="text">
@@ -298,17 +277,17 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="labelContrast">
          <property name="text">
           <string>Contrast:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="5" column="1">
         <layout class="QHBoxLayout" name="sliderContrast">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
             <widget class="QSlider" name="kcfg_Contrast">
              <property name="minimum">
@@ -332,7 +311,7 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
               <widget class="QLabel" name="labelContrastStrong">
                <property name="text">
@@ -369,25 +348,25 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="labelForceContrastParams">
          <property name="text">
           <string>Force Contrast Parameters:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <widget class="QCheckBox" name="kcfg_ForceContrastParams"/>
        </item>
-       <item row="8" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="labelCornerRadius">
          <property name="text">
           <string>Corner Radius:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item row="7" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
           <widget class="QDoubleSpinBox" name="kcfg_CornerRadius"/>
          </item>

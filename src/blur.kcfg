@@ -12,9 +12,6 @@
         <entry name="NoiseStrength" type="Int">
             <default>5</default>
         </entry>
-        <entry name="TransparentBlur" type="Bool">
-            <default>true</default>
-        </entry>
         <entry name="Brightness" type="Int">
             <default>100</default>
         </entry>
