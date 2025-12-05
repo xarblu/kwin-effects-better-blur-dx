@@ -358,7 +358,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
     if (SurfaceInterface *surface = w->surface()) {
         if (surface->blur()) {
             content = surface->blur()->region();
-            type = BlurType::Requested;
         }
         if (surface->contrast()) {
             saturation = surface->contrast()->saturation();
@@ -370,7 +369,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w, bool geometryChanged)
         const auto property = internal->property("kwin_blur");
         if (property.isValid()) {
             content = property.value<QRegion>();
-            type = BlurType::Requested;
         }
     }
 

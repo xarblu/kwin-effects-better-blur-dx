@@ -34,6 +34,15 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 
 void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type)
 {
+    // If we already have a blur region at this point
+    // the window requested it.
+    // This tracker allows us to later decide if we want
+    // to trust the window or use user parameters
+    // e.g. for corner radius.
+    if (content.has_value() || frame.has_value()) {
+        type = BlurType::Requested;
+    }
+
     // Normally we'd assume windows that set their own blur region
     // know what they're doing.
     // However these windows probably don't expect users to decrease
