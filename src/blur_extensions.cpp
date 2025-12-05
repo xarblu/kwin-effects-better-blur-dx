@@ -98,14 +98,17 @@ qreal BlurEffect::getContrastParam(std::optional<qreal> requested_value, qreal c
     return requested_value.value_or(config_value);
 }
 
-qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data) const
+qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data, BlurEffectData &blurInfo) const
 {
-    // default KWin case
-    if (w && m_settings.general.windowOpacityAffectsBlur) {
+    // Plasma surfaces expect their opacity to affect
+    // the blur e.g. to hide the blurred surface alongside
+    // themselves.
+    // Force blurred surfaces don't want/need this
+    if (blurInfo.type == BlurType::Requested) {
         return w->opacity() * data.opacity();
+    } else {
+        return data.opacity();
     }
-
-    return data.opacity();
 }
 
 }
