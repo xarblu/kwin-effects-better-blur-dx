@@ -34,9 +34,14 @@ bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 
 void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type)
 {
-    // we'll assume windows that set their own blur region
-    // know what they're doing
-    if (content.has_value()) return;
+    // Normally we'd assume windows that set their own blur region
+    // know what they're doing.
+    // However these windows probably don't expect users to decrease
+    // the window opacity via KWin rules in which case we'll allow
+    // overriding the blur area.
+    // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
+    // Most windows will provide opacity via WindowPaintData)
+    if (content.has_value() && w->opacity() >= 1.0) return;
 
     // don't touch KWin internal windows
     // this includes the snapping assistant zones
