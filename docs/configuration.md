@@ -13,8 +13,16 @@ Adjusts how strong the noise applied to the blurred background is.
 
 ### Window opacity affects blur
 
-Since Plasma 6, window opacity now affects blur opacity.
+Since Plasma 6 window opacity affects blur opacity
+to work around blurred surfaces being visible behind windows
+that are hidden by making them transparent.
+(See yourself: Disable this, press `Ctrl+Super+Esc` and hover over the "select to force close" prompt.
+It should hide itself and reveal a blurred surface.)
+
 This allows users to bring back the old behaviour.
+
+You likely want to disable this if you want to blur windows
+that had their opacity reduced via KWin rules.
 
 ### Brightness
 
