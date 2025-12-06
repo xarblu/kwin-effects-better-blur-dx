@@ -618,7 +618,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
     }
 
     // in case this window has regions to be blurred
-    const QRegion blurArea = blurRegion(w).translated(w->pos().toPoint());
+    const QRegion blurArea = blurRegion(w).boundingRect().translated(w->pos().toPoint());
 
     // if this window or a window underneath the blurred area is painted again we have to
     // blur everything
