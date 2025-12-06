@@ -780,17 +780,13 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         textureFormat = renderTarget.texture()->internalFormat();
     }
 
-    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != deviceBackgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
+    if (renderInfo.framebuffers.size() != (m_iterationCount + 1) || renderInfo.textures[0]->size() != backgroundRect.size() || renderInfo.textures[0]->internalFormat() != textureFormat) {
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
 
         glClearColor(0, 0, 0, 0);
         for (size_t i = 0; i <= m_iterationCount; ++i) {
-            // For very small windows, the width and/or height of the last blur texture may be 0. Creation of
-            // and/or usage of invalid textures to create framebuffers appears to cause performance issues.
-            // https://github.com/taj-ny/kwin-effects-better_blur_dx/issues/160
-            const QSize textureSize(std::max(1, deviceBackgroundRect.width() / (1 << i)), std::max(1, deviceBackgroundRect.height() / (1 << i)));
-            auto texture = GLTexture::allocate(textureFormat, textureSize);
+            auto texture = GLTexture::allocate(textureFormat, getTextureSize(backgroundRect, i));
             if (!texture) {
                 qCWarning(KWIN_BLUR) << "Failed to allocate an offscreen texture";
                 return;
@@ -821,8 +817,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     // Fetch the pixels behind the shape that is going to be blurred.
     const QRegion dirtyRegion = region & backgroundRect;
     for (const QRect &dirtyRect : dirtyRegion) {
-        const auto destination = snapToPixelGrid(scaledRect(dirtyRect, viewport.scale())).translated(-deviceBackgroundRect.topLeft());
-        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, destination);
+        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
     }
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
@@ -839,17 +834,17 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         // The geometry that will be blurred offscreen, in logical pixels.
         {
-            const QRectF localRect = QRectF(0, 0, deviceBackgroundRect.width(), deviceBackgroundRect.height());
+            const QRectF localRect = QRectF(0, 0, backgroundRect.width(), backgroundRect.height());
 
             const float x0 = localRect.left();
             const float y0 = localRect.top();
             const float x1 = localRect.right();
             const float y1 = localRect.bottom();
 
-            const float u0 = x0 / deviceBackgroundRect.width();
-            const float v0 = 1.0f - y0 / deviceBackgroundRect.height();
-            const float u1 = x1 / deviceBackgroundRect.width();
-            const float v1 = 1.0f - y1 / deviceBackgroundRect.height();
+            const float u0 = x0 / backgroundRect.width();
+            const float v0 = 1.0f - y0 / backgroundRect.height();
+            const float u1 = x1 / backgroundRect.width();
+            const float v1 = 1.0f - y1 / backgroundRect.height();
 
             // first triangle
             map[vboIndex++] = GLVertex2D{
@@ -934,7 +929,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->pushShader(m_downsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         m_downsamplePass.shader->setUniform(m_downsamplePass.mvpMatrixLocation, projectionMatrix);
         m_downsamplePass.shader->setUniform(m_downsamplePass.offsetLocation, float(m_offset));
@@ -961,7 +956,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->pushShader(m_upsamplePass.shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, deviceBackgroundRect.width(), deviceBackgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         m_upsamplePass.shader->setUniform(m_upsamplePass.mvpMatrixLocation, projectionMatrix);
         m_upsamplePass.shader->setUniform(m_upsamplePass.offsetLocation, float(m_offset));
