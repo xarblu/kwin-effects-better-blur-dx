@@ -419,6 +419,9 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         updateBlurRegion(w, true);
     });
 
+    windowMaximizedStateChangedConnections[w] = connect(w, &EffectWindow::windowMaximizedStateChanged,
+                                                        this, &BlurEffect::slotWindowMaximizedStateChanged);
+
     if (auto internal = w->internalWindow()) {
         internal->installEventFilter(this);
     }
@@ -449,6 +452,10 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
         disconnect(*it);
         windowFrameGeometryChangedConnections.erase(it);
+    }
+    if (auto it = windowMaximizedStateChangedConnections.find(w); it != windowMaximizedStateChangedConnections.end()) {
+        disconnect(*it);
+        windowMaximizedStateChangedConnections.erase(it);
     }
 
     if (m_blurWhenTransformed.contains(w)) {

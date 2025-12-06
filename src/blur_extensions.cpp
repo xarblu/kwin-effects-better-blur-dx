@@ -13,6 +13,27 @@
 namespace KWin
 {
 
+void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizontal, bool vertical) {
+    auto it = m_windows.find(w);
+    if (it == m_windows.end()) {
+        return;
+    }
+
+    BlurEffectData &data = it->second;
+
+    if (!horizontal && !vertical) {
+        data.maximizedState = MaximizedState::Restored;
+    } else if (horizontal && !vertical) {
+        data.maximizedState = MaximizedState::Horizontal;
+    } else if (!horizontal && vertical) {
+        data.maximizedState = MaximizedState::Vertical;
+    } else if (horizontal && vertical) {
+        data.maximizedState = MaximizedState::Complete;
+    } else {
+        data.maximizedState = MaximizedState::Unknown;
+    }
+}
+
 bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
 {
     const auto windowClass = w->window()->resourceClass();
@@ -92,7 +113,10 @@ BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 
     // Maximized/fullscreen windows don't need radius.
     // They shouldn't have rounded corners.
-    if (w->isFullScreen()) {
+    if (w->isFullScreen()
+        || data.maximizedState == MaximizedState::Horizontal
+        || data.maximizedState == MaximizedState::Vertical
+        || data.maximizedState == MaximizedState::Complete) {
         return BorderRadius();
     }
 

@@ -28,10 +28,18 @@ namespace KWin
 class BlurManagerInterface;
 class ContrastManagerInterface;
 
-enum BlurType {
+enum class BlurType {
     Unknown,
     Requested,
     Forced
+};
+
+enum class MaximizedState {
+    Unknown,
+    Restored,
+    Horizontal,
+    Vertical,
+    Complete
 };
 
 struct BlurRenderData
@@ -67,6 +75,8 @@ struct BlurEffectData
     std::optional<qreal> saturation;
 
     BlurType type = BlurType::Unknown;
+
+    MaximizedState maximizedState = MaximizedState::Unknown;
 };
 
 class BlurEffect : public KWin::Effect
@@ -100,6 +110,7 @@ public:
 public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
+    void slotWindowMaximizedStateChanged(EffectWindow *w, bool horizontal, bool vertical);
 #ifdef BETTERBLUR_X11
     void slotScreenRemoved(KWin::Output *view);
 #else
@@ -218,6 +229,7 @@ private:
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
+    QMap<EffectWindow *, QMetaObject::Connection> windowMaximizedStateChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     static BlurManagerInterface *s_blurManager;
