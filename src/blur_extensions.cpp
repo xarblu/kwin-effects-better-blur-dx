@@ -113,6 +113,10 @@ BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 
     // Maximized/fullscreen windows don't need radius.
     // They shouldn't have rounded corners.
+    // TODO: Apparently this doesn't cover tiles
+    //       but there is no easy way to detect those.
+    //       They look maximized, behave maximized but
+    //       apparently aren't maximized.
     if (w->isFullScreen()
         || data.maximizedState == MaximizedState::Horizontal
         || data.maximizedState == MaximizedState::Vertical
