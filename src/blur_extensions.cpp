@@ -90,6 +90,12 @@ BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
         return BorderRadius();
     }
 
+    // Maximized/fullscreen windows don't need radius.
+    // They shouldn't have rounded corners.
+    if (w->isFullScreen()) {
+        return BorderRadius();
+    }
+
     // fallback to configured radius
     if (qreal radius = m_settings.general.cornerRadius; radius > 0.0) {
         return BorderRadius(radius);
