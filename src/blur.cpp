@@ -50,7 +50,7 @@
 
 #define BETTERBLUR_NOT_NEEDED 0
 
-Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_better_blur_dx", QtWarningMsg)
+Q_LOGGING_CATEGORY(KWIN_BLUR, "kwin_effect_better_blur_dx", QtWarningMsg)
 
 static void ensureResources()
 {
