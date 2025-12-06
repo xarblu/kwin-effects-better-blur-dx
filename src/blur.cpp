@@ -1047,6 +1047,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         read->colorAttachment()->bind();
 
+        // Modulate the blurred texture with the window opacity if the window isn't opaque
         if (opacity < 1.0) {
             glEnable(GL_BLEND);
             glBlendColor(0, 0, 0, opacity * opacity);
