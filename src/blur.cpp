@@ -538,7 +538,7 @@ bool BlurEffect::enabledByDefault()
 bool BlurEffect::supported()
 {
 #ifdef BETTERBLUR_X11
-    return effects->openglContext() && (effects->openglContext()->supportsBlits() || effects->waylandDisplay());
+    return effects->openglContext() && effects->openglContext()->supportsBlits();
 #else
     return effects->isOpenGLCompositing();
 #endif
