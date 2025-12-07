@@ -96,7 +96,7 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
 
 BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 {
-    // init of BlurEffect::blur() should w is in map
+    // init of BlurEffect::blur() should assure w is in map
     BlurEffectData &data = m_windows[w];
 
     // always respect window provided radius
