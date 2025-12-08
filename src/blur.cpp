@@ -949,6 +949,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                       0.5 / read->colorAttachment()->height());
             m_downsamplePass.shader->setUniform(m_downsamplePass.halfpixelLocation, halfpixel);
 
+            bbdxSwizzle(read->colorAttachment());
             read->colorAttachment()->bind();
 
             GLFramebuffer::pushFramebuffer(draw.get());
@@ -976,6 +977,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                       0.5 / read->colorAttachment()->height());
             m_upsamplePass.shader->setUniform(m_upsamplePass.halfpixelLocation, halfpixel);
 
+            bbdxSwizzle(read->colorAttachment());
             read->colorAttachment()->bind();
 
             vbo->draw(GL_TRIANGLES, 0, 6);
@@ -1016,6 +1018,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.cornerRadiusLocation, nativeCornerRadius.toVector());
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.opacityLocation, opacity);
 
+        bbdxSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
         glEnable(GL_BLEND);
@@ -1045,6 +1048,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_contrastPass.shader->setUniform(m_contrastPass.halfpixelLocation, halfpixel);
         m_contrastPass.shader->setUniform(m_contrastPass.offsetLocation, float(m_offset));
 
+        bbdxSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
         // Modulate the blurred texture with the window opacity if the window isn't opaque

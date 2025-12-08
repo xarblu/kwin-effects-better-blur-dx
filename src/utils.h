@@ -1,6 +1,9 @@
 #pragma once
 
 #include "effect/effectwindow.h"
+
+#include <opengl/gltexture.h>
+
 #include <QSize>
 
 namespace KWin
@@ -30,6 +33,20 @@ inline bool isDockFloating(const EffectWindow *dock, const QRegion blurRegion)
 inline QSize getTextureSize(const QRect &backgroundRect, const size_t i) {
     return QSize(std::max(1, backgroundRect.width() / (1 << i)),
                  std::max(1, backgroundRect.height() / (1 << i)));
+}
+
+/**
+ * When reading textures make the alpha channel a constant 1.
+ *
+ * At screen edges KWin seems to give us textures where (I'm assuming)
+ * all RGBA values are 0.
+ * This results in weird blur artifacts around screen edges.
+ *
+ * This workaround sort of replaces the artifacts with a dark gradient, which
+ * technically isn't correct either but better than looking completely broken.
+ */
+inline void bbdxSwizzle(GLTexture *texture) {
+    texture->setSwizzle(GL_RED, GL_GREEN, GL_BLUE, GL_ONE);
 }
 
 }
