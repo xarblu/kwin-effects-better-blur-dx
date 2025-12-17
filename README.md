@@ -6,7 +6,8 @@ Better Blur DX is a loose continuation of [Better Blur](https://github.com/taj-n
 ### Features
 - X11 and Wayland support
 - Force blur
-- Adjust blur brightness, contrast and saturation
+- Adjustable blur brightness, contrast and saturation
+- Adjustable corner radius
 
 You may notice these are *less* features than the original Better Blur.
 *This is intentional* - this project focusses on bringing the KWin blur to arbitrary windows
@@ -33,7 +34,6 @@ Currently supported versions: **6.5**
 > The effect only works for the *exact KWin* version it was built for.
 
 ## Packages
-
 <details>
   <summary>Arch Linux AUR (maintained by https://github.com/D3SOX)</summary>
   <br>
