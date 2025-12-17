@@ -30,8 +30,45 @@ Currently supported versions: **6.5**
 # Installation
 > [!IMPORTANT]
 > If the effect stops working after a system upgrade, you will need to rebuild it or reinstall the package.
+> The effect only works for the *exact KWin* version it was built for.
 
 ## Packages
+
+<details>
+  <summary>Arch Linux AUR (maintained by https://github.com/D3SOX)</summary>
+  <br>
+
+  ```sh
+  yay -S kwin-effects-better-blur-dx-git
+  ```
+
+  or use your AUR helper of choice
+</details>
+
+<details>
+  <summary>Gentoo (maintained by me - https://github.com/xarblu)</summary>
+  <br>
+
+  ```sh
+  eselect repository enable xarblu-overlay
+  emerge --sync xarblu-overlay
+  emerge --ask kde-misc/kwin-effects-better-blur-dx
+  ```
+</details>
+
+<details>
+  <summary>Fedora COPR (maintained by https://github.com/Infinality)</summary>
+  <br>
+
+  Details: https://copr.fedorainfracloud.org/coprs/infinality/kwin-effects-better-blur-dx/
+
+  ```sh
+  dnf copr enable infinality/kwin-effects-better-blur-dx
+  dnf install kwin-effects-better-blur-dx
+  dnf install kwin-effects-better-blur-dx-x11
+  ```
+</details>
+
 <details>
   <summary>NixOS (flakes)</summary>
   <br>
@@ -61,8 +98,6 @@ Currently supported versions: **6.5**
   }
   ```
 </details>
-
-**\* Unofficial package, use at your own risk.**
 
 ## Manual
 > [!NOTE]
