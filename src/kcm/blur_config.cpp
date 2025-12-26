@@ -64,9 +64,18 @@ void BlurEffectConfig::setupContextualHelp()
 {
     setContextualHelp(
         ui.windowClassesContextualHelp,
-        QStringLiteral("<p>Specify one window class per line.</p>") +
-        QStringLiteral("<p>Use <code>$blank</code> to match empty window classes.<br/>") +
-        QStringLiteral("Use <code>$$</code> for literal dollar sign.</p>"),
+        QStringLiteral("<p>Specify one window class pattern per line.</p>") +
+
+        QStringLiteral("<p><strong>Exact match:</strong><br>") +
+        QStringLiteral("By default window classes are matched exactly.<br>") +
+        QStringLiteral("Example: <code>org.kde.dolphin</code> matches only Dolphin.</p>") +
+
+        QStringLiteral("<p><strong>Regex match:</strong><br>") +
+        QStringLiteral("If wrapped with <code>/</code> window classes are matched by Perl compatible regular expression.<br>") +
+        QStringLiteral("Example: <code>/^org\\.kde\\..*/</code> matches all KDE applications.</p>") +
+
+        QStringLiteral("<p><strong>Empty match:</strong><br>") +
+        QStringLiteral("Use the special value <code>$blank</code> to match empty window classes.</p>"),
         ui.windowClassesBriefDescription
     );
 }
