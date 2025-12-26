@@ -38,25 +38,6 @@ void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizonta
     }
 }
 
-bool BlurEffect::shouldForceBlur(const EffectWindow *w) const
-{
-    const auto windowClass = w->window()->resourceClass();
-    const auto layer = w->window()->layer();
-    if (w->isDesktop()
-        || (!m_settings.forceBlur.blurDocks && w->isDock())
-        || (!m_settings.forceBlur.blurMenus && isMenu(w))
-        || windowClass == "xwaylandvideobridge"
-        || ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
-            && (layer == Layer::OverlayLayer || layer == Layer::ActiveLayer))) {
-        return false;
-    }
-
-    bool matches = m_settings.forceBlur.windowClasses.contains(w->window()->resourceName())
-        || m_settings.forceBlur.windowClasses.contains(w->window()->resourceClass());
-    return (matches && m_settings.forceBlur.windowClassMatchingMode == WindowClassMatchingMode::Whitelist)
-        || (!matches && m_settings.forceBlur.windowClassMatchingMode == WindowClassMatchingMode::Blacklist);
-}
-
 void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type)
 {
     // If we already have a blur region at this point
