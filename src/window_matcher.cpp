@@ -69,7 +69,7 @@ WindowMatcher::WindowMatcher (BlurConfig *config) {
     setMatchDocks(config->blurDocks());
 }
 
-bool WindowMatcher::ignoreWindow(EffectWindow *w) {
+bool WindowMatcher::ignoreWindow(const EffectWindow *w) {
     if (w->isDesktop())
         return true;
 
@@ -92,7 +92,7 @@ bool WindowMatcher::ignoreWindow(EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::matchFixed(EffectWindow *w) {
+bool WindowMatcher::matchFixed(const EffectWindow *w) {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
 
@@ -102,7 +102,7 @@ bool WindowMatcher::matchFixed(EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::matchRegex(EffectWindow *w) {
+bool WindowMatcher::matchRegex(const EffectWindow *w) {
     for (const auto &regex : m_windowClassesRegex) {
         if (auto m = regex.match(w->window()->resourceClass()); m.hasMatch())
             return true;
@@ -114,7 +114,7 @@ bool WindowMatcher::matchRegex(EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::match(EffectWindow *w) {
+bool WindowMatcher::match(const EffectWindow *w) {
     if (ignoreWindow(w))
         return false;
 

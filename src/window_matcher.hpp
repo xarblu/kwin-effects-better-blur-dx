@@ -31,9 +31,9 @@ private:
     bool m_matchDocks{false};
 
     // match helpers
-    bool ignoreWindow(EffectWindow *w);
-    bool matchFixed(EffectWindow *w);
-    bool matchRegex(EffectWindow *w);
+    bool ignoreWindow(const EffectWindow *w);
+    bool matchFixed(const EffectWindow *w);
+    bool matchRegex(const EffectWindow *w);
 
 public:
     WindowMatcher() = default;
@@ -62,7 +62,7 @@ public:
     /**
      * Match an EffectWindow instance
      */
-    bool match(EffectWindow *w);
+    bool match(const EffectWindow *w);
 };
 
 } // namespace KWin
