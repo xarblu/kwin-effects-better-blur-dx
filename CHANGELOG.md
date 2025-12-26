@@ -1,3 +1,9 @@
+# DEV
+Things not in any tagged release yet:
+
+### Features
+- Match window classes with regular expressions
+
 # 2.0.0
 The first release of Better Blur DX 🎉
 

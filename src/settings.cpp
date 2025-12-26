@@ -15,6 +15,7 @@ void BlurSettings::read()
     general.contrast = BlurConfig::contrast() / 100.0;
     general.forceContrastParams = BlurConfig::forceContrastParams();
     general.cornerRadius = BlurConfig::cornerRadius();
+
     forceBlur.blurDecorations = BlurConfig::blurDecorations();
     forceBlur.blurMenus = BlurConfig::blurMenus();
     forceBlur.blurDocks = BlurConfig::blurDocks();
