@@ -80,7 +80,7 @@ BlurEffect::BlurEffect()
                                                                               QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
                                                                               QStringLiteral(":/effects/better_blur_dx/shaders/contrast.frag"));
     if (!m_contrastPass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load contrast pass shader";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to load contrast pass shader";
         return;
     } else {
         m_contrastPass.mvpMatrixLocation = m_contrastPass.shader->uniformLocation("modelViewProjectionMatrix");
@@ -93,7 +93,7 @@ BlurEffect::BlurEffect()
                                                                                      QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.vert"),
                                                                                      QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.frag"));
     if (!m_roundedContrastPass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load contrast pass shader";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to load contrast pass shader";
         return;
     } else {
         m_roundedContrastPass.mvpMatrixLocation = m_roundedContrastPass.shader->uniformLocation("modelViewProjectionMatrix");
@@ -109,7 +109,7 @@ BlurEffect::BlurEffect()
                                                                                 QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
                                                                                 QStringLiteral(":/effects/better_blur_dx/shaders/downsample.frag"));
     if (!m_downsamplePass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load downsampling pass shader";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to load downsampling pass shader";
         return;
     } else {
         m_downsamplePass.mvpMatrixLocation = m_downsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
@@ -121,7 +121,7 @@ BlurEffect::BlurEffect()
                                                                               QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
                                                                               QStringLiteral(":/effects/better_blur_dx/shaders/upsample.frag"));
     if (!m_upsamplePass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load upsampling pass shader";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to load upsampling pass shader";
         return;
     } else {
         m_upsamplePass.mvpMatrixLocation = m_upsamplePass.shader->uniformLocation("modelViewProjectionMatrix");
@@ -133,7 +133,7 @@ BlurEffect::BlurEffect()
                                                                            QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
                                                                            QStringLiteral(":/effects/better_blur_dx/shaders/noise.frag"));
     if (!m_noisePass.shader) {
-        qCWarning(KWIN_BLUR) << "Failed to load noise pass shader";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to load noise pass shader";
         return;
     } else {
         m_noisePass.mvpMatrixLocation = m_noisePass.shader->uniformLocation("modelViewProjectionMatrix");
@@ -798,7 +798,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         for (size_t i = 0; i <= m_iterationCount; ++i) {
             auto texture = GLTexture::allocate(textureFormat, getTextureSize(backgroundRect, i));
             if (!texture) {
-                qCWarning(KWIN_BLUR) << "Failed to allocate an offscreen texture";
+                qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to allocate an offscreen texture";
                 return;
             }
             texture->setFilter(GL_LINEAR);
@@ -806,7 +806,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
             auto framebuffer = std::make_unique<GLFramebuffer>(texture.get());
             if (!framebuffer->valid()) {
-                qCWarning(KWIN_BLUR) << "Failed to create an offscreen framebuffer";
+                qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to create an offscreen framebuffer";
                 return;
             }
             auto *context =
@@ -928,7 +928,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         vbo->unmap();
     } else {
-        qCWarning(KWIN_BLUR) << "Failed to map vertex buffer";
+        qCWarning(KWIN_BLUR) << BBDX_LOG_PREFIX << "Failed to map vertex buffer";
         return;
     }
 

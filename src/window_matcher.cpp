@@ -21,7 +21,8 @@ namespace KWin
 
 WindowMatcher::WindowMatcher (BlurConfig *config) {
     if (!config) {
-        qCWarning(WINDOW_MATCHER) << "WindowMatcher constructor called before BlurConfig::read()";
+        qCWarning(WINDOW_MATCHER) << BBDX_LOG_PREFIX
+                                  << "WindowMatcher constructor called before BlurConfig::read()";
         return;
     }
 
@@ -36,8 +37,9 @@ WindowMatcher::WindowMatcher (BlurConfig *config) {
             QRegularExpression regex{pattern};
 
             if (!regex.isValid()) {
-                qWarning(WINDOW_MATCHER) << "Ignoring malformed regex pattern: " << pattern
-                                         << ": " << regex.errorString();
+                qCWarning(WINDOW_MATCHER) << BBDX_LOG_PREFIX
+                                          << "Ignoring malformed regex pattern:" << pattern
+                                          << "-" << regex.errorString();
                 continue;
             }
 

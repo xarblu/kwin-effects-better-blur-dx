@@ -9,6 +9,8 @@
 namespace KWin
 {
 
+static const char BBDX_LOG_PREFIX[]{"better_blur_dx:"};
+
 inline bool isMenu(const EffectWindow *w)
 {
     return w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow();
