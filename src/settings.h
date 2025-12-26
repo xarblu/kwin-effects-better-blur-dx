@@ -26,8 +26,6 @@ struct GeneralSettings
 
 struct ForceBlurSettings
 {
-    QStringList windowClasses;
-    WindowClassMatchingMode windowClassMatchingMode;
     bool blurDecorations;
     bool blurMenus;
     bool blurDocks;
