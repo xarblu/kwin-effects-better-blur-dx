@@ -6,6 +6,7 @@ set(better_blur_dx_SOURCES
     blur.qrc
     main.cpp
     settings.cpp
+    window_matcher.cpp
 )
 
 kconfig_add_kcfg_files(better_blur_dx_SOURCES

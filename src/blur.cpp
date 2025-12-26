@@ -10,6 +10,9 @@
 // KConfigSkeleton
 #include "blurconfig.h"
 
+#include "utils.h"
+#include "window_matcher.hpp"
+
 #include "core/output.h"
 #include "core/pixelgrid.h"
 #include "core/rendertarget.h"
@@ -22,7 +25,6 @@
 #include "scene/scene.h"
 #include "scene/surfaceitem.h"
 #include "scene/windowitem.h"
-#include "utils.h"
 #include "utils/xcbutils.h"
 #include "wayland/blur.h"
 #include "wayland/contrast.h"
@@ -312,6 +314,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
 void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
     m_settings.read();
+    m_windowMatcher = WindowMatcher{BlurConfig::self()};
 
     int blurStrength = m_settings.general.blurStrength;
     m_iterationCount = blurStrengthValues[blurStrength].iteration;
