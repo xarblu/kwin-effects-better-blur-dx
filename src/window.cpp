@@ -46,7 +46,7 @@ void BBDX::Window::updateForceBlurRegion() {
         }
     } else {
         // frame is full window
-        //frame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
+        frame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
     }
 
     bool changed{false};
