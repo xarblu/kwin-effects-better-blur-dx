@@ -314,6 +314,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
 
 void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
+    Q_UNUSED(flags);
     m_settings.read();
     m_windowManager.reconfigure();
 
