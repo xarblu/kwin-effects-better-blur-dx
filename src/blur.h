@@ -205,7 +205,7 @@ private:
     int m_noiseStrength;
 
     BlurSettings m_settings;
-    WindowManager m_windowManager;
+    BBDX::WindowManager m_windowManager{};
 
     struct OffsetStruct
     {

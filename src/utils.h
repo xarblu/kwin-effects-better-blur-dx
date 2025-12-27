@@ -6,17 +6,17 @@
 
 #include <QSize>
 
-namespace KWin
+namespace BBDX
 {
 
-static const char BBDX_LOG_PREFIX[]{"better_blur_dx:"};
+static const char LOG_PREFIX[]{"better_blur_dx:"};
 
-inline bool isMenu(const EffectWindow *w)
+inline bool isMenu(const KWin::EffectWindow *w)
 {
     return w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow();
 }
 
-inline bool isDockFloating(const EffectWindow *dock, const QRegion blurRegion)
+inline bool isDockFloating(const KWin::EffectWindow *dock, const QRegion blurRegion)
 {
     // If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0) for vertical panels doesn't belong to
     // the blur region, the dock is most likely floating. The (0,0) pixel may be outside the blur region if the dock
@@ -47,7 +47,7 @@ inline QSize getTextureSize(const QRect &backgroundRect, const size_t i) {
  * This workaround sort of replaces the artifacts with a dark gradient, which
  * technically isn't correct either but better than looking completely broken.
  */
-inline void bbdxSwizzle(GLTexture *texture) {
+inline void setTextureSwizzle(KWin::GLTexture *texture) {
     texture->setSwizzle(GL_RED, GL_GREEN, GL_BLUE, GL_ONE);
 }
 

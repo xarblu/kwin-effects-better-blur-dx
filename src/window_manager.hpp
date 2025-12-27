@@ -1,20 +1,26 @@
 #pragma once
 
 #include "blurconfig.h"
+#include "window.hpp"
 
+#include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
 
+#include <QObject>
 #include <QList>
 #include <QRegularExpression>
-#include <QSet>
+#include <QMap>
 #include <QString>
 
+#include <optional>
 #include <utility>
 
-namespace KWin
+namespace BBDX
 {
 
-class WindowManager {
+class WindowManager : public QObject {
+    Q_OBJECT
+
 public:
     enum class WindowClassMatchMode {
         Whitelist,
@@ -22,6 +28,8 @@ public:
     };
 
 private:
+    QMap<KWin::EffectWindow *, BBDX::Window *> m_windows{};
+
     // window classes
     QList<QString> m_windowClassesFixed{};
     QList<QRegularExpression> m_windowClassesRegex{};
@@ -31,24 +39,27 @@ private:
     bool m_matchMenus{false};
     bool m_matchDocks{false};
 
-    // match sets used for a) caching and b) tracking
-    // allowing full "groups" of related windows to be matched
-    // by the same window class
-    QSet<EffectWindow *> m_matched{};
-    QSet<EffectWindow *> m_not_matched{};
-
     // match helpers
-    bool ignoreWindow(const EffectWindow *w);
-    bool matchFixed(const EffectWindow *w);
-    bool matchRegex(const EffectWindow *w);
+    bool ignoreWindow(const KWin::EffectWindow *w);
+    bool matchFixed(const KWin::EffectWindow *w);
+    bool matchRegex(const KWin::EffectWindow *w);
+
+public Q_SLOT:
+    void slotWindowAdded(KWin::EffectWindow *w);
+    void slotWindowDeleted(KWin::EffectWindow *w);
 
 public:
-    WindowManager() = default;
+    explicit WindowManager();
 
     /**
-     * Construct from the BlurConfig singleton accessed via BlurConfig::self()
+     * access to singleton
      */
-    WindowManager(BlurConfig *config);
+    static const WindowManager *instance();
+
+    /**
+     * reconfigure from BlurConfig
+     */
+    void reconfigure();
 
     void setWindowClassesFixed(QList<QString> windowClasses) {
         m_windowClassesFixed = std::move(windowClasses);
@@ -67,9 +78,14 @@ public:
     }
 
     /**
+     * Find a managed window, nullptr if not found
+     */
+    BBDX::Window* findWindow(KWin::EffectWindow *w);
+
+    /**
      * Match an EffectWindow instance
      */
-    bool match(const EffectWindow *w);
+    bool match(const KWin::EffectWindow *w);
 };
 
 } // namespace KWin

@@ -2,11 +2,14 @@
 
 #include "blurconfig.h"
 #include "utils.h"
+#include "window.hpp"
 
 #include <effect/effectwindow.h>
+#include <effect/effecthandler.h>
 #include <window.h>
 
 #include <QList>
+#include <QMap>
 #include <QString>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -16,13 +19,51 @@
 
 Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtWarningMsg)
 
-namespace KWin
+namespace BBDX
 {
 
-WindowManager::WindowManager (BlurConfig *config) {
+static const WindowManager *self;
+
+WindowManager::WindowManager() {
+    self = this;
+
+    // add existing windows
+    for (const auto &window : KWin::effects->stackingOrder()) {
+        slotWindowAdded(window);
+    }
+
+    connect(KWin::effects, &KWin::EffectsHandler::windowAdded, this, &WindowManager::slotWindowAdded);
+    connect(KWin::effects, &KWin::EffectsHandler::windowDeleted, this, &WindowManager::slotWindowDeleted);
+}
+
+const WindowManager* WindowManager::instance() {
+    return self;
+}
+
+void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
+    m_windows[w] = new BBDX::Window(w);
+}
+
+void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
+    if (BBDX::Window* bbdx_window = findWindow(w)) {
+        delete bbdx_window;
+        m_windows.remove(w);
+    }
+}
+
+BBDX::Window* WindowManager::findWindow(KWin::EffectWindow *w) {
+    if (const auto it = m_windows.find(w); it != m_windows.end()) {
+        return it.value();
+    }
+    return nullptr;
+}
+
+void WindowManager::reconfigure() {
+    auto config = KWin::BlurConfig::self();
+
     if (!config) {
-        qCWarning(WINDOW_MANAGER) << BBDX_LOG_PREFIX
-                                  << "WindowManager constructor called before BlurConfig::read()";
+        qCWarning(WINDOW_MANAGER) << BBDX::LOG_PREFIX
+                                  << "WindowManager::reconfigure() called before BlurConfig::read()";
         return;
     }
 
@@ -37,7 +78,7 @@ WindowManager::WindowManager (BlurConfig *config) {
             QRegularExpression regex{pattern};
 
             if (!regex.isValid()) {
-                qCWarning(WINDOW_MANAGER) << BBDX_LOG_PREFIX
+                qCWarning(WINDOW_MANAGER) << BBDX::LOG_PREFIX
                                           << "Ignoring malformed regex pattern:" << pattern
                                           << "-" << regex.errorString();
                 continue;
@@ -71,7 +112,7 @@ WindowManager::WindowManager (BlurConfig *config) {
     setMatchDocks(config->blurDocks());
 }
 
-bool WindowManager::ignoreWindow(const EffectWindow *w) {
+bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) {
     if (w->isDesktop())
         return true;
 
@@ -82,19 +123,19 @@ bool WindowManager::ignoreWindow(const EffectWindow *w) {
         return true;
 
     const QString windowClass = w->window()->resourceClass();
-    const Layer layer = w->window()->layer();
+    const KWin::Layer layer = w->window()->layer();
 
     if (windowClass == QStringLiteral("xwaylandvideobridge"))
         return true;
 
     if ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
-        && (layer == Layer::OverlayLayer || layer == Layer::ActiveLayer))
+        && (layer == KWin::Layer::OverlayLayer || layer == KWin::Layer::ActiveLayer))
         return true;
 
     return false;
 }
 
-bool WindowManager::matchFixed(const EffectWindow *w) {
+bool WindowManager::matchFixed(const KWin::EffectWindow *w) {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
 
@@ -104,7 +145,7 @@ bool WindowManager::matchFixed(const EffectWindow *w) {
     return false;
 }
 
-bool WindowManager::matchRegex(const EffectWindow *w) {
+bool WindowManager::matchRegex(const KWin::EffectWindow *w) {
     for (const auto &regex : m_windowClassesRegex) {
         if (auto m = regex.match(w->window()->resourceClass()); m.hasMatch())
             return true;
@@ -116,7 +157,7 @@ bool WindowManager::matchRegex(const EffectWindow *w) {
     return false;
 }
 
-bool WindowManager::match(const EffectWindow *w) {
+bool WindowManager::match(const KWin::EffectWindow *w) {
     if (ignoreWindow(w))
         return false;
 
