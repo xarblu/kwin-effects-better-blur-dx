@@ -6,6 +6,7 @@
 
 #include <QList>
 #include <QRegularExpression>
+#include <QSet>
 #include <QString>
 
 #include <utility>
@@ -13,7 +14,7 @@
 namespace KWin
 {
 
-class WindowMatcher {
+class WindowManager {
 public:
     enum class Mode {
         Whitelist,
@@ -30,18 +31,24 @@ private:
     bool m_matchMenus{false};
     bool m_matchDocks{false};
 
+    // match sets used for a) caching and b) tracking
+    // allowing full "groups" of related windows to be matched
+    // by the same window class
+    QSet<EffectWindow *> m_matched{};
+    QSet<EffectWindow *> m_not_matched{};
+
     // match helpers
     bool ignoreWindow(const EffectWindow *w);
     bool matchFixed(const EffectWindow *w);
     bool matchRegex(const EffectWindow *w);
 
 public:
-    WindowMatcher() = default;
+    WindowManager() = default;
 
     /**
      * Construct from the BlurConfig singleton accessed via BlurConfig::self()
      */
-    WindowMatcher(BlurConfig *config);
+    WindowManager(BlurConfig *config);
 
     void setWindowClassesFixed(QList<QString> windowClasses) {
         m_windowClassesFixed = std::move(windowClasses);

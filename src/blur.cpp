@@ -11,7 +11,7 @@
 #include "blurconfig.h"
 
 #include "utils.h"
-#include "window_matcher.hpp"
+#include "window_manager.hpp"
 
 #include "core/output.h"
 #include "core/pixelgrid.h"
@@ -314,7 +314,7 @@ QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
 void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
     m_settings.read();
-    m_windowMatcher = WindowMatcher{BlurConfig::self()};
+    m_windowManager = WindowManager{BlurConfig::self()};
 
     int blurStrength = m_settings.general.blurStrength;
     m_iterationCount = blurStrengthValues[blurStrength].iteration;

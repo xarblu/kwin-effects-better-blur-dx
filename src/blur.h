@@ -14,7 +14,7 @@
 #include "scene/scene.h"
 
 #include "settings.h"
-#include "window_matcher.hpp"
+#include "window_manager.hpp"
 #include "window.h"
 
 #include <QList>
@@ -205,7 +205,7 @@ private:
     int m_noiseStrength;
 
     BlurSettings m_settings;
-    WindowMatcher m_windowMatcher;
+    WindowManager m_windowManager;
 
     struct OffsetStruct
     {

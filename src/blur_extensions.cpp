@@ -64,7 +64,7 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     if (w->internalWindow()) return;
 
     // matched by user config
-    if (!m_windowMatcher.match(w)) return;
+    if (!m_windowManager.match(w)) return;
 
     // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
     // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the

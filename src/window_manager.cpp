@@ -1,4 +1,4 @@
-#include "window_matcher.hpp"
+#include "window_manager.hpp"
 
 #include "blurconfig.h"
 #include "utils.h"
@@ -14,15 +14,15 @@
 
 #include <utility>
 
-Q_LOGGING_CATEGORY(WINDOW_MATCHER, "kwin_effect_better_blur_dx.window_matcher", QtWarningMsg)
+Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtWarningMsg)
 
 namespace KWin
 {
 
-WindowMatcher::WindowMatcher (BlurConfig *config) {
+WindowManager::WindowManager (BlurConfig *config) {
     if (!config) {
-        qCWarning(WINDOW_MATCHER) << BBDX_LOG_PREFIX
-                                  << "WindowMatcher constructor called before BlurConfig::read()";
+        qCWarning(WINDOW_MANAGER) << BBDX_LOG_PREFIX
+                                  << "WindowManager constructor called before BlurConfig::read()";
         return;
     }
 
@@ -37,7 +37,7 @@ WindowMatcher::WindowMatcher (BlurConfig *config) {
             QRegularExpression regex{pattern};
 
             if (!regex.isValid()) {
-                qCWarning(WINDOW_MATCHER) << BBDX_LOG_PREFIX
+                qCWarning(WINDOW_MANAGER) << BBDX_LOG_PREFIX
                                           << "Ignoring malformed regex pattern:" << pattern
                                           << "-" << regex.errorString();
                 continue;
@@ -62,16 +62,16 @@ WindowMatcher::WindowMatcher (BlurConfig *config) {
     setWindowClassesRegex(std::move(windowClassesRegex));
 
     if (config->blurMatching()) {
-        setWindowClassMatchMode(WindowMatcher::Mode::Whitelist);
+        setWindowClassMatchMode(WindowManager::Mode::Whitelist);
     } else {
-        setWindowClassMatchMode(WindowMatcher::Mode::Blacklist);
+        setWindowClassMatchMode(WindowManager::Mode::Blacklist);
     }
 
     setMatchMenus(config->blurMenus());
     setMatchDocks(config->blurDocks());
 }
 
-bool WindowMatcher::ignoreWindow(const EffectWindow *w) {
+bool WindowManager::ignoreWindow(const EffectWindow *w) {
     if (w->isDesktop())
         return true;
 
@@ -94,7 +94,7 @@ bool WindowMatcher::ignoreWindow(const EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::matchFixed(const EffectWindow *w) {
+bool WindowManager::matchFixed(const EffectWindow *w) {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
 
@@ -104,7 +104,7 @@ bool WindowMatcher::matchFixed(const EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::matchRegex(const EffectWindow *w) {
+bool WindowManager::matchRegex(const EffectWindow *w) {
     for (const auto &regex : m_windowClassesRegex) {
         if (auto m = regex.match(w->window()->resourceClass()); m.hasMatch())
             return true;
@@ -116,22 +116,22 @@ bool WindowMatcher::matchRegex(const EffectWindow *w) {
     return false;
 }
 
-bool WindowMatcher::match(const EffectWindow *w) {
+bool WindowManager::match(const EffectWindow *w) {
     if (ignoreWindow(w))
         return false;
 
     if (matchFixed(w) || matchRegex(w)) {
         switch (m_windowClassMatchMode) {
-            case WindowMatcher::Mode::Whitelist:
+            case WindowManager::Mode::Whitelist:
                 return true;
-            case WindowMatcher::Mode::Blacklist:
+            case WindowManager::Mode::Blacklist:
                 return false;
         }
     } else {
         switch (m_windowClassMatchMode) {
-            case WindowMatcher::Mode::Whitelist:
+            case WindowManager::Mode::Whitelist:
                 return false;
-            case WindowMatcher::Mode::Blacklist:
+            case WindowManager::Mode::Blacklist:
                 return true;
         }
     }
