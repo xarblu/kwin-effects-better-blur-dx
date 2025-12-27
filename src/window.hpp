@@ -46,6 +46,7 @@ public:
      * getters
      */
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
+    bool forceBlurred() const { return m_forceBlurred; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
     bool requestedBlur() const { return m_requestedBlur; };

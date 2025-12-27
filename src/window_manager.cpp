@@ -203,4 +203,17 @@ bool WindowManager::windowRequestedBlur(const KWin::EffectWindow *w) const {
     return window->requestedBlur();
 }
 
+bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
+
+    // unmanaged windows can never be force blurred
+    if (!window)
+        return false;
+
+    if (window->requestedBlur())
+        return false;
+
+    return window->forceBlurred();
+}
+
 } // namespace BBDX

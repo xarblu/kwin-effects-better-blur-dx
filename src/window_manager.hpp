@@ -111,6 +111,12 @@ public:
      * Check if a window requested blur
      */
     bool windowRequestedBlur(const KWin::EffectWindow *w) const;
+
+    /**
+     * Check if a window is force blurred
+     * (blurred through user config, not requested)
+     */
+    bool windowForceBlurred(const KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin
