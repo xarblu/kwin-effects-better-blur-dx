@@ -4,7 +4,7 @@
 #include <effect/effectwindow.h>
 #include <KDecoration3/Decoration>
 
-BBDX::Window::Window(const KWin::EffectWindow *w) {
+BBDX::Window::Window(KWin::EffectWindow *w) {
     m_effectwindow = w;
     reconfigure();
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotFrameGeometryChanged);
@@ -22,6 +22,7 @@ void BBDX::Window::updateForceBlurRegion() {
     if (!m_forceBlurred) {
         m_forceBlurContent.reset();
         m_forceBlurFrame.reset();
+        triggerBlurRegionUpdate();
         return;
     }
 
@@ -42,6 +43,16 @@ void BBDX::Window::updateForceBlurRegion() {
         // frame is full window
         m_forceBlurFrame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
     }
+
+    triggerBlurRegionUpdate();
+}
+
+void BBDX::Window::triggerBlurRegionUpdate() {
+    auto windowManager = BBDX::WindowManager::instance();
+    if (!windowManager)
+        return;
+
+    windowManager->triggerBlurRegionUpdate(m_effectwindow);
 }
 
 void BBDX::Window::reconfigure() {

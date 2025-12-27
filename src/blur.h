@@ -121,6 +121,7 @@ public Q_SLOTS:
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
 #endif
     void setupDecorationConnections(EffectWindow *w);
+    void slotWindowWantsBlurRegionUpdate(EffectWindow *w);
 
 private:
     void initBlurStrengthValues();

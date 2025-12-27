@@ -15,7 +15,7 @@ class Window : public QObject {
     Q_OBJECT
 
 private:
-    const KWin::EffectWindow* m_effectwindow;
+    KWin::EffectWindow* m_effectwindow;
 
     // track whether this window should be force blurred
     bool m_forceBlurred{false};
@@ -26,12 +26,13 @@ private:
 
 private:
     void updateForceBlurRegion();
+    void triggerBlurRegionUpdate();
 
 public Q_SLOTS:
     void slotFrameGeometryChanged();
 
 public:
-    explicit Window(const KWin::EffectWindow *w);
+    explicit Window(KWin::EffectWindow *w);
 
     /**
      * getters

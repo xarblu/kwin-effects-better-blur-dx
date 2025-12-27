@@ -190,6 +190,7 @@ BlurEffect::BlurEffect()
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
 #endif
+    connect(&m_windowManager, &BBDX::WindowManager::windowWantsBlurRegionUpdate, this, &BlurEffect::slotWindowWantsBlurRegionUpdate);
 
     // Fetch the blur regions for all windows
     const auto stackingOrder = effects->stackingOrder();
@@ -413,14 +414,6 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
             }
         });
     }
-
-    windowFrameGeometryChangedConnections[w] = connect(w, &EffectWindow::windowFrameGeometryChanged, this, [this,w]() {
-        if (!w) {
-            return;
-        }
-
-        updateBlurRegion(w, true);
-    });
 
     windowMaximizedStateChangedConnections[w] = connect(w, &EffectWindow::windowMaximizedStateChanged,
                                                         this, &BlurEffect::slotWindowMaximizedStateChanged);

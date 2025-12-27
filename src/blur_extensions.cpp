@@ -18,6 +18,10 @@
 namespace KWin
 {
 
+void BlurEffect::slotWindowWantsBlurRegionUpdate(EffectWindow *w) {
+    updateBlurRegion(w);
+}
+
 void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizontal, bool vertical) {
     auto it = m_windows.find(w);
     if (it == m_windows.end()) {

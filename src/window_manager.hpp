@@ -46,8 +46,11 @@ private:
     bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
 public Q_SLOT:
-    void slotWindowAdded(const KWin::EffectWindow *w);
-    void slotWindowDeleted(const KWin::EffectWindow *w);
+    void slotWindowAdded(KWin::EffectWindow *w);
+    void slotWindowDeleted(KWin::EffectWindow *w);
+
+signals:
+    void windowWantsBlurRegionUpdate(KWin::EffectWindow *w) const;
 
 public:
     explicit WindowManager();
@@ -98,6 +101,11 @@ public:
      * Match an EffectWindow instance
      */
     bool shouldForceBlur(const KWin::EffectWindow *w) const;
+
+    /**
+     * emits the wantsBlurRegionUpdate signal
+     */
+    void triggerBlurRegionUpdate(KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

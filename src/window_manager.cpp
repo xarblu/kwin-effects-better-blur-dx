@@ -40,11 +40,11 @@ const WindowManager* WindowManager::instance() {
     return self;
 }
 
-void WindowManager::slotWindowAdded(const KWin::EffectWindow *w) {
+void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
     m_windows[w] = new BBDX::Window(w);
 }
 
-void WindowManager::slotWindowDeleted(const KWin::EffectWindow *w) {
+void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
     if (BBDX::Window* bbdx_window = findWindow(w)) {
         delete bbdx_window;
         m_windows.remove(w);
@@ -188,4 +188,8 @@ bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
     }
 }
 
-} // namespace KWin
+void WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const {
+    emit windowWantsBlurRegionUpdate(w);
+}
+
+} // namespace BBDX
