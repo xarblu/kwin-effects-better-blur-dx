@@ -8,14 +8,9 @@ BBDX::Window::Window(KWin::EffectWindow *w) {
     m_effectwindow = w;
     reconfigure();
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
-    connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
 }
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
-    updateForceBlurRegion();
-}
-
-void BBDX::Window::slotWindowFinishUserMovedResized() {
     updateForceBlurRegion();
 }
 

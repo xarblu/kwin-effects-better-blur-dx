@@ -30,7 +30,6 @@ private:
 
 public Q_SLOTS:
     void slotWindowFrameGeometryChanged();
-    void slotWindowFinishUserMovedResized();
 
 public:
     explicit Window(KWin::EffectWindow *w);
