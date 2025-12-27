@@ -7,10 +7,10 @@
 BBDX::Window::Window(KWin::EffectWindow *w) {
     m_effectwindow = w;
     reconfigure();
-    connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotFrameGeometryChanged);
+    connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
 }
 
-void BBDX::Window::slotFrameGeometryChanged() {
+void BBDX::Window::slotWindowFrameGeometryChanged() {
     updateForceBlurRegion();
 }
 

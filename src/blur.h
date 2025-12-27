@@ -112,6 +112,7 @@ public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotWindowMaximizedStateChanged(EffectWindow *w, bool horizontal, bool vertical);
+    void slotWindowWantsBlurRegionUpdate(EffectWindow *w);
 #ifdef BETTERBLUR_X11
     void slotScreenRemoved(KWin::Output *view);
 #else
@@ -121,7 +122,6 @@ public Q_SLOTS:
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
 #endif
     void setupDecorationConnections(EffectWindow *w);
-    void slotWindowWantsBlurRegionUpdate(EffectWindow *w);
 
 private:
     void initBlurStrengthValues();
@@ -230,7 +230,6 @@ private:
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
-    QMap<EffectWindow *, QMetaObject::Connection> windowFrameGeometryChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowMaximizedStateChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 

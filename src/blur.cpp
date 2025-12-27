@@ -445,10 +445,6 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowContrastChangedConnections.erase(it);
     }
-    if (auto it = windowFrameGeometryChangedConnections.find(w); it != windowFrameGeometryChangedConnections.end()) {
-        disconnect(*it);
-        windowFrameGeometryChangedConnections.erase(it);
-    }
     if (auto it = windowMaximizedStateChangedConnections.find(w); it != windowMaximizedStateChangedConnections.end()) {
         disconnect(*it);
         windowMaximizedStateChangedConnections.erase(it);

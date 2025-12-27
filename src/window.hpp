@@ -29,7 +29,7 @@ private:
     void triggerBlurRegionUpdate();
 
 public Q_SLOTS:
-    void slotFrameGeometryChanged();
+    void slotWindowFrameGeometryChanged();
 
 public:
     explicit Window(KWin::EffectWindow *w);
