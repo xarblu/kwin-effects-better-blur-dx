@@ -43,15 +43,20 @@ void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizonta
     }
 }
 
-void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type)
+void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame)
 {
+    BBDX::Window* window = m_windowManager.findWindow(w);
+
+    // nothing we can do if the window isn't managed by us
+    if (!window) return;
+
     // If we already have a blur region at this point
     // the window requested it.
     // This tracker allows us to later decide if we want
     // to trust the window or use user parameters
     // e.g. for corner radius.
     if (content.has_value() || frame.has_value()) {
-        type = BlurType::Requested;
+        window->setRequestedBlur(true);
     }
 
     // Normally we'd assume windows that set their own blur region
@@ -64,12 +69,8 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     if (content.has_value() && w->opacity() >= 1.0) return;
 
     // matched by user config
-    if (const BBDX::Window* window = m_windowManager.findWindow(w)) {
-        content = window->forceBlurContent();
-        frame = window->forceBlurFrame();
-        type = BlurType::Forced;
-    }
-
+    content = window->forceBlurContent();
+    frame = window->forceBlurFrame();
 }
 
 BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
@@ -85,7 +86,7 @@ BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 
     // assume the window knows what it's doing
     // when it requested the blur
-    if (data.type == BlurType::Requested) {
+    if (m_windowManager.windowRequestedBlur(w)) {
         return BorderRadius();
     }
 
@@ -119,13 +120,13 @@ qreal BlurEffect::getContrastParam(std::optional<qreal> requested_value, qreal c
     return requested_value.value_or(config_value);
 }
 
-qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data, BlurEffectData &blurInfo) const
+qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data) const
 {
     // Plasma surfaces expect their opacity to affect
     // the blur e.g. to hide the blurred surface alongside
     // themselves.
     // Force blurred surfaces don't want/need this
-    if (blurInfo.type == BlurType::Requested) {
+    if (m_windowManager.windowRequestedBlur(w)) {
         return w->opacity() * data.opacity();
     } else {
         return data.opacity();

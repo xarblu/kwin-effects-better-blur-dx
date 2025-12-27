@@ -337,7 +337,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     std::optional<QRegion> frame;
     std::optional<qreal> saturation;
     std::optional<qreal> contrast;
-    BlurType type = BlurType::Unknown;
 
 #ifdef BETTERBLUR_X11
     if (net_wm_blur_region != XCB_ATOM_NONE) {
@@ -380,7 +379,7 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         frame = decorationBlurRegion(w);
     }
 
-    updateForceBlurRegion(w, content, frame, type);
+    updateForceBlurRegion(w, content, frame);
 
     if (content.has_value() || frame.has_value()) {
         BlurEffectData &data = m_windows[w];
@@ -389,7 +388,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         data.contrast = contrast;
         data.saturation = saturation;
         data.windowEffect = ItemEffect(w->windowItem());
-        data.type = type;
     } else {
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
@@ -731,7 +729,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     const QRect backgroundRect = blurShape.boundingRect();
     const QRect deviceBackgroundRect = snapToPixelGrid(scaledRect(backgroundRect, viewport.scale()));
-    const auto opacity = getOpacity(w, data, blurInfo);
+    const auto opacity = getOpacity(w, data);
 
     // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
     QList<QRectF> effectiveShape;

@@ -24,6 +24,9 @@ private:
     std::optional<QRegion> m_forceBlurContent{};
     std::optional<QRegion> m_forceBlurFrame{};
 
+    // track whether this window requested a blur region
+    bool m_requestedBlur{false};
+
 private:
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();
@@ -35,11 +38,17 @@ public:
     explicit Window(KWin::EffectWindow *w);
 
     /**
+     * setters
+     */
+    void setRequestedBlur(bool toggle) { m_requestedBlur = toggle; }
+
+    /**
      * getters
      */
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
+    bool requestedBlur() const { return m_requestedBlur; };
 
     /**
      * reconfigure hook

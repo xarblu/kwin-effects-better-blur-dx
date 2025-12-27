@@ -106,6 +106,11 @@ public:
      * emits the wantsBlurRegionUpdate signal
      */
     void triggerBlurRegionUpdate(KWin::EffectWindow *w) const;
+
+    /**
+     * Check if a window requested blur
+     */
+    bool windowRequestedBlur(const KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

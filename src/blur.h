@@ -29,12 +29,6 @@ namespace KWin
 class BlurManagerInterface;
 class ContrastManagerInterface;
 
-enum class BlurType {
-    Unknown,
-    Requested,
-    Forced
-};
-
 enum class MaximizedState {
     Unknown,
     Restored,
@@ -74,8 +68,6 @@ struct BlurEffectData
     std::optional<qreal> brightness;
     std::optional<qreal> contrast;
     std::optional<qreal> saturation;
-
-    BlurType type = BlurType::Unknown;
 
     MaximizedState maximizedState = MaximizedState::Unknown;
 };
@@ -131,12 +123,12 @@ private:
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
     void updateBlurRegion(EffectWindow *w);
-    void updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame, BlurType &type);
+    void updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
     BorderRadius getWindowBorderRadius(EffectWindow *w);
     qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
-    qreal getOpacity(const EffectWindow *w, WindowPaintData &data, BlurEffectData &blurInfo) const;
+    qreal getOpacity(const EffectWindow *w, WindowPaintData &data) const;
 
 private:
     struct

@@ -192,4 +192,15 @@ void WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const {
     emit windowWantsBlurRegionUpdate(w);
 }
 
+bool WindowManager::windowRequestedBlur(const KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
+
+    // assume "requested" if it's not a managed window because
+    // only managed windows can have forced blur
+    if (!window)
+        return true;
+
+    return window->requestedBlur();
+}
+
 } // namespace BBDX
