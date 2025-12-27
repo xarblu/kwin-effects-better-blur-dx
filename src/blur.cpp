@@ -449,10 +449,6 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowMaximizedStateChangedConnections.erase(it);
     }
-
-    if (m_blurWhenTransformed.contains(w)) {
-        m_blurWhenTransformed.removeOne(w);
-    }
 }
 
 #ifdef BETTERBLUR_X11
@@ -641,8 +637,7 @@ void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::
 
 bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data)
 {
-    const bool hasForceBlurRole = w->data(WindowForceBlurRole).toBool();
-    if (effects->activeFullScreenEffect() && !hasForceBlurRole) {
+    if (effects->activeFullScreenEffect() && !w->data(WindowForceBlurRole).toBool()) {
         return false;
     }
 
@@ -652,23 +647,12 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
 
     bool scaled = !qFuzzyCompare(data.xScale(), 1.0) && !qFuzzyCompare(data.yScale(), 1.0);
     bool translated = data.xTranslation() || data.yTranslation();
-    if (!(scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED)))) {
-        if (m_blurWhenTransformed.contains(w)) {
-            m_blurWhenTransformed.removeOne(w);
-        }
 
-        return true;
+    if ((scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED))) && !w->data(WindowForceBlurRole).toBool()) {
+        return false;
     }
 
-    // The force blur role may be removed while the window is still transformed, causing the blur to disappear for
-    // a short time. To avoid that, we allow the window to be blurred until it's not transformed anymore.
-    if (m_blurWhenTransformed.contains(w)) {
-        return true;
-    } else if (hasForceBlurRole) {
-        m_blurWhenTransformed.append(w);
-    }
-
-    return hasForceBlurRole;
+    return true;
 }
 
 void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)

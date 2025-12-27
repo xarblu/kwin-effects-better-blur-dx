@@ -37,6 +37,7 @@ public:
     /**
      * getters
      */
+    KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
 
@@ -44,10 +45,6 @@ public:
      * reconfigure hook
      */
     void reconfigure();
-
-    /**
-     * access underlying KWin::EffectWindow
-     */
-    const KWin::EffectWindow* effectwindow() { return m_effectwindow; }
 };
+
 } // namespace BBDX

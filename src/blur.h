@@ -225,9 +225,6 @@ private:
 
     QList<BlurValuesStruct> blurStrengthValues;
 
-    // Windows to blur even when transformed.
-    QList<const EffectWindow*> m_blurWhenTransformed;
-
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowMaximizedStateChangedConnections;
