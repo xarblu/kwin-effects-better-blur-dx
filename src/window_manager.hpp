@@ -16,7 +16,7 @@ namespace KWin
 
 class WindowManager {
 public:
-    enum class Mode {
+    enum class WindowClassMatchMode {
         Whitelist,
         Blacklist,
     };
@@ -25,7 +25,7 @@ private:
     // window classes
     QList<QString> m_windowClassesFixed{};
     QList<QRegularExpression> m_windowClassesRegex{};
-    Mode m_windowClassMatchMode{Mode::Whitelist};
+    WindowClassMatchMode m_windowClassMatchMode{WindowClassMatchMode::Whitelist};
 
     // window types
     bool m_matchMenus{false};
@@ -56,7 +56,7 @@ public:
     void setWindowClassesRegex(QList<QRegularExpression> windowClasses) {
         m_windowClassesRegex = std::move(windowClasses);
     }
-    void setWindowClassMatchMode(Mode mode) {
+    void setWindowClassMatchMode(WindowClassMatchMode mode) {
         m_windowClassMatchMode = mode;
     }
     void setMatchMenus(bool match) {

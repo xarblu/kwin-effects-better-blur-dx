@@ -62,9 +62,9 @@ WindowManager::WindowManager (BlurConfig *config) {
     setWindowClassesRegex(std::move(windowClassesRegex));
 
     if (config->blurMatching()) {
-        setWindowClassMatchMode(WindowManager::Mode::Whitelist);
+        setWindowClassMatchMode(WindowManager::WindowClassMatchMode::Whitelist);
     } else {
-        setWindowClassMatchMode(WindowManager::Mode::Blacklist);
+        setWindowClassMatchMode(WindowManager::WindowClassMatchMode::Blacklist);
     }
 
     setMatchMenus(config->blurMenus());
@@ -122,16 +122,16 @@ bool WindowManager::match(const EffectWindow *w) {
 
     if (matchFixed(w) || matchRegex(w)) {
         switch (m_windowClassMatchMode) {
-            case WindowManager::Mode::Whitelist:
+            case WindowManager::WindowClassMatchMode::Whitelist:
                 return true;
-            case WindowManager::Mode::Blacklist:
+            case WindowManager::WindowClassMatchMode::Blacklist:
                 return false;
         }
     } else {
         switch (m_windowClassMatchMode) {
-            case WindowManager::Mode::Whitelist:
+            case WindowManager::WindowClassMatchMode::Whitelist:
                 return false;
-            case WindowManager::Mode::Blacklist:
+            case WindowManager::WindowClassMatchMode::Blacklist:
                 return true;
         }
     }
