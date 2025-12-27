@@ -2,8 +2,9 @@
 #include "window_manager.hpp"
 
 #include <effect/effectwindow.h>
+#include <KDecoration3/Decoration>
 
-BBDX::Window::Window(KWin::EffectWindow *w) {
+BBDX::Window::Window(const KWin::EffectWindow *w) {
     m_effectwindow = w;
     updateForceBlurRegion();
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotFrameGeometryChanged);
@@ -18,8 +19,29 @@ void BBDX::Window::updateForceBlurRegion() {
     if (!windowManager)
         return;
 
-    
-    
+    if (!m_forceBlurred) {
+        m_forceBlurContent.reset();
+        m_forceBlurFrame.reset();
+        return;
+    }
+
+    // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
+    // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
+    // blur region to be off on X11. The frame region is not translated, so it is used instead.
+    const auto isX11WithCSD = m_effectwindow->isX11Client() &&
+                              m_effectwindow->frameGeometry() != m_effectwindow->bufferGeometry();
+    if (!isX11WithCSD) {
+        // empty QRegion -> full window
+        m_forceBlurContent = QRegion();
+
+        // only decorations in this case
+        if (windowManager->blurDecorations() && m_effectwindow->decoration()) {
+            m_forceBlurFrame = QRegion(m_effectwindow->decoration()->rect().toAlignedRect()) - m_effectwindow->contentsRect().toRect();
+        }
+    } else {
+        // frame is full window
+        m_forceBlurFrame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
+    }
 }
 
 void BBDX::Window::reconfigure() {

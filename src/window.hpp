@@ -15,14 +15,14 @@ class Window : public QObject {
     Q_OBJECT
 
 private:
-    KWin::EffectWindow* m_effectwindow;
+    const KWin::EffectWindow* m_effectwindow;
 
     // track whether this window should be force blurred
     bool m_forceBlurred{false};
 
     // if force blurred, contain content/frame of the blur region
-    std::optional<QRegion> m_forceBlurContent;
-    std::optional<QRegion> m_forceBlurFrame;
+    std::optional<QRegion> m_forceBlurContent{};
+    std::optional<QRegion> m_forceBlurFrame{};
 
 private:
     void updateForceBlurRegion();
@@ -31,7 +31,13 @@ public Q_SLOTS:
     void slotFrameGeometryChanged();
 
 public:
-    explicit Window(KWin::EffectWindow *w);
+    explicit Window(const KWin::EffectWindow *w);
+
+    /**
+     * getters
+     */
+    std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
+    std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
 
     /**
      * reconfigure hook
@@ -41,6 +47,6 @@ public:
     /**
      * access underlying KWin::EffectWindow
      */
-    KWin::EffectWindow* effectwindow() { return m_effectwindow; }
+    const KWin::EffectWindow* effectwindow() { return m_effectwindow; }
 };
 } // namespace BBDX

@@ -28,16 +28,17 @@ public:
     };
 
 private:
-    QMap<KWin::EffectWindow *, BBDX::Window *> m_windows{};
+    QMap<const KWin::EffectWindow *, BBDX::Window *> m_windows{};
 
     // window classes
     QList<QString> m_windowClassesFixed{};
     QList<QRegularExpression> m_windowClassesRegex{};
     WindowClassMatchMode m_windowClassMatchMode{WindowClassMatchMode::Whitelist};
 
-    // window types
-    bool m_matchMenus{false};
-    bool m_matchDocks{false};
+    // window/region types
+    bool m_blurDecorations{false};
+    bool m_blurDocks{false};
+    bool m_blurMenus{false};
 
     // match helpers
     bool ignoreWindow(const KWin::EffectWindow *w) const;
@@ -45,8 +46,8 @@ private:
     bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
 public Q_SLOT:
-    void slotWindowAdded(KWin::EffectWindow *w);
-    void slotWindowDeleted(KWin::EffectWindow *w);
+    void slotWindowAdded(const KWin::EffectWindow *w);
+    void slotWindowDeleted(const KWin::EffectWindow *w);
 
 public:
     explicit WindowManager();
@@ -61,6 +62,9 @@ public:
      */
     void reconfigure();
 
+    /**
+     * setters
+     */
     void setWindowClassesFixed(QList<QString> windowClasses) {
         m_windowClassesFixed = std::move(windowClasses);
     }
@@ -70,17 +74,25 @@ public:
     void setWindowClassMatchMode(WindowClassMatchMode mode) {
         m_windowClassMatchMode = mode;
     }
-    void setMatchMenus(bool match) {
-        m_matchMenus = match;
+    void setBlurDecorations(bool toggle) {
+        m_blurDecorations = toggle;
     }
-    void setMatchDocks(bool match) {
-        m_matchDocks = match;
+    void setBlurDocks(bool toggle) {
+        m_blurDocks = toggle;
     }
+    void setBlurMenus(bool toggle) {
+        m_blurMenus = toggle;
+    }
+
+    /**
+     * getters
+     */
+    bool blurDecorations() const { return m_blurDecorations; }
 
     /**
      * Find a managed window, nullptr if not found
      */
-    BBDX::Window* findWindow(KWin::EffectWindow *w);
+    BBDX::Window* findWindow(const KWin::EffectWindow *w) const;
 
     /**
      * Match an EffectWindow instance

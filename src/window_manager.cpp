@@ -40,18 +40,18 @@ const WindowManager* WindowManager::instance() {
     return self;
 }
 
-void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
+void WindowManager::slotWindowAdded(const KWin::EffectWindow *w) {
     m_windows[w] = new BBDX::Window(w);
 }
 
-void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
+void WindowManager::slotWindowDeleted(const KWin::EffectWindow *w) {
     if (BBDX::Window* bbdx_window = findWindow(w)) {
         delete bbdx_window;
         m_windows.remove(w);
     }
 }
 
-BBDX::Window* WindowManager::findWindow(KWin::EffectWindow *w) {
+BBDX::Window* WindowManager::findWindow(const KWin::EffectWindow *w) const {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
         return it.value();
     }
@@ -108,8 +108,9 @@ void WindowManager::reconfigure() {
         setWindowClassMatchMode(WindowManager::WindowClassMatchMode::Blacklist);
     }
 
-    setMatchMenus(config->blurMenus());
-    setMatchDocks(config->blurDocks());
+    setBlurDecorations(config->blurDecorations());
+    setBlurDocks(config->blurDocks());
+    setBlurMenus(config->blurMenus());
 
     for (const auto &window : m_windows.values()) {
         window->reconfigure();
@@ -120,10 +121,10 @@ bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
     if (w->isDesktop())
         return true;
 
-    if (!m_matchMenus && isMenu(w))
+    if (!m_blurMenus && isMenu(w))
         return true;
 
-    if (!m_matchDocks && w->isDock())
+    if (!m_blurDocks && w->isDock())
         return true;
 
     const QString windowClass = w->window()->resourceClass();

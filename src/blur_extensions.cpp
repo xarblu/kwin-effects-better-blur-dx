@@ -6,6 +6,7 @@
 
 #include "blur.h"
 #include "utils.h"
+#include "window.hpp"
 
 #include <effect/effectwindow.h>
 #include <scene/borderradius.h>
@@ -64,26 +65,12 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     if (w->internalWindow()) return;
 
     // matched by user config
-    if (!m_windowManager.shouldForceBlur(w)) return;
-
-    // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
-    // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
-    // blur region to be off on X11. The frame region is not translated, so it is used instead.
-    const auto isX11WithCSD = w->isX11Client() && w->frameGeometry() != w->bufferGeometry();
-    if (!isX11WithCSD) {
-        // empty QRegion -> full window
-        content = QRegion();
-
-        // only decorations in this case
-        if (m_settings.forceBlur.blurDecorations && w->decoration()) {
-            frame = QRegion(w->decoration()->rect().toAlignedRect()) - w->contentsRect().toRect();
-        }
-    } else {
-        // frame is full window
-        frame = w->frameGeometry().translated(-w->x(), -w->y()).toRect();
+    if (const BBDX::Window* window = m_windowManager.findWindow(w)) {
+        content = window->forceBlurContent();
+        frame = window->forceBlurFrame();
+        type = BlurType::Forced;
     }
 
-    type = BlurType::Forced;
 }
 
 BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
