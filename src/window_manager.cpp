@@ -137,6 +137,11 @@ bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
         && (layer == KWin::Layer::OverlayLayer || layer == KWin::Layer::ActiveLayer))
         return true;
 
+    // don't touch KWin internal windows
+    // this includes the snapping assistant zones
+    // and they don't handle blur well at all
+    if (w->internalWindow()) return true;
+
     return false;
 }
 

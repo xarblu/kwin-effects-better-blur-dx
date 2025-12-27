@@ -59,11 +59,6 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     // Most windows will provide opacity via WindowPaintData)
     if (content.has_value() && w->opacity() >= 1.0) return;
 
-    // don't touch KWin internal windows
-    // this includes the snapping assistant zones
-    // and they don't handle blur well at all
-    if (w->internalWindow()) return;
-
     // matched by user config
     if (const BBDX::Window* window = m_windowManager.findWindow(w)) {
         content = window->forceBlurContent();
