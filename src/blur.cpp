@@ -143,11 +143,9 @@ BlurEffect::BlurEffect()
     initBlurStrengthValues();
     reconfigure(ReconfigureAll);
 
-#ifdef BETTERBLUR_X11
     if (effects->xcbConnection()) {
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     }
-#endif
 
 #ifndef BETTERBLUR_X11
     if (!s_blurManagerRemoveTimer) {
@@ -184,12 +182,10 @@ BlurEffect::BlurEffect()
 #else
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
 #endif
-#ifdef BETTERBLUR_X11
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
-#endif
     connect(&m_windowManager, &BBDX::WindowManager::windowWantsBlurRegionUpdate, this, &BlurEffect::slotWindowWantsBlurRegionUpdate);
 
     // Fetch the blur regions for all windows
@@ -339,7 +335,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
     std::optional<qreal> saturation;
     std::optional<qreal> contrast;
 
-#ifdef BETTERBLUR_X11
     if (net_wm_blur_region != XCB_ATOM_NONE) {
         const QByteArray value = w->readProperty(net_wm_blur_region, XCB_ATOM_CARDINAL, 32);
         QRegion region;
@@ -357,7 +352,6 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
             content = region;
         }
     }
-#endif
 
     if (SurfaceInterface *surface = w->surface()) {
         if (surface->blur()) {
@@ -464,14 +458,12 @@ void BlurEffect::slotViewRemoved(KWin::RenderView *view)
     }
 }
 
-#ifdef BETTERBLUR_X11
 void BlurEffect::slotPropertyNotify(EffectWindow *w, long atom)
 {
     if (w && atom == net_wm_blur_region && net_wm_blur_region != XCB_ATOM_NONE) {
         updateBlurRegion(w);
     }
 }
-#endif
 
 void BlurEffect::setupDecorationConnections(EffectWindow *w)
 {

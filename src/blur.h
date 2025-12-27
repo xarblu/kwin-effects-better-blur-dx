@@ -110,9 +110,7 @@ public Q_SLOTS:
 #else
     void slotViewRemoved(KWin::RenderView *view);
 #endif
-#ifdef BETTERBLUR_X11
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
-#endif
     void setupDecorationConnections(EffectWindow *w);
 
 private:
@@ -180,9 +178,7 @@ private:
     } m_noisePass;
 
     bool m_valid = false;
-#ifdef BETTERBLUR_X11
     long net_wm_blur_region = 0;
-#endif
     QRegion m_paintedArea; // keeps track of all painted areas (from bottom to top)
     QRegion m_currentBlur; // keeps track of currently blurred area of the windows (from bottom to top)
 
