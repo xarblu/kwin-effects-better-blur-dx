@@ -110,9 +110,13 @@ void WindowManager::reconfigure() {
 
     setMatchMenus(config->blurMenus());
     setMatchDocks(config->blurDocks());
+
+    for (const auto &window : m_windows.values()) {
+        window->reconfigure();
+    }
 }
 
-bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) {
+bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
     if (w->isDesktop())
         return true;
 
@@ -135,7 +139,7 @@ bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) {
     return false;
 }
 
-bool WindowManager::matchFixed(const KWin::EffectWindow *w) {
+bool WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
 
@@ -145,7 +149,7 @@ bool WindowManager::matchFixed(const KWin::EffectWindow *w) {
     return false;
 }
 
-bool WindowManager::matchRegex(const KWin::EffectWindow *w) {
+bool WindowManager::matchesWindowClassRegex(const KWin::EffectWindow *w) const {
     for (const auto &regex : m_windowClassesRegex) {
         if (auto m = regex.match(w->window()->resourceClass()); m.hasMatch())
             return true;
@@ -157,11 +161,11 @@ bool WindowManager::matchRegex(const KWin::EffectWindow *w) {
     return false;
 }
 
-bool WindowManager::match(const KWin::EffectWindow *w) {
+bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
     if (ignoreWindow(w))
         return false;
 
-    if (matchFixed(w) || matchRegex(w)) {
+    if (matchesWindowClassFixed(w) || matchesWindowClassRegex(w)) {
         switch (m_windowClassMatchMode) {
             case WindowManager::WindowClassMatchMode::Whitelist:
                 return true;

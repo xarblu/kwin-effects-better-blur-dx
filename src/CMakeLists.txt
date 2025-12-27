@@ -6,6 +6,7 @@ set(better_blur_dx_SOURCES
     blur.qrc
     main.cpp
     settings.cpp
+    window.cpp
     window_manager.cpp
 )
 

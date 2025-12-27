@@ -17,19 +17,26 @@ class Window : public QObject {
 private:
     KWin::EffectWindow* m_effectwindow;
 
+    // track whether this window should be force blurred
+    bool m_forceBlurred{false};
+
+    // if force blurred, contain content/frame of the blur region
     std::optional<QRegion> m_forceBlurContent;
     std::optional<QRegion> m_forceBlurFrame;
-
-    bool m_forceBlurred{false};
 
 private:
     void updateForceBlurRegion();
 
 public Q_SLOTS:
-    void slotFrameGeometryChanged(KWin::EffectWindow *w);
+    void slotFrameGeometryChanged();
 
 public:
     explicit Window(KWin::EffectWindow *w);
+
+    /**
+     * reconfigure hook
+     */
+    void reconfigure();
 
     /**
      * access underlying KWin::EffectWindow

@@ -40,9 +40,9 @@ private:
     bool m_matchDocks{false};
 
     // match helpers
-    bool ignoreWindow(const KWin::EffectWindow *w);
-    bool matchFixed(const KWin::EffectWindow *w);
-    bool matchRegex(const KWin::EffectWindow *w);
+    bool ignoreWindow(const KWin::EffectWindow *w) const;
+    bool matchesWindowClassFixed(const KWin::EffectWindow *w) const;
+    bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
 public Q_SLOT:
     void slotWindowAdded(KWin::EffectWindow *w);
@@ -85,7 +85,7 @@ public:
     /**
      * Match an EffectWindow instance
      */
-    bool match(const KWin::EffectWindow *w);
+    bool shouldForceBlur(const KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

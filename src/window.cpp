@@ -9,6 +9,10 @@ BBDX::Window::Window(KWin::EffectWindow *w) {
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotFrameGeometryChanged);
 }
 
+void BBDX::Window::slotFrameGeometryChanged() {
+    updateForceBlurRegion();
+}
+
 void BBDX::Window::updateForceBlurRegion() {
     auto windowManager = BBDX::WindowManager::instance();
     if (!windowManager)
@@ -16,4 +20,16 @@ void BBDX::Window::updateForceBlurRegion() {
 
     
     
+}
+
+void BBDX::Window::reconfigure() {
+    auto windowManager = BBDX::WindowManager::instance();
+    if (!windowManager)
+        return;
+
+    if (windowManager->shouldForceBlur(m_effectwindow)) {
+        m_forceBlurred = true;
+    } else {
+        m_forceBlurred = false;
+    }
 }
