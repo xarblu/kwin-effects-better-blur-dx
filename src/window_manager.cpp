@@ -177,6 +177,8 @@ bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
                 return true;
             case WindowManager::WindowClassMatchMode::Blacklist:
                 return false;
+            [[unlikely]] default:
+                return false;
         }
     } else {
         switch (m_windowClassMatchMode) {
@@ -184,6 +186,8 @@ bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
                 return false;
             case WindowManager::WindowClassMatchMode::Blacklist:
                 return true;
+            [[unlikely]] default:
+                return false;
         }
     }
 }
