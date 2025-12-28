@@ -9,7 +9,7 @@
 
 stdenv.mkDerivation rec {
   pname = "kwin-better-blur";
-  version = "1.5.0";
+  version = "2.0.0";
 
   src = ./..;
 
@@ -27,6 +27,6 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Fork of the KWin Blur effect for KDE Plasma 6 with additional features (including force blur) and bug fixes";
     license = licenses.gpl3;
-    homepage = "https://github.com/taj-ny/kwin-effects-better_blur_dx";
+    homepage = "https://github.com/xarblu/kwin-effects-better-blur-dx";
   };
 }

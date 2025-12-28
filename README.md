@@ -87,7 +87,7 @@ Currently supported versions: **6.5**
     inputs = {
       nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-      kwin-effects-better_blur_dx = {
+      kwin-effects-better-blur-dx = {
         url = "github:xarblu/kwin-effects-better-blur-dx";
         inputs.nixpkgs.follows = "nixpkgs";
       };
