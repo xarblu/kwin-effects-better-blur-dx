@@ -45,6 +45,11 @@ void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizonta
 
 void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame)
 {
+    // TODO: merge into BBDX::Window
+    // e.g. request BBDX::Window in updateBlurRegion
+    // then request sth like getForceBlurRegion
+    // called with references to content & frame
+
     BBDX::Window* window = m_windowManager.findWindow(w);
 
     // nothing we can do if the window isn't managed by us
@@ -57,6 +62,8 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     // e.g. for corner radius.
     if (content.has_value() || frame.has_value()) {
         window->setRequestedBlur(true);
+    } else {
+        window->setRequestedBlur(false);
     }
 
     // Normally we'd assume windows that set their own blur region
@@ -71,6 +78,7 @@ void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QReg
     // matched by user config
     content = window->forceBlurContent();
     frame = window->forceBlurFrame();
+    window->setRequestedBlur(false);
 }
 
 BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
