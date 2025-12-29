@@ -6,6 +6,7 @@
 #include <optional>
 
 namespace KWin {
+    class BorderRadius;
     class EffectWindow;
 }
 
@@ -26,8 +27,10 @@ public:
 private:
     KWin::EffectWindow* m_effectwindow;
 
+    // User config related attributes
     // track whether this window should be force blurred
     bool m_forceBlurred{false};
+    qreal m_borderRadius{};
 
     // if force blurred, contain content/frame of the blur region
     std::optional<QRegion> m_forceBlurContent{};
@@ -77,6 +80,16 @@ public:
      * m_requestedBlur flag, else writes the current force blur region
      */
     void getFinalBlurRegion(std::optional<QRegion> &content, std::optional<QRegion> &frame);
+
+    /**
+     * Get the effective border radius
+     *
+     * For blur-requested windows this respects their radius.
+     * Otherwise the configured radius is used.
+     * 
+     * If the window is fullscreen/maximized the radius is always 0.
+     */
+    KWin::BorderRadius getEffectiveBorderRadius();
 };
 
 } // namespace BBDX

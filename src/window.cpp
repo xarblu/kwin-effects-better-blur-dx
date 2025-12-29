@@ -1,8 +1,10 @@
 #include "window.hpp"
 #include "window_manager.hpp"
 
-#include <effect/effectwindow.h>
 #include <KDecoration3/Decoration>
+#include <effect/effectwindow.h>
+#include <scene/borderradius.h>
+#include <window.h>
 
 #include <optional>
 
@@ -94,6 +96,8 @@ void BBDX::Window::reconfigure() {
         m_forceBlurred = false;
     }
 
+    // TODO: setup m_borderRadius here
+
     updateForceBlurRegion();
 }
 
@@ -122,4 +126,38 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     content = m_forceBlurContent;
     frame = m_forceBlurFrame;
     m_requestedBlur = false;
+}
+
+KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
+    // always respect window provided radius
+    const KWin::BorderRadius windowCornerRadius = m_effectwindow->window()->borderRadius();
+    if (!windowCornerRadius.isNull()) {
+        return windowCornerRadius;
+    }
+
+    // assume the window knows what it's doing
+    // when it requested the blur
+    if (m_requestedBlur) {
+        return KWin::BorderRadius();
+    }
+
+    // Maximized/fullscreen windows don't need radius.
+    // They shouldn't have rounded corners.
+    // TODO: Apparently this doesn't cover tiles
+    //       but there is no easy way to detect those.
+    //       They look maximized, behave maximized but
+    //       apparently aren't maximized.
+    if (m_effectwindow->isFullScreen()
+        || m_maximizedState == MaximizedState::Horizontal
+        || m_maximizedState == MaximizedState::Vertical
+        || m_maximizedState == MaximizedState::Complete) {
+        return KWin::BorderRadius();
+    }
+
+    // fallback to configured radius
+    if (m_borderRadius > 0.0) {
+        return KWin::BorderRadius(m_borderRadius);
+    } else {
+        return KWin::BorderRadius();
+    }
 }
