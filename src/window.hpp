@@ -55,6 +55,15 @@ public:
      * reconfigure hook
      */
     void reconfigure();
+
+    /**
+     * Get the final blur region written into
+     * the provided content/frame references
+     *
+     * If values already exists keeps them and sets
+     * m_requestedBlur flag, else writes the current force blur region
+     */
+    void getFinalBlurRegion(std::optional<QRegion> &content, std::optional<QRegion> &frame);
 };
 
 } // namespace BBDX

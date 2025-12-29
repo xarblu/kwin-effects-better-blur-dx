@@ -43,44 +43,6 @@ void BlurEffect::slotWindowMaximizedStateChanged(EffectWindow *w, bool horizonta
     }
 }
 
-void BlurEffect::updateForceBlurRegion(const EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame)
-{
-    // TODO: merge into BBDX::Window
-    // e.g. request BBDX::Window in updateBlurRegion
-    // then request sth like getForceBlurRegion
-    // called with references to content & frame
-
-    BBDX::Window* window = m_windowManager.findWindow(w);
-
-    // nothing we can do if the window isn't managed by us
-    if (!window) return;
-
-    // If we already have a blur region at this point
-    // the window requested it.
-    // This tracker allows us to later decide if we want
-    // to trust the window or use user parameters
-    // e.g. for corner radius.
-    if (content.has_value() || frame.has_value()) {
-        window->setRequestedBlur(true);
-    } else {
-        window->setRequestedBlur(false);
-    }
-
-    // Normally we'd assume windows that set their own blur region
-    // know what they're doing.
-    // However these windows probably don't expect users to decrease
-    // the window opacity via KWin rules in which case we'll allow
-    // overriding the blur area.
-    // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
-    // Most windows will provide opacity via WindowPaintData)
-    if (content.has_value() && w->opacity() >= 1.0) return;
-
-    // matched by user config
-    content = window->forceBlurContent();
-    frame = window->forceBlurFrame();
-    window->setRequestedBlur(false);
-}
-
 BorderRadius BlurEffect::getWindowBorderRadius(EffectWindow *w)
 {
     // init of BlurEffect::blur() should assure w is in map

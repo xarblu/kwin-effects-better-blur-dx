@@ -82,3 +82,30 @@ void BBDX::Window::reconfigure() {
 
     updateForceBlurRegion();
 }
+
+void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::optional<QRegion> &frame) {
+    // If we already have a blur region at this point
+    // the window requested it.
+    // This tracker allows us to later decide if we want
+    // to trust the window or use user parameters
+    // e.g. for corner radius.
+    if (content.has_value() || frame.has_value()) {
+        m_requestedBlur = true;
+    } else {
+        m_requestedBlur = false;
+    }
+
+    // Normally we'd assume windows that set their own blur region
+    // know what they're doing.
+    // However these windows probably don't expect users to decrease
+    // the window opacity via KWin rules in which case we'll allow
+    // overriding the blur area.
+    // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
+    // Most windows will provide opacity via WindowPaintData)
+    if (content.has_value() && m_effectwindow->opacity() >= 1.0) return;
+
+    // matched by user config
+    content = m_forceBlurContent;
+    frame = m_forceBlurFrame;
+    m_requestedBlur = false;
+}

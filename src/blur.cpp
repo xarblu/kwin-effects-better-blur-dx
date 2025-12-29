@@ -374,7 +374,9 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         frame = decorationBlurRegion(w);
     }
 
-    updateForceBlurRegion(w, content, frame);
+    if (const auto window = m_windowManager.findWindow(w)) {
+        window->getFinalBlurRegion(content, frame);
+    }
 
     if (content.has_value() || frame.has_value()) {
         BlurEffectData &data = m_windows[w];
