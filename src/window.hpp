@@ -14,6 +14,15 @@ namespace BBDX {
 class Window : public QObject {
     Q_OBJECT
 
+public:
+    enum class MaximizedState {
+        Unknown,
+        Restored,
+        Vertical,
+        Horizontal,
+        Complete
+    };
+
 private:
     KWin::EffectWindow* m_effectwindow;
 
@@ -27,12 +36,16 @@ private:
     // track whether this window requested a blur region
     bool m_requestedBlur{false};
 
+    // track mazimized state
+    MaximizedState m_maximizedState{MaximizedState::Unknown};
+
 private:
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();
 
 public Q_SLOTS:
     void slotWindowFrameGeometryChanged();
+    void slotWindowMaximizedStateChanged(bool horizontal, bool vertical);
 
 public:
     explicit Window(KWin::EffectWindow *w);

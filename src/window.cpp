@@ -16,6 +16,20 @@ void BBDX::Window::slotWindowFrameGeometryChanged() {
     updateForceBlurRegion();
 }
 
+void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertical) {
+    if (!horizontal && !vertical) {
+        m_maximizedState = MaximizedState::Restored;
+    } else if (horizontal && !vertical) {
+        m_maximizedState = MaximizedState::Horizontal;
+    } else if (!horizontal && vertical) {
+        m_maximizedState = MaximizedState::Vertical;
+    } else if (horizontal && vertical) {
+        m_maximizedState = MaximizedState::Complete;
+    } else {
+        m_maximizedState = MaximizedState::Unknown;
+    }
+}
+
 void BBDX::Window::updateForceBlurRegion() {
     auto windowManager = BBDX::WindowManager::instance();
     if (!windowManager)
