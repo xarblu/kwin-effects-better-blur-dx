@@ -1,8 +1,16 @@
 # DEV
 Things not in any tagged release yet:
 
-### Features
+### Features:
 - Match window classes with regular expressions
+- Explicitly force-blurred windows are now always blurred - even when transforming. (May or may not improve compatibility with things like Wobbly Windows. Instead of blur disappearing and potential flickering we now have a somewhat off-looking blurred square behind the "wobble area".)
+
+### Bug Fixes:
+- Fix not respecting requested blur by X11 clients on the Wayland build. The X11 property parsing logic was accidentally made exclusive to the X11 build.
+- Fix corner radius with "Round bottom corners of windows with no borders" (Breeze decoration settings) and "Blur decorations as well" both enabled.
+
+### Internal:
+- Introduce `WindowManager` and `Window` classes to track all relevant window info, perform matching, etc.
 
 # 2.0.0
 The first release of Better Blur DX 🎉
