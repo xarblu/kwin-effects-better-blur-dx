@@ -44,6 +44,9 @@ private:
     bool m_blurDocks{false};
     bool m_blurMenus{false};
 
+    // user configured border radius
+    qreal m_userBorderRadius{0.0};
+
     // match helpers
     bool ignoreWindow(const KWin::EffectWindow *w) const;
     bool matchesWindowClassFixed(const KWin::EffectWindow *w) const;
@@ -90,11 +93,15 @@ public:
     void setBlurMenus(bool toggle) {
         m_blurMenus = toggle;
     }
+    void setUserBorderRadius(qreal radius) {
+        m_userBorderRadius = radius;
+    }
 
     /**
      * getters
      */
     bool blurDecorations() const { return m_blurDecorations; }
+    qreal userBorderRadius() const { return m_userBorderRadius; }
 
     /**
      * Find a managed window, nullptr if not found

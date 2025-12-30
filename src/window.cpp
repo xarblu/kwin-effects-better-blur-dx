@@ -96,7 +96,7 @@ void BBDX::Window::reconfigure() {
         m_forceBlurred = false;
     }
 
-    // TODO: setup m_borderRadius here
+    m_userBorderRadius = windowManager->userBorderRadius();
 
     updateForceBlurRegion();
 }
@@ -155,8 +155,8 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
     }
 
     // fallback to configured radius
-    if (m_borderRadius > 0.0) {
-        return KWin::BorderRadius(m_borderRadius);
+    if (m_userBorderRadius > 0.0) {
+        return KWin::BorderRadius(m_userBorderRadius);
     } else {
         return KWin::BorderRadius();
     }

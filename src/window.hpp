@@ -30,7 +30,7 @@ private:
     // User config related attributes
     // track whether this window should be force blurred
     bool m_forceBlurred{false};
-    qreal m_borderRadius{};
+    qreal m_userBorderRadius{0.0};
 
     // if force blurred, contain content/frame of the blur region
     std::optional<QRegion> m_forceBlurContent{};

@@ -113,6 +113,8 @@ void WindowManager::reconfigure() {
     setBlurDocks(config->blurDocks());
     setBlurMenus(config->blurMenus());
 
+    setUserBorderRadius(config->cornerRadius());
+
     for (const auto &window : m_windows.values()) {
         window->reconfigure();
     }
