@@ -34,10 +34,6 @@ void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertica
 }
 
 void BBDX::Window::updateForceBlurRegion() {
-    auto windowManager = BBDX::WindowManager::instance();
-    if (!windowManager)
-        return;
-
     if (!m_forceBlurred) {
         m_forceBlurContent.reset();
         m_forceBlurFrame.reset();
@@ -58,7 +54,7 @@ void BBDX::Window::updateForceBlurRegion() {
         content = QRegion();
 
         // only decorations in this case
-        if (windowManager->blurDecorations() && m_effectwindow->decoration()) {
+        if (m_windowManager->blurDecorations() && m_effectwindow->decoration()) {
             frame = QRegion(m_effectwindow->decoration()->rect().toAlignedRect()) - m_effectwindow->contentsRect().toRect();
         }
     } else {
@@ -79,25 +75,17 @@ void BBDX::Window::updateForceBlurRegion() {
 }
 
 void BBDX::Window::triggerBlurRegionUpdate() {
-    auto windowManager = BBDX::WindowManager::instance();
-    if (!windowManager)
-        return;
-
-    windowManager->triggerBlurRegionUpdate(m_effectwindow);
+    m_windowManager->triggerBlurRegionUpdate(m_effectwindow);
 }
 
 void BBDX::Window::reconfigure() {
-    auto windowManager = BBDX::WindowManager::instance();
-    if (!windowManager)
-        return;
-
-    if (windowManager->shouldForceBlur(m_effectwindow)) {
+    if (m_windowManager->shouldForceBlur(m_effectwindow)) {
         m_forceBlurred = true;
     } else {
         m_forceBlurred = false;
     }
 
-    m_userBorderRadius = windowManager->userBorderRadius();
+    m_userBorderRadius = m_windowManager->userBorderRadius();
 
     updateForceBlurRegion();
 }
