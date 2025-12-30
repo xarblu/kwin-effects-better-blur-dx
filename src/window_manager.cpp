@@ -6,6 +6,7 @@
 
 #include <effect/effectwindow.h>
 #include <effect/effecthandler.h>
+#include <scene/borderradius.h>
 #include <window.h>
 
 #include <QList>
@@ -218,6 +219,16 @@ bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
         return false;
 
     return window->forceBlurred();
+}
+
+KWin::BorderRadius WindowManager::getEffectiveBorderRadius(const KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
+
+    // unmanaged windows can never be force blurred
+    if (!window)
+        return KWin::BorderRadius();
+
+    return window->getEffectiveBorderRadius();
 }
 
 } // namespace BBDX

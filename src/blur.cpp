@@ -410,9 +410,6 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
         });
     }
 
-    windowMaximizedStateChangedConnections[w] = connect(w, &EffectWindow::windowMaximizedStateChanged,
-                                                        this, &BlurEffect::slotWindowMaximizedStateChanged);
-
     if (auto internal = w->internalWindow()) {
         internal->installEventFilter(this);
     }
@@ -439,10 +436,6 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
     if (auto it = windowContrastChangedConnections.find(w); it != windowContrastChangedConnections.end()) {
         disconnect(*it);
         windowContrastChangedConnections.erase(it);
-    }
-    if (auto it = windowMaximizedStateChangedConnections.find(w); it != windowMaximizedStateChangedConnections.end()) {
-        disconnect(*it);
-        windowMaximizedStateChangedConnections.erase(it);
     }
 }
 
@@ -955,7 +948,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->popShader();
     }
 
-    if (const BorderRadius cornerRadius = getWindowBorderRadius(w); !cornerRadius.isNull()) {
+    if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
         ShaderManager::instance()->pushShader(m_roundedContrastPass.shader.get());
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();

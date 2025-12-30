@@ -15,6 +15,10 @@
 #include <optional>
 #include <utility>
 
+namespace KWin {
+    class BorderRadius;
+}
+
 namespace BBDX
 {
 
@@ -117,6 +121,12 @@ public:
      * (blurred through user config, not requested)
      */
     bool windowForceBlurred(const KWin::EffectWindow *w) const;
+
+    /**
+     * Get effective border radius for requested window,
+     * or empty if unmanaged
+     */
+    KWin::BorderRadius getEffectiveBorderRadius(const KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

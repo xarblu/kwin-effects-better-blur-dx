@@ -29,14 +29,6 @@ namespace KWin
 class BlurManagerInterface;
 class ContrastManagerInterface;
 
-enum class MaximizedState {
-    Unknown,
-    Restored,
-    Horizontal,
-    Vertical,
-    Complete
-};
-
 struct BlurRenderData
 {
     /// Temporary render targets needed for the Dual Kawase algorithm, the first texture
@@ -68,8 +60,6 @@ struct BlurEffectData
     std::optional<qreal> brightness;
     std::optional<qreal> contrast;
     std::optional<qreal> saturation;
-
-    MaximizedState maximizedState = MaximizedState::Unknown;
 };
 
 class BlurEffect : public KWin::Effect
@@ -103,7 +93,6 @@ public:
 public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
-    void slotWindowMaximizedStateChanged(EffectWindow *w, bool horizontal, bool vertical);
     void slotWindowWantsBlurRegionUpdate(EffectWindow *w);
 #ifdef BETTERBLUR_X11
     void slotScreenRemoved(KWin::Output *view);
@@ -123,7 +112,6 @@ private:
     void updateBlurRegion(EffectWindow *w);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
-    BorderRadius getWindowBorderRadius(EffectWindow *w);
     qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
     qreal getOpacity(const EffectWindow *w, WindowPaintData &data) const;
 
@@ -214,7 +202,6 @@ private:
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
-    QMap<EffectWindow *, QMetaObject::Connection> windowMaximizedStateChangedConnections;
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
     static BlurManagerInterface *s_blurManager;
