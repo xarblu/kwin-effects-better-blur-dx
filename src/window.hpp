@@ -12,6 +12,8 @@ namespace KWin {
 
 namespace BBDX {
 
+class WindowManager;
+
 class Window : public QObject {
     Q_OBJECT
 
@@ -25,6 +27,10 @@ public:
     };
 
 private:
+    // managing WindowManager instance
+    WindowManager* m_windowManager;
+
+    // underlying KWin::EffectWindow
     KWin::EffectWindow* m_effectwindow;
 
     // User config related attributes
@@ -51,7 +57,7 @@ public Q_SLOTS:
     void slotWindowMaximizedStateChanged(bool horizontal, bool vertical);
 
 public:
-    explicit Window(KWin::EffectWindow *w);
+    explicit Window(WindowManager *wm, KWin::EffectWindow *w);
 
     /**
      * setters

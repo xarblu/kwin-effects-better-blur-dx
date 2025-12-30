@@ -8,7 +8,8 @@
 
 #include <optional>
 
-BBDX::Window::Window(KWin::EffectWindow *w) {
+BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
+    m_windowManager = wm;
     m_effectwindow = w;
     reconfigure();
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
@@ -130,9 +131,33 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
 
 KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
     // always respect window provided radius
+    // (although this seems to only ever be set by Breeze's
+    // "Round bottom corners of windows with no borders"
+    // currently)
     const KWin::BorderRadius windowCornerRadius = m_effectwindow->window()->borderRadius();
+
+    // Breeze has a "Round bottom corners of windows with no borders"
+    // option which sets radius for the *bottom corners only* (because
+    // it assumes no blur behind the top corners).
+    // We provide a "Blur decorations as well option" which breaks said
+    // assumption. Assuming all corners are rounded equally we'll just
+    // copy the bottom radius to their respective top corners.
     if (!windowCornerRadius.isNull()) {
-        return windowCornerRadius;
+        // if not blurring decorations we don't need
+        // any adjustments
+        if (!m_windowManager->blurDecorations())
+            return windowCornerRadius;
+
+        // if top radius is set explicitly by decoration keep it
+        const qreal topLeft = windowCornerRadius.topLeft() > 0.0 ?
+            windowCornerRadius.topLeft() : windowCornerRadius.bottomLeft();
+        const qreal topRight = windowCornerRadius.topRight() > 0.0 ?
+            windowCornerRadius.topRight() : windowCornerRadius.bottomRight();
+
+        return KWin::BorderRadius(topLeft,
+                                  topRight,
+                                  windowCornerRadius.bottomLeft(),
+                                  windowCornerRadius.bottomRight());
     }
 
     // assume the window knows what it's doing

@@ -42,7 +42,7 @@ const WindowManager* WindowManager::instance() {
 }
 
 void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
-    m_windows[w] = new BBDX::Window(w);
+    m_windows[w] = new BBDX::Window(this, w);
 }
 
 void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
