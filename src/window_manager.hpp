@@ -140,6 +140,11 @@ public:
      * or empty if unmanaged
      */
     KWin::BorderRadius getEffectiveBorderRadius(const KWin::EffectWindow *w) const;
+
+    /**
+     * Get effective blur opacity for requested window
+     */
+    qreal getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const;
 };
 
 } // namespace KWin

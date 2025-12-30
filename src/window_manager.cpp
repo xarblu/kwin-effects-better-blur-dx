@@ -240,4 +240,14 @@ KWin::BorderRadius WindowManager::getEffectiveBorderRadius(const KWin::EffectWin
     return window->getEffectiveBorderRadius();
 }
 
+qreal WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const {
+    const auto window = findWindow(w);
+
+    // for unmanaged windows just use the paint data
+    if (!window)
+        return data.opacity();
+
+    return window->getEffectiveBlurOpacity(data);
+}
+
 } // namespace BBDX

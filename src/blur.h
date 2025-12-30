@@ -113,7 +113,6 @@ private:
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
     qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
-    qreal getOpacity(const EffectWindow *w, WindowPaintData &data) const;
 
 private:
     struct

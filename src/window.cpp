@@ -2,12 +2,15 @@
 #include "window_manager.hpp"
 
 #include <KDecoration3/Decoration>
+#include <chrono>
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
+#include <qeasingcurve.h>
 #include <scene/borderradius.h>
 #include <window.h>
 
 #include <QVariant>
+#include <QEasingCurve>
 
 #include <optional>
 
@@ -25,7 +28,9 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
     // Don't allow blurring while transformed during move/resize
     // to avoid dragging an off-looking rectangular blur region
     // behind windows affected by Wobbly Windows.
-    m_shouldBlurWhileTransformed = false;
+    m_shouldBlurWhileTransformed = true;
+    m_blurWhileTransformedTransitionState = TransformState::Started;
+    m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
@@ -34,6 +39,8 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
     // after finishing move/resize) this at least assures blur
     // is always set afterwards.
     m_shouldBlurWhileTransformed = true;
+    m_blurWhileTransformedTransitionState = TransformState::Ended;
+    m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
 }
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
@@ -195,5 +202,60 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
         return KWin::BorderRadius(m_userBorderRadius);
     } else {
         return KWin::BorderRadius();
+    }
+}
+
+qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
+    // Plasma surfaces expect their opacity to affect
+    // the blur e.g. to hide the blurred surface alongside
+    // themselves.
+    // Force blurred surfaces don't want/need this
+    if (requestedBlur()) {
+        return effectwindow()->opacity() * data.opacity();
+    } else {
+        // ease into and out of the phase without blur
+        // if moving/resizing with Wobbly Windows
+        // TODO: maybe move partly this to a separate function
+        //       - feels kind of out-of place here
+        if (m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - m_blurWhileTransformedTransitionStart).count();
+
+            // animation takes 250ms max for now
+            const qreal progress = elapsed / 250.0;
+
+            // we need to queue a full repaint here to 
+            // avoid flickering due to blur-region-clipping
+            effectwindow()->addRepaintFull();
+
+            switch (m_blurWhileTransformedTransitionState) {
+                case TransformState::Started:
+                    if (progress >= 1.0) {
+                        // fade out done
+                        // We can stop blurring now until
+                        // slotWindowFinishUserMovedResized gets called.
+                        m_shouldBlurWhileTransformed = false;
+                        return 0.0;
+                    } else {
+                        // fade out in progress
+                        const QEasingCurve curve{QEasingCurve::OutCubic};
+                        return data.opacity() * (1.0 - curve.valueForProgress(progress));
+                    }
+                case TransformState::Ended:
+                    if (progress >= 1.0) {
+                        // fade in done
+                        m_blurWhileTransformedTransitionState = TransformState::None;
+                        return data.opacity();
+                    } else {
+                        // fade in in progress
+                        const QEasingCurve curve{QEasingCurve::InCubic};
+                        return data.opacity() * curve.valueForProgress(progress);
+                    }
+                default:
+                    break;
+            }
+        }
+
+        return data.opacity();
     }
 }

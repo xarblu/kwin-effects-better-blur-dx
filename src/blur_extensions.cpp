@@ -14,6 +14,9 @@
 #include <KDecoration3/Decoration>
 
 #include <QRegion>
+#include <QEasingCurve>
+
+#include <chrono>
 
 namespace KWin
 {
@@ -29,19 +32,6 @@ qreal BlurEffect::getContrastParam(std::optional<qreal> requested_value, qreal c
     }
 
     return requested_value.value_or(config_value);
-}
-
-qreal BlurEffect::getOpacity(const EffectWindow *w, WindowPaintData &data) const
-{
-    // Plasma surfaces expect their opacity to affect
-    // the blur e.g. to hide the blurred surface alongside
-    // themselves.
-    // Force blurred surfaces don't want/need this
-    if (m_windowManager.windowRequestedBlur(w)) {
-        return w->opacity() * data.opacity();
-    } else {
-        return data.opacity();
-    }
 }
 
 }

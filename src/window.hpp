@@ -4,10 +4,12 @@
 #include <QRegion>
 
 #include <optional>
+#include <chrono>
 
 namespace KWin {
     class BorderRadius;
     class EffectWindow;
+    class WindowPaintData;
 }
 
 namespace BBDX {
@@ -24,6 +26,12 @@ public:
         Vertical,
         Horizontal,
         Complete
+    };
+
+    enum class TransformState {
+        None,
+        Started,
+        Ended
     };
 
 private:
@@ -51,6 +59,8 @@ private:
     // track whether window should be blurred even
     // when PAINT_WINDOW_TRANSFORMED is set
     bool m_shouldBlurWhileTransformed{false};
+    TransformState m_blurWhileTransformedTransitionState{TransformState::None};
+    std::chrono::steady_clock::time_point m_blurWhileTransformedTransitionStart;
 
 private:
     void updateForceBlurRegion();
@@ -103,6 +113,11 @@ public:
      * If the window is fullscreen/maximized the radius is always 0.
      */
     KWin::BorderRadius getEffectiveBorderRadius();
+
+    /**
+     * Get effective blur opacity
+     */
+    qreal getEffectiveBlurOpacity(KWin::WindowPaintData &data);
 };
 
 } // namespace BBDX
