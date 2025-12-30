@@ -55,6 +55,8 @@ private:
 public Q_SLOTS:
     void slotWindowFrameGeometryChanged();
     void slotWindowMaximizedStateChanged(bool horizontal, bool vertical);
+    void slotWindowStartUserMovedResized();
+    void slotWindowFinishUserMovedResized();
 
 public:
     explicit Window(WindowManager *wm, KWin::EffectWindow *w);

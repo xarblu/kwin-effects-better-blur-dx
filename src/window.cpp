@@ -2,9 +2,12 @@
 #include "window_manager.hpp"
 
 #include <KDecoration3/Decoration>
+#include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
 #include <scene/borderradius.h>
 #include <window.h>
+
+#include <QVariant>
 
 #include <optional>
 
@@ -13,6 +16,16 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_effectwindow = w;
     reconfigure();
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
+    connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
+    connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
+}
+
+void BBDX::Window::slotWindowStartUserMovedResized() {
+    effectwindow()->setData(KWin::WindowForceBlurRole, QVariant());
+}
+
+void BBDX::Window::slotWindowFinishUserMovedResized() {
+    effectwindow()->setData(KWin::WindowForceBlurRole, QVariant(true));
 }
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
