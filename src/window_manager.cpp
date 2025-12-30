@@ -217,9 +217,6 @@ bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
     if (!window)
         return false;
 
-    if (window->requestedBlur())
-        return false;
-
     return window->forceBlurred();
 }
 

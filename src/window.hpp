@@ -35,7 +35,7 @@ private:
 
     // User config related attributes
     // track whether this window should be force blurred
-    bool m_forceBlurred{false};
+    bool m_shouldForceBlur{false};
     qreal m_userBorderRadius{0.0};
 
     // if force blurred, contain content/frame of the blur region
@@ -70,10 +70,10 @@ public:
      * getters
      */
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
-    bool forceBlurred() const { return m_forceBlurred; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
     bool requestedBlur() const { return m_requestedBlur; };
+    bool forceBlurred() const { return m_shouldForceBlur && !m_requestedBlur; }
 
     /**
      * reconfigure hook

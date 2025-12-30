@@ -47,7 +47,7 @@ void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertica
 }
 
 void BBDX::Window::updateForceBlurRegion() {
-    if (!m_forceBlurred) {
+    if (!m_shouldForceBlur) {
         if (m_forceBlurContent.has_value() || m_forceBlurFrame.has_value()) {
             m_forceBlurContent.reset();
             m_forceBlurFrame.reset();
@@ -95,9 +95,9 @@ void BBDX::Window::triggerBlurRegionUpdate() {
 
 void BBDX::Window::reconfigure() {
     if (m_windowManager->shouldForceBlur(m_effectwindow)) {
-        m_forceBlurred = true;
+        m_shouldForceBlur = true;
     } else {
-        m_forceBlurred = false;
+        m_shouldForceBlur = false;
     }
 
     m_userBorderRadius = m_windowManager->userBorderRadius();
