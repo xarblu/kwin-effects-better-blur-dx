@@ -22,11 +22,18 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    effectwindow()->setData(KWin::WindowForceBlurRole, QVariant());
+    // Don't allow blurring while transformed during move/resize
+    // to avoid dragging an off-looking rectangular blur region
+    // behind windows affected by Wobbly Windows.
+    m_shouldBlurWhileTransformed = false;
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    effectwindow()->setData(KWin::WindowForceBlurRole, QVariant(true));
+    // After move/resize force blurring while transformed.
+    // While still suboptimal (the Wobbly Windows effect doesn't end
+    // after finishing move/resize) this at least assures blur
+    // is always set afterwards.
+    m_shouldBlurWhileTransformed = true;
 }
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {

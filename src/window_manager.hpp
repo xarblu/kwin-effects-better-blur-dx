@@ -130,6 +130,12 @@ public:
     bool windowForceBlurred(const KWin::EffectWindow *w) const;
 
     /**
+     * Check if this window should currently be blurred
+     * even when PAINT_WINDOW_TRANSFORMED is set
+     */
+    bool windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const;
+
+    /**
      * Get effective border radius for requested window,
      * or empty if unmanaged
      */

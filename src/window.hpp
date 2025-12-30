@@ -48,6 +48,10 @@ private:
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};
 
+    // track whether window should be blurred even
+    // when PAINT_WINDOW_TRANSFORMED is set
+    bool m_shouldBlurWhileTransformed{false};
+
 private:
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();
@@ -74,6 +78,7 @@ public:
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
     bool requestedBlur() const { return m_requestedBlur; };
     bool forceBlurred() const { return m_shouldForceBlur && !m_requestedBlur; }
+    bool shouldBlurWhileTransformed() const { return m_shouldBlurWhileTransformed; }
 
     /**
      * reconfigure hook

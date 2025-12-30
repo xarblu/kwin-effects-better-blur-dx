@@ -220,6 +220,16 @@ bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
     return window->forceBlurred();
 }
 
+bool WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
+
+    // assume false for unmanaged windows
+    if (!window)
+        return false;
+
+    return window->shouldBlurWhileTransformed();
+}
+
 KWin::BorderRadius WindowManager::getEffectiveBorderRadius(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 
