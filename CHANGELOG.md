@@ -3,7 +3,10 @@ Things not in any tagged release yet:
 
 ### Features:
 - Match window classes with regular expressions
-- Explicitly force-blurred windows are now always blurred - even when transforming. (May or may not improve compatibility with things like Wobbly Windows. Instead of blur disappearing and potential flickering we now have a somewhat off-looking blurred square behind the "wobble area".)
+- Improved "blur while transformed" behaviour - and thus compatibility with Wobbly Windows.  
+  Before the behaviour of BBDX in conjuction with Wobbly Windows was somewhat "undefined" (blur randomly disappearing, flickering, blur region "leaking" behind the window, ...).  
+  Now we explicitly disable blur on window move/resize, let it transform like it wants, then explicitly reapply our blur.  
+  It's not perfect but it's consistent and predictable. (And there even is a very cool fade when transitioning between blurred ↔ non-blurred states 🚀)
 
 ### Bug Fixes:
 - Fix not respecting requested blur by X11 clients on the Wayland build. The X11 property parsing logic was accidentally made exclusive to the X11 build.
