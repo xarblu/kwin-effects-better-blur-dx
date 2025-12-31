@@ -25,22 +25,32 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    // Don't allow blurring while transformed during move/resize
-    // to avoid dragging an off-looking rectangular blur region
-    // behind windows affected by Wobbly Windows.
-    m_shouldBlurWhileTransformed = true;
-    m_blurWhileTransformedTransitionState = TransformState::Started;
-    m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+    if (forceBlurred()) {
+        // Don't allow blurring while transformed during move/resize
+        // to avoid dragging an off-looking rectangular blur region
+        // behind windows affected by Wobbly Windows.
+        m_shouldBlurWhileTransformed = true;
+        m_blurWhileTransformedTransitionState = TransformState::Started;
+        m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+    } else {
+        m_shouldBlurWhileTransformed = false;
+        m_blurWhileTransformedTransitionState = TransformState::None;
+    }
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    // After move/resize force blurring while transformed.
-    // While still suboptimal (the Wobbly Windows effect doesn't end
-    // after finishing move/resize) this at least assures blur
-    // is always set afterwards.
-    m_shouldBlurWhileTransformed = true;
-    m_blurWhileTransformedTransitionState = TransformState::Ended;
-    m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+    if (forceBlurred()) {
+        // After move/resize force blurring while transformed.
+        // While still suboptimal (the Wobbly Windows effect doesn't end
+        // after finishing move/resize) this at least assures blur
+        // is always set afterwards.
+        m_shouldBlurWhileTransformed = true;
+        m_blurWhileTransformedTransitionState = TransformState::Ended;
+        m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+    } else {
+        m_shouldBlurWhileTransformed = false;
+        m_blurWhileTransformedTransitionState = TransformState::None;
+    }
 }
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
