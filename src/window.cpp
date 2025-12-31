@@ -194,16 +194,12 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
         return KWin::BorderRadius();
     }
 
-    // Maximized/fullscreen windows don't need radius.
-    // They shouldn't have rounded corners.
-    // TODO: Apparently this doesn't cover tiles
-    //       but there is no easy way to detect those.
-    //       They look maximized, behave maximized but
-    //       apparently aren't maximized.
-    if (m_effectwindow->isFullScreen()
-        || m_maximizedState == MaximizedState::Horizontal
-        || m_maximizedState == MaximizedState::Vertical
-        || m_maximizedState == MaximizedState::Complete) {
+    // Fullscreen windows don't need radius.
+    // Maximized/tiled likely don't either in most cases
+    // but those states need some extra work.
+    // (Sadly EffectWindow::windowMaximizedStateChanged
+    // doesn't seem to be that useful here.)
+    if (m_effectwindow->isFullScreen()) {
         return KWin::BorderRadius();
     }
 
