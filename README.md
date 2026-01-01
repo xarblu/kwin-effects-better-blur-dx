@@ -38,16 +38,32 @@ Currently supported versions: **6.5**
   <summary>Arch Linux AUR (maintained by https://github.com/D3SOX)</summary>
   <br>
 
-  Tagged releases:
+  **Tagged releases:**
+
+  Wayland:
 
   ```sh
   yay -S kwin-effects-better-blur-dx
   ```
+
+  X11:
+
+  ```sh
+  yay -S kwin-effects-better-blur-dx-x11
+  ```
   
-  `-git` package tracking the `main` branch:
+  **`-git` packages tracking the `main` branch:**
+
+  Wayland:
 
   ```sh
   yay -S kwin-effects-better-blur-dx-git
+  ```
+
+  X11:
+
+  ```sh
+  yay -S kwin-effects-better-blur-dx-git-x11
   ```
 
   (Or use your AUR helper of choice instead of `yay`)
