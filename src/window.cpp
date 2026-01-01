@@ -32,7 +32,6 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
         m_shouldBlurWhileTransformed = true;
         m_blurWhileTransformedTransitionState = TransformState::Started;
         m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
-        effectwindow()->addRepaintFull();
     } else {
         m_shouldBlurWhileTransformed = false;
         m_blurWhileTransformedTransitionState = TransformState::None;
@@ -48,7 +47,6 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
         m_shouldBlurWhileTransformed = true;
         m_blurWhileTransformedTransitionState = TransformState::Ended;
         m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
-        effectwindow()->addRepaintFull();
     } else {
         m_shouldBlurWhileTransformed = false;
         m_blurWhileTransformedTransitionState = TransformState::None;
@@ -71,6 +69,20 @@ void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertica
     } else {
         m_maximizedState = MaximizedState::Unknown;
     }
+}
+
+void BBDX::Window::setIsTransformed(bool toggle) {
+    // De-maximizing a window by dragging the titlebar
+    // while wobbly windows is active behaves weird:
+    // - drag (before de-maximize) already marked "transformed" after mouse moved a bit
+    // - on actual de-maximize blur briefly reappears (not marked "transformed"?)
+    // - then it's marked "transformed" again
+    // We'll skip the initial toggle to avoid the blur (dis-)appearing.
+    if (toggle && (m_maximizedState == MaximizedState::Complete)) {
+        return;
+    }
+
+    m_isTransformed = toggle;
 }
 
 void BBDX::Window::updateForceBlurRegion() {

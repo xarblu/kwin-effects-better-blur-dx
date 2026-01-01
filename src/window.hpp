@@ -82,7 +82,7 @@ public:
      * setters
      */
     void setRequestedBlur(bool toggle) { m_requestedBlur = toggle; }
-    void setIsTransformed(bool toggle) { m_isTransformed = toggle; }
+    void setIsTransformed(bool toggle);
 
     /**
      * getters
