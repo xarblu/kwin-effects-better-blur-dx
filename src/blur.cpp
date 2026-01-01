@@ -635,6 +635,11 @@ bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintDa
     bool translated = data.xTranslation() || data.yTranslation();
 
     if ((scaled || (translated || (mask & PAINT_WINDOW_TRANSFORMED))) && !w->data(WindowForceBlurRole).toBool()) {
+        // TODO: de-maximizing a window by dragging the titlebar
+        //       while wobbly windows is active bevaves weird:
+        //       - drag (before de-maximize) already marked "transformed"
+        //         -> blur disappears (normal)
+        //       - on actual de-maximize blur briefly reappears (not marked "transformed"?)
         m_windowManager.setWindowIsTransformed(w, true);
         if (m_windowManager.windowShouldBlurWhileTransformed(w)) {
             return true;

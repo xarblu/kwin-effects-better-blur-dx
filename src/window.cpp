@@ -25,7 +25,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    if (forceBlurred()) {
+    if (forceBlurred() && m_isTransformed) {
         // Don't allow blurring while transformed during move/resize
         // to avoid dragging an off-looking rectangular blur region
         // behind windows affected by Wobbly Windows.
@@ -39,7 +39,7 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    if (forceBlurred()) {
+    if (forceBlurred() && m_isTransformed) {
         // After move/resize force blurring while transformed.
         // While still suboptimal (the Wobbly Windows effect doesn't end
         // after finishing move/resize) this at least assures blur
@@ -223,7 +223,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
         // if moving/resizing with Wobbly Windows
         // TODO: maybe move partly this to a separate function
         //       - feels kind of out-of place here
-        if (m_isTransformed && m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
+        if (m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - m_blurWhileTransformedTransitionStart).count();
 
