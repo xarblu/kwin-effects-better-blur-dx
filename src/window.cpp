@@ -32,6 +32,7 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
         m_shouldBlurWhileTransformed = true;
         m_blurWhileTransformedTransitionState = TransformState::Started;
         m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+        effectwindow()->addRepaintFull();
     } else {
         m_shouldBlurWhileTransformed = false;
         m_blurWhileTransformedTransitionState = TransformState::None;
@@ -47,6 +48,7 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
         m_shouldBlurWhileTransformed = true;
         m_blurWhileTransformedTransitionState = TransformState::Ended;
         m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+        effectwindow()->addRepaintFull();
     } else {
         m_shouldBlurWhileTransformed = false;
         m_blurWhileTransformedTransitionState = TransformState::None;
