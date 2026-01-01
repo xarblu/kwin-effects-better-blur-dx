@@ -63,7 +63,7 @@ Currently supported versions: **6.5**
   X11:
 
   ```sh
-  yay -S kwin-effects-better-blur-dx-git-x11
+  yay -S kwin-effects-better-blur-dx-x11-git
   ```
 
   (Or use your AUR helper of choice instead of `yay`)
