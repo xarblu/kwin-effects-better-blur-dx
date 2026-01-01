@@ -75,15 +75,6 @@ void BBDX::Window::setIsTransformed(bool toggle) {
     if (m_isTransformed == toggle)
         return;
 
-    // De-maximizing a window by dragging the titlebar
-    // while wobbly windows is active behaves weird:
-    // - drag (before de-maximize) already marked "transformed" after mouse moved a bit
-    // - on actual de-maximize blur briefly reappears (not marked "transformed"?)
-    // - then it's marked "transformed" again
-    // We'll skip the initial toggle to avoid the blur (dis-)appearing.
-    if (toggle && (m_maximizedState == MaximizedState::Complete))
-        return;
-
     m_isTransformed = toggle;
 }
 
@@ -249,6 +240,15 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
             // we need to queue a full repaint here to 
             // avoid flickering due to blur-region-clipping
             effectwindow()->addRepaintFull();
+
+            // De-maximizing a window by dragging the titlebar
+            // while wobbly windows is active behaves weird:
+            // - drag (before de-maximize) already marked "transformed" after mouse moved a bit
+            // - on actual de-maximize blur briefly reappears (not marked "transformed"?)
+            // - then it's marked "transformed" again
+            // So while we're maximized stay fully blurred.
+            if (m_maximizedState == MaximizedState::Complete)
+                return data.opacity();
 
             switch (m_blurWhileTransformedTransitionState) {
                 case TransformState::Started:
