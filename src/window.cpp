@@ -84,9 +84,7 @@ void BBDX::Window::setIsTransformed(bool toggle) {
     if (toggle && (m_maximizedState == MaximizedState::Complete))
         return;
 
-    // apply and fully repaint once
     m_isTransformed = toggle;
-    effectwindow()->addRepaintFull();
 }
 
 void BBDX::Window::updateForceBlurRegion() {
