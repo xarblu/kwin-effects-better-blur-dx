@@ -223,7 +223,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
         // if moving/resizing with Wobbly Windows
         // TODO: maybe move partly this to a separate function
         //       - feels kind of out-of place here
-        if (m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
+        if (m_isTransformed && m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - m_blurWhileTransformedTransitionStart).count();
 

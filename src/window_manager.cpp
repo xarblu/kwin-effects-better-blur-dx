@@ -220,6 +220,15 @@ bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
     return window->forceBlurred();
 }
 
+void WindowManager::setWindowIsTransformed(const KWin::EffectWindow *w, bool toggle) const {
+    const auto window = findWindow(w);
+
+    if (!window)
+        return;
+
+    window->setIsTransformed(toggle);
+}
+
 bool WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 

@@ -130,6 +130,12 @@ public:
     bool windowForceBlurred(const KWin::EffectWindow *w) const;
 
     /**
+     * Set the "window is transformed" flag on a window
+     * (scaled, translated or PAINT_WINDOW_TRANSFORMED set)
+     */
+    void setWindowIsTransformed(const KWin::EffectWindow *w, bool toggle) const;
+
+    /**
      * Check if this window should currently be blurred
      * even when PAINT_WINDOW_TRANSFORMED is set
      */

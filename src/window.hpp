@@ -56,6 +56,9 @@ private:
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};
 
+    // track whether window is currently being transformed
+    bool m_isTransformed{false};
+
     // track whether window should be blurred even
     // when PAINT_WINDOW_TRANSFORMED is set
     bool m_shouldBlurWhileTransformed{false};
@@ -79,6 +82,7 @@ public:
      * setters
      */
     void setRequestedBlur(bool toggle) { m_requestedBlur = toggle; }
+    void setIsTransformed(bool toggle) { m_isTransformed = toggle; }
 
     /**
      * getters
