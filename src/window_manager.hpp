@@ -1,18 +1,17 @@
 #pragma once
 
-#include "blurconfig.h"
 #include "window.hpp"
 
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
 
-#include <QObject>
 #include <QList>
+#include <QObject>
 #include <QRegularExpression>
-#include <QMap>
 #include <QString>
 
-#include <optional>
+#include <memory>
+#include <unordered_map>
 #include <utility>
 
 namespace KWin {
@@ -32,7 +31,7 @@ public:
     };
 
 private:
-    QMap<const KWin::EffectWindow *, BBDX::Window *> m_windows{};
+    std::unordered_map<const KWin::EffectWindow *, std::unique_ptr<BBDX::Window>> m_windows{};
 
     // window classes
     QList<QString> m_windowClassesFixed{};

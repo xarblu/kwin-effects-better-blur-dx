@@ -10,12 +10,12 @@
 #include <window.h>
 
 #include <QList>
-#include <QMap>
-#include <QString>
+#include <QLoggingCategory>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include <QLoggingCategory>
+#include <QString>
 
+#include <memory>
 #include <utility>
 
 Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtWarningMsg)
@@ -42,19 +42,19 @@ const WindowManager* WindowManager::instance() {
 }
 
 void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
-    m_windows[w] = new BBDX::Window(this, w);
+    auto window = std::make_unique<BBDX::Window>(this, w);
+    m_windows.insert_or_assign(w, std::move(window));
 }
 
 void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
-    if (BBDX::Window* bbdx_window = findWindow(w)) {
-        delete bbdx_window;
-        m_windows.remove(w);
+    if (const auto it = m_windows.find(w); it != m_windows.end()) {
+        m_windows.erase(it);
     }
 }
 
 BBDX::Window* WindowManager::findWindow(const KWin::EffectWindow *w) const {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
-        return it.value();
+        return it->second.get();
     }
     return nullptr;
 }
@@ -115,7 +115,7 @@ void WindowManager::reconfigure() {
 
     setUserBorderRadius(config->cornerRadius());
 
-    for (const auto &window : m_windows.values()) {
+    for (const auto &[_, window] : m_windows) {
         window->reconfigure();
     }
 }
