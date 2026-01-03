@@ -236,6 +236,14 @@ bool BBDX::WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWin
     return window->shouldBlurWhileTransformed();
 }
 
+void BBDX::WindowManager::getFinalBlurRegion(const KWin::EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame) const {
+    const auto window = findWindow(w);
+    if (!window)
+        return;
+
+    window->getFinalBlurRegion(content, frame);
+}
+
 KWin::BorderRadius BBDX::WindowManager::getEffectiveBorderRadius(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 

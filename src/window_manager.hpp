@@ -141,6 +141,14 @@ public:
     bool windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const;
 
     /**
+     * Get the final blur region for a window, set in content/frame.
+     *
+     * Forwarded to BBDX::Window::getFinalBlurRegion() if w is managed
+     * else does nothing.
+     */
+    void getFinalBlurRegion(const KWin::EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame) const;
+
+    /**
      * Get effective border radius for requested window,
      * or empty if unmanaged
      */
