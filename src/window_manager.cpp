@@ -20,12 +20,9 @@
 
 Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtWarningMsg)
 
-namespace BBDX
-{
+static const BBDX::WindowManager *self;
 
-static const WindowManager *self;
-
-WindowManager::WindowManager() {
+BBDX::WindowManager::WindowManager() {
     self = this;
 
     // add existing windows
@@ -37,29 +34,29 @@ WindowManager::WindowManager() {
     connect(KWin::effects, &KWin::EffectsHandler::windowDeleted, this, &WindowManager::slotWindowDeleted);
 }
 
-const WindowManager* WindowManager::instance() {
+const BBDX::WindowManager* BBDX::WindowManager::instance() {
     return self;
 }
 
-void WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
+void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
     auto window = std::make_unique<BBDX::Window>(this, w);
     m_windows.insert_or_assign(w, std::move(window));
 }
 
-void WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
+void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
         m_windows.erase(it);
     }
 }
 
-BBDX::Window* WindowManager::findWindow(const KWin::EffectWindow *w) const {
+BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
         return it->second.get();
     }
     return nullptr;
 }
 
-void WindowManager::reconfigure() {
+void BBDX::WindowManager::reconfigure() {
     auto config = KWin::BlurConfig::self();
 
     if (!config) {
@@ -120,7 +117,7 @@ void WindowManager::reconfigure() {
     }
 }
 
-bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
     if (w->isDesktop())
         return true;
 
@@ -148,7 +145,7 @@ bool WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
     return false;
 }
 
-bool WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
 
@@ -158,7 +155,7 @@ bool WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
     return false;
 }
 
-bool WindowManager::matchesWindowClassRegex(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::matchesWindowClassRegex(const KWin::EffectWindow *w) const {
     for (const auto &regex : m_windowClassesRegex) {
         if (auto m = regex.match(w->window()->resourceClass()); m.hasMatch())
             return true;
@@ -170,7 +167,7 @@ bool WindowManager::matchesWindowClassRegex(const KWin::EffectWindow *w) const {
     return false;
 }
 
-bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
     if (ignoreWindow(w))
         return false;
 
@@ -195,11 +192,11 @@ bool WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
     }
 }
 
-void WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const {
+void BBDX::WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const {
     emit windowWantsBlurRegionUpdate(w);
 }
 
-bool WindowManager::windowRequestedBlur(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::windowRequestedBlur(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 
     // assume "requested" if it's not a managed window because
@@ -210,7 +207,7 @@ bool WindowManager::windowRequestedBlur(const KWin::EffectWindow *w) const {
     return window->requestedBlur();
 }
 
-bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 
     // unmanaged windows can never be force blurred
@@ -220,7 +217,7 @@ bool WindowManager::windowForceBlurred(const KWin::EffectWindow *w) const {
     return window->forceBlurred();
 }
 
-void WindowManager::setWindowIsTransformed(const KWin::EffectWindow *w, bool toggle) const {
+void BBDX::WindowManager::setWindowIsTransformed(const KWin::EffectWindow *w, bool toggle) const {
     const auto window = findWindow(w);
 
     if (!window)
@@ -229,7 +226,7 @@ void WindowManager::setWindowIsTransformed(const KWin::EffectWindow *w, bool tog
     window->setIsTransformed(toggle);
 }
 
-bool WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 
     // assume false for unmanaged windows
@@ -239,7 +236,7 @@ bool WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWindow *w
     return window->shouldBlurWhileTransformed();
 }
 
-KWin::BorderRadius WindowManager::getEffectiveBorderRadius(const KWin::EffectWindow *w) const {
+KWin::BorderRadius BBDX::WindowManager::getEffectiveBorderRadius(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
 
     // unmanaged windows can never be force blurred
@@ -249,7 +246,7 @@ KWin::BorderRadius WindowManager::getEffectiveBorderRadius(const KWin::EffectWin
     return window->getEffectiveBorderRadius();
 }
 
-qreal WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const {
+qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const {
     const auto window = findWindow(w);
 
     // for unmanaged windows just use the paint data
@@ -258,5 +255,3 @@ qreal WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::
 
     return window->getEffectiveBlurOpacity(data);
 }
-
-} // namespace BBDX
