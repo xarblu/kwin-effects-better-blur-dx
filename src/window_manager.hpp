@@ -51,28 +51,9 @@ private:
     bool matchesWindowClassFixed(const KWin::EffectWindow *w) const;
     bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
-public Q_SLOT:
-    void slotWindowAdded(KWin::EffectWindow *w);
-    void slotWindowDeleted(KWin::EffectWindow *w);
-
-signals:
-    void windowWantsBlurRegionUpdate(KWin::EffectWindow *w) const;
-
-public:
-    explicit WindowManager();
-
     /**
-     * access to singleton
-     */
-    static const WindowManager *instance();
-
-    /**
-     * reconfigure from BlurConfig
-     */
-    void reconfigure();
-
-    /**
-     * setters
+     * reconfigure helpers
+     * TODO: maybe just inline into reconfigure?
      */
     void setWindowClassesFixed(QList<QString> windowClasses) {
         m_windowClassesFixed = std::move(windowClasses);
@@ -97,15 +78,35 @@ public:
     }
 
     /**
+     * Find a managed window, nullptr if not found
+     */
+    BBDX::Window* findWindow(const KWin::EffectWindow *w) const;
+
+public Q_SLOT:
+    void slotWindowAdded(KWin::EffectWindow *w);
+    void slotWindowDeleted(KWin::EffectWindow *w);
+
+signals:
+    void windowWantsBlurRegionUpdate(KWin::EffectWindow *w) const;
+
+public:
+    explicit WindowManager();
+
+    /**
+     * access to singleton
+     */
+    static const WindowManager *instance();
+
+    /**
+     * reconfigure from BlurConfig
+     */
+    void reconfigure();
+
+    /**
      * getters
      */
     bool blurDecorations() const { return m_blurDecorations; }
     qreal userBorderRadius() const { return m_userBorderRadius; }
-
-    /**
-     * Find a managed window, nullptr if not found
-     */
-    BBDX::Window* findWindow(const KWin::EffectWindow *w) const;
 
     /**
      * Match an EffectWindow instance
