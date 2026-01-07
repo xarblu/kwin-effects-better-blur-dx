@@ -266,6 +266,16 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
                         return data.opacity() * (1.0 - curve.valueForProgress(progress));
                     }
                 case TransformState::Ended:
+                    // Needed to avoid a flicker in case de-maximizing by dragging
+                    // the titlebar is cancelled (drag stopped before de-maximize)
+                    // which still triggers slotWindowFinishUserMovedResized
+                    // TODO: this should only be the case if MaximizedState stays Complete
+                    //       throughout the entire UserMovedResized i.e. we need to track that
+                    if (m_maximizedState == MaximizedState::Complete) {
+                        m_blurWhileTransformedTransitionState = TransformState::None;
+                        return data.opacity();
+                    }
+
                     if (progress >= 1.0) {
                         // fade in done
                         m_blurWhileTransformedTransitionState = TransformState::None;
