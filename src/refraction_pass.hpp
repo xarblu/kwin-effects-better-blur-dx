@@ -22,7 +22,8 @@ private:
         int offsetLocation;
         int halfpixelLocation;
         // refraction parameters
-        int refractionEdgeSizePixels;
+        int refractionRectSizeLocation;
+        int refractionEdgeSizePixelsLocation;
         int refractionCornerRadiusPixelsLocation;
         int refractionStrengthLocation;
         int refractionNormalPowLocation;
@@ -42,7 +43,8 @@ private:
         int cornerRadiusLocation;
         int opacityLocation;
         // refraction parameters
-        int refractionEdgeSizePixels;
+        int refractionRectSizeLocation;
+        int refractionEdgeSizePixelsLocation;
         int refractionCornerRadiusPixelsLocation;
         int refractionStrengthLocation;
         int refractionNormalPowLocation;

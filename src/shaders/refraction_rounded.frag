@@ -10,6 +10,7 @@ uniform vec4 box;
 uniform vec4 cornerRadius;
 uniform float opacity;
 
+uniform vec2 refractionRectSize;
 uniform float refractionEdgeSizePixels;
 uniform float refractionCornerRadiusPixels;
 uniform float refractionStrength;
@@ -48,7 +49,7 @@ vec2 applyTextureRepeatMode(vec2 coord)
 }
 
 // Concave lens-style radial mapping around the rect center, shaped by distance to edge
-vec2 concaveLensCoord(vec2 uv, float strength, float fringing, float dist, vec2 halfBlurSize)
+vec2 concaveLensCoord(vec2 uv, float strength, float fringing, float dist, vec2 halfRefractionRectSize)
 {
     // Edge proximity: 0 in the deep interior, 1 near the rounded rectangle edge
     float edgeProximity = clamp(1.0 + dist / refractionEdgeSizePixels, 0.0, 1.0);
@@ -90,11 +91,11 @@ void main(void)
     float weightSum = 12.0;
     vec4 sum = vec4(0, 0, 0, 0);
 
-    vec2 halfBlurSize = 0.5 * blurSize;
-    vec2 position = uv * blurSize - halfBlurSize.xy;
-    float cornerR = min(refractionCornerRadiusPixels, min(halfBlurSize.x, halfBlurSize.y));
-    float distConcave = roundedRectangleDist(position, halfBlurSize, cornerR);
-    float distBulge = roundedRectangleDist(position, halfBlurSize, refractionEdgeSizePixels);
+    vec2 halfRefractionRectSize = 0.5 * refractionRectSize;
+    vec2 position = uv * refractionRectSize - halfRefractionRectSize.xy;
+    float cornerR = min(refractionCornerRadiusPixels, min(halfRefractionRectSize.x, halfRefractionRectSize.y));
+    float distConcave = roundedRectangleDist(position, halfRefractionRectSize, cornerR);
+    float distBulge = roundedRectangleDist(position, halfRefractionRectSize, refractionEdgeSizePixels);
 
     // Different refraction behavior depending on mode
     if (refractionMode == 1) {
@@ -131,8 +132,8 @@ void main(void)
         // Initial 2D normal
         const float h = 1.0;
         vec2 gradient = vec2(
-            roundedRectangleDist(position + vec2(h, 0), halfBlurSize, refractionEdgeSizePixels) - roundedRectangleDist(position - vec2(h, 0), halfBlurSize, refractionEdgeSizePixels),
-            roundedRectangleDist(position + vec2(0, h), halfBlurSize, refractionEdgeSizePixels) - roundedRectangleDist(position - vec2(0, h), halfBlurSize, refractionEdgeSizePixels)
+            roundedRectangleDist(position + vec2(h, 0), halfRefractionRectSize, refractionEdgeSizePixels) - roundedRectangleDist(position - vec2(h, 0), halfRefractionRectSize, refractionEdgeSizePixels),
+            roundedRectangleDist(position + vec2(0, h), halfRefractionRectSize, refractionEdgeSizePixels) - roundedRectangleDist(position - vec2(0, h), halfRefractionRectSize, refractionEdgeSizePixels)
         );
 
         vec2 normal = length(gradient) > 1e-6 ? -normalize(gradient) : vec2(0.0, 1.0);
