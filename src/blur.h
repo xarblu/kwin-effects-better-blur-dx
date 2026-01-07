@@ -7,19 +7,19 @@
 
 #pragma once
 
-#include "effect/effect.h"
-#include "opengl/glutils.h"
-
-#include "scene/item.h"
-#include "scene/scene.h"
-
+#include "refraction_pass.hpp"
 #include "settings.h"
 #include "window_manager.hpp"
-#include "window.h"
+
+#include <effect/effect.h>
+#include <effect/effectwindow.h>
+#include <opengl/glutils.h>
+#include <scene/item.h>
+#include <scene/scene.h>
+#include <window.h>
 
 #include <QList>
 
-#include <effect/effectwindow.h>
 #include <optional>
 #include <unordered_map>
 
@@ -180,6 +180,7 @@ private:
     int m_noiseStrength;
 
     BlurSettings m_settings;
+    BBDX::RefractionPass m_refractionPass{};
     BBDX::WindowManager m_windowManager{};
 
     struct OffsetStruct

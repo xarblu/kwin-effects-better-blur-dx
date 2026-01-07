@@ -140,6 +140,9 @@ BlurEffect::BlurEffect()
         m_noisePass.noiseTextureSizeLocation = m_noisePass.shader->uniformLocation("noiseTextureSize");
     }
 
+    if (!m_refractionPass.ready())
+        return;
+
     initBlurStrengthValues();
     reconfigure(ReconfigureAll);
 

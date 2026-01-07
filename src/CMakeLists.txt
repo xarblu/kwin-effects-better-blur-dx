@@ -2,9 +2,10 @@ add_subdirectory(kcm)
 
 set(better_blur_dx_SOURCES
     blur.cpp
-    blur_extensions.cpp
     blur.qrc
+    blur_extensions.cpp
     main.cpp
+    refraction_pass.cpp
     settings.cpp
     window.cpp
     window_manager.cpp
