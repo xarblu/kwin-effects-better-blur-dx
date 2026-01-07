@@ -456,39 +456,16 @@
       <attribute name="title">
        <string>Refraction</string>
       </attribute>
-      <layout class="QVBoxLayout">
-       <item>
+      <layout class="QFormLayout" name="formLayoutRefraction">
+       <item row="0" column="0">
         <widget class="QLabel" name="labelRefractionStrength">
          <property name="text">
           <string>Refraction Strength:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionStrength">
-         <item>
-          <spacer name="horizontalSpacerRefractionStrength">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionStrengthOff">
-           <property name="text">
-            <string>Off</string>
-           </property>
-          </widget>
-         </item>
+       <item row="0" column="1">
+        <layout class="QVBoxLayout" name="sliderVerticalLayoutRefractionStrength">
          <item>
           <widget class="QSlider" name="kcfg_RefractionStrength">
            <property name="minimum">
@@ -515,87 +492,58 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelRefractionStrengthStrong">
-           <property name="text">
-            <string>Strong</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="sliderLabelBoxRefractionStrength">
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionStrengthOff">
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionStrengthStrong">
+             <property name="text">
+              <string>Strong</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
-       <item>
+       <item row="1" column="0">
         <widget class="QLabel" name="labelRefractionMode">
          <property name="text">
           <string>Refraction Mode:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionMode">
+       <item row="1" column="1">
+        <widget class="QComboBox" name="kcfg_RefractionMode">
          <item>
-          <spacer name="horizontalSpacerRefractionMode">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          <property name="text">
+           <string>Basic (Bulge)</string>
+          </property>
          </item>
          <item>
-          <widget class="QComboBox" name="kcfg_RefractionMode">
-           <item>
-            <property name="text">
-             <string>Basic (Bulge)</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Concave (Lens)</string>
-            </property>
-           </item>
-          </widget>
+          <property name="text">
+           <string>Concave (Lens)</string>
+          </property>
          </item>
-        </layout>
+        </widget>
        </item>
-       <item>
+       <item row="2" column="0">
         <widget class="QLabel" name="labelRefractionEdgeSize">
          <property name="text">
           <string>Refraction Edge Size:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionEdgeSize">
-         <item>
-          <spacer name="horizontalSpacerRefractionEdgeSize">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionEdgeSizeSmall">
-           <property name="text">
-            <string>Small</string>
-           </property>
-          </widget>
-         </item>
+       <item row="2" column="1">
+        <layout class="QVBoxLayout" name="sliderVerticalLayoutRefractionEdgeSize">
          <item>
           <widget class="QSlider" name="kcfg_RefractionEdgeSize">
            <property name="minimum">
@@ -622,46 +570,37 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelRefractionEdgeSizeWide">
-           <property name="text">
-            <string>Wide</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="sliderLabelBoxRefractionEdgeSize">
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionEdgeSizeSmall">
+             <property name="text">
+              <string>Small</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionEdgeSizeStrong">
+             <property name="text">
+              <string>Wide</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
-       <item>
+       <item row="3" column="0">
         <widget class="QLabel" name="labelRefractionNormalPow">
          <property name="text">
           <string>Refraction Falloff:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionNormalPow">
-         <item>
-          <spacer name="horizontalSpacerRefractionNormalPow">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionNormalPowLinear">
-           <property name="text">
-            <string>Linear</string>
-           </property>
-          </widget>
-         </item>
+       <item row="3" column="1">
+        <layout class="QVBoxLayout" name="sliderVerticalLayoutRefractionNormalPow">
          <item>
           <widget class="QSlider" name="kcfg_RefractionNormalPow">
            <property name="minimum">
@@ -688,46 +627,37 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelRefractionNormalPowRound">
-           <property name="text">
-            <string>Round</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="sliderLabelBoxRefractionNormalPow">
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionNormalPowLinear">
+             <property name="text">
+              <string>Linear</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionNormalPowRound">
+             <property name="text">
+              <string>Round</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
-       <item>
+       <item row="4" column="0">
         <widget class="QLabel" name="labelRefractionCornerRadius">
          <property name="text">
           <string>Refraction Corner Radius:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionCornerRadius">
-         <item>
-          <spacer name="horizontalSpacerRefractionCornerRadius">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-          <item>
-           <widget class="QLabel" name="labelRefractionCornerRadiusSquare">
-           <property name="text">
-            <string>Square</string>
-           </property>
-          </widget>
-         </item>
+       <item row="4" column="1">
+        <layout class="QVBoxLayout" name="sliderVerticalLayoutRefractionCornerRadius">
          <item>
           <widget class="QSlider" name="kcfg_RefractionCornerRadius">
            <property name="minimum">
@@ -748,52 +678,40 @@
            <property name="tickPosition">
             <enum>QSlider::TicksBelow</enum>
            </property>
-           <property name="tickInterval">
-            <number>7</number>
-           </property>
           </widget>
          </item>
-          <item>
-           <widget class="QLabel" name="labelRefractionCornerRadiusRound">
-           <property name="text">
-            <string>Round</string>
-           </property>
-          </widget>
+         <item>
+          <layout class="QHBoxLayout" name="sliderLabelBoxRefractionCornerRadius">
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionCornerRadiusSquare">
+             <property name="text">
+              <string>Square</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionCornerRadiusRound">
+             <property name="text">
+              <string>Round</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
-       <item>
+       <item row="5" column="0">
         <widget class="QLabel" name="labelRefractionRGBFringing">
          <property name="text">
           <string>RGB Fringing Strength:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionRGBFringing">
-         <item>
-          <spacer name="horizontalSpacerRefractionRGBFringing">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelRefractionRGBFringingOff">
-           <property name="text">
-            <string>Off</string>
-           </property>
-          </widget>
-         </item>
+       <item row="5" column="1">
+        <layout class="QVBoxLayout" name="sliderVerticalLayoutRefractionRGBFringing">
          <item>
           <widget class="QSlider" name="kcfg_RefractionRGBFringing">
            <property name="minimum">
@@ -820,70 +738,48 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelRefractionRGBFringingStrong">
-           <property name="text">
-            <string>Strong</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="sliderLabelBoxRefractionRGBFringing">
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionRGBFringingOff">
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="sliderLabelRefractionRGBFringingStrong">
+             <property name="text">
+              <string>Strong</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
-       <item>
+       <item row="6" column="0">
         <widget class="QLabel" name="labelRefractionTextureRepeatMode">
          <property name="text">
           <string>Edge Behavior:</string>
          </property>
         </widget>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutRefractionTextureRepeatMode">
+       <item row="6" column="1">
+        <widget class="QComboBox" name="kcfg_RefractionTextureRepeatMode">
          <item>
-          <spacer name="horizontalSpacerRefractionTextureRepeatMode">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          <property name="text">
+           <string>Clamp (extend edge pixels)</string>
+          </property>
          </item>
          <item>
-          <widget class="QComboBox" name="kcfg_RefractionTextureRepeatMode">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <item>
-            <property name="text">
-             <string>Clamp (extend edge pixels)</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Flip (mirror texture)</string>
-            </property>
-           </item>
-          </widget>
+          <property name="text">
+           <string>Flip (mirror texture)</string>
+          </property>
          </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>
