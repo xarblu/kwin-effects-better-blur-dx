@@ -81,11 +81,32 @@ void BBDX::RefractionPass::reconfigure() {
         return;
     }
 
-    m_normalPow = config->refractionNormalPow();
-    m_strength = config->refractionStrength();
-    m_edgeSize = config->refractionEdgeSize();
-    m_cornerRadius = config->refractionCornerRadius();
-    m_RGBFringing = config->refractionRGBFringing();
+    // scaled up by 10.0
+    constexpr double scaleEdgeSizePixels{10.0};
+    m_edgeSizePixels = config->refractionEdgeSize() * scaleEdgeSizePixels;
+
+    // snapped to nearest step (...for some reason)
+    constexpr double maxCorner{200.0};
+    constexpr double steps{30.0};
+    constexpr double stepSize{maxCorner / steps}; // ~6.6667
+    const double snapped{std::round(config->refractionCornerRadius() / stepSize) * stepSize};
+    m_cornerRadiusPixels = snapped;
+
+    // expects range 0.0-1.0
+    // max value from blur_config.ui
+    constexpr double maxStrength{30.0};
+    m_strength = config->refractionStrength() / maxStrength;
+
+    // XXX: why scaled down?
+    constexpr double scaleNormalPow{0.5};
+    m_normalPow = config->refractionNormalPow() * scaleNormalPow;
+
+    // expects range 0.0-1.0
+    // max value from blur_config.ui
+    constexpr double maxRGBFringing{30.0};
+    m_RGBFringing = config->refractionRGBFringing() / maxRGBFringing;
+
+    // integer mode selectors
     m_textureRepeatMode = config->refractionTextureRepeatMode();
     m_mode = config->refractionMode();
 }
@@ -132,10 +153,10 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
     m_rounded.shader->setUniform(m_rounded.refractionRectSizeLocation,
                                  QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
     m_rounded.shader->setUniform(m_rounded.refractionEdgeSizePixelsLocation,
-                                 std::min(static_cast<float>(m_edgeSize),
+                                 std::min(static_cast<float>(m_edgeSizePixels),
                                           static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
                                                                       deviceBackgroundRect.height() / 2))));
-    m_rounded.shader->setUniform(m_rounded.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadius));
+    m_rounded.shader->setUniform(m_rounded.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadiusPixels));
     m_rounded.shader->setUniform(m_rounded.refractionStrengthLocation, static_cast<float>(m_strength));
     m_rounded.shader->setUniform(m_rounded.refractionNormalPowLocation, static_cast<float>(m_normalPow));
     m_rounded.shader->setUniform(m_rounded.refractionRGBFringingLocation, static_cast<float>(m_RGBFringing));
@@ -163,10 +184,10 @@ bool BBDX::RefractionPass::setParametersRectangular(const QMatrix4x4 &projection
     m_rectangular.shader->setUniform(m_rectangular.refractionRectSizeLocation,
                                      QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
     m_rectangular.shader->setUniform(m_rectangular.refractionEdgeSizePixelsLocation,
-                                     std::min(static_cast<float>(m_edgeSize),
+                                     std::min(static_cast<float>(m_edgeSizePixels),
                                               static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
                                                                           deviceBackgroundRect.height() / 2))));
-    m_rectangular.shader->setUniform(m_rectangular.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadius));
+    m_rectangular.shader->setUniform(m_rectangular.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadiusPixels));
     m_rectangular.shader->setUniform(m_rectangular.refractionStrengthLocation, static_cast<float>(m_strength));
     m_rectangular.shader->setUniform(m_rectangular.refractionNormalPowLocation, static_cast<float>(m_normalPow));
     m_rectangular.shader->setUniform(m_rectangular.refractionRGBFringingLocation, static_cast<float>(m_RGBFringing));

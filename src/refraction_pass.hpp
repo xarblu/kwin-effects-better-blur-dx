@@ -59,8 +59,8 @@ private:
     // user settings
     qreal m_normalPow{};
     qreal m_strength{};
-    qreal m_edgeSize{};
-    qreal m_cornerRadius{};
+    qreal m_edgeSizePixels{};
+    qreal m_cornerRadiusPixels{};
     qreal m_RGBFringing{};
     int m_textureRepeatMode{};
     int m_mode{};
