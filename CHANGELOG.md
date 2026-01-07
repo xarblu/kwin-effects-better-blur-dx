@@ -1,6 +1,9 @@
 # DEV
 Things not in any tagged release yet:
 
+### Features:
+- Re-implement refraction as an alternative to the default contrast pass
+
 # 2.1.0
 
 ### Features:
