@@ -988,7 +988,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                    float(m_offset),
                                                    QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5),
                                                    nativeCornerRadius.toVector(),
-                                                   opacity)) {
+                                                   opacity,
+                                                   deviceBackgroundRect)) {
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.mvpMatrixLocation, projectionMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.colorMatrixLocation, colorMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.halfpixelLocation, halfpixel);
@@ -1028,7 +1029,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         if (!m_refractionPass.setParametersRectangular(projectionMatrix,
                                                        colorMatrix,
                                                        halfpixel,
-                                                       float(m_offset))) {
+                                                       float(m_offset),
+                                                       deviceBackgroundRect)) {
         m_contrastPass.shader->setUniform(m_contrastPass.mvpMatrixLocation, projectionMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.colorMatrixLocation, colorMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.halfpixelLocation, halfpixel);

@@ -16,14 +16,24 @@ class RefractionPass {
 private:
     struct Rectangular {
         std::unique_ptr<KWin::GLShader> shader;
+        // contrast parameters
         int mvpMatrixLocation;
         int colorMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
+        // refraction parameters
+        int refractionEdgeSizePixels;
+        int refractionCornerRadiusPixelsLocation;
+        int refractionStrengthLocation;
+        int refractionNormalPowLocation;
+        int refractionRGBFringingLocation;
+        int refractionTextureRepeatModeLocation;
+        int refractionModeLocation;
     };
 
     struct Rounded {
         std::unique_ptr<KWin::GLShader> shader;
+        // contrast parameters
         int mvpMatrixLocation;
         int colorMatrixLocation;
         int offsetLocation;
@@ -31,12 +41,18 @@ private:
         int boxLocation;
         int cornerRadiusLocation;
         int opacityLocation;
+        // refraction parameters
+        int refractionEdgeSizePixels;
+        int refractionCornerRadiusPixelsLocation;
+        int refractionStrengthLocation;
+        int refractionNormalPowLocation;
+        int refractionRGBFringingLocation;
+        int refractionTextureRepeatModeLocation;
+        int refractionModeLocation;
     };
 
     Rectangular m_rectangular{};
     Rounded m_rounded{};
-
-    bool m_enabled{false};
 
     // user settings
     qreal m_normalPow{};
@@ -66,7 +82,7 @@ public:
     /**
      * Check if refraction pass is enabled
      */
-    bool enabled() const { return m_enabled; }
+    bool enabled() const { return m_strength > 0.0; }
 
     /**
      * Push respective shader to the ShaderManager
@@ -87,7 +103,8 @@ public:
                               const float offset,
                               const QVector4D &box,
                               const QVector4D &cornerRadius,
-                              const qreal opacity) const;
+                              const qreal opacity,
+                              const QRect &deviceBackgroundRect) const;
 
     /**
      * Set GLSL parameters, rectangular version
@@ -97,7 +114,8 @@ public:
     bool setParametersRectangular(const QMatrix4x4 &projectionMatrix,
                                   const QMatrix4x4 &colorMatrix,
                                   const QVector2D &halfpixel,
-                                  const float offset) const;
+                                  const float offset,
+                                  const QRect &deviceBackgroundRect) const;
 };
 
 } // namespace BBDX
