@@ -956,7 +956,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
+        if (!m_refractionPass.pushShaderRounded()) {
         ShaderManager::instance()->pushShader(m_roundedContrastPass.shader.get());
+        } // indent intentional for KWin diff
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
@@ -979,6 +981,13 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                      .translated(-deviceBackgroundRect.topLeft());
         const BorderRadius nativeCornerRadius = cornerRadius.scaled(viewport.scale()).rounded();
 
+        if (!m_refractionPass.setParametersRounded(projectionMatrix,
+                                                   colorMatrix,
+                                                   halfpixel,
+                                                   float(m_offset),
+                                                   QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5),
+                                                   nativeCornerRadius.toVector(),
+                                                   opacity)) {
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.mvpMatrixLocation, projectionMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.colorMatrixLocation, colorMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.halfpixelLocation, halfpixel);
@@ -986,6 +995,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.cornerRadiusLocation, nativeCornerRadius.toVector());
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.opacityLocation, opacity);
+        } // indent intentional for KWin diff
 
         BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
@@ -999,7 +1009,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         ShaderManager::instance()->popShader();
     } else {
+        if (!m_refractionPass.pushShaderRectangular()) {
         ShaderManager::instance()->pushShader(m_contrastPass.shader.get());
+        } // indent intentional for KWin diff
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(deviceBackgroundRect.x(), deviceBackgroundRect.y());
@@ -1012,10 +1024,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         const QVector2D halfpixel(0.5 / read->colorAttachment()->width(),
                                   0.5 / read->colorAttachment()->height());
 
+        if (!m_refractionPass.setParametersRectangular(projectionMatrix,
+                                                       colorMatrix,
+                                                       halfpixel,
+                                                       float(m_offset))) {
         m_contrastPass.shader->setUniform(m_contrastPass.mvpMatrixLocation, projectionMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.colorMatrixLocation, colorMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.halfpixelLocation, halfpixel);
         m_contrastPass.shader->setUniform(m_contrastPass.offsetLocation, float(m_offset));
+        } // indent intentional for KWin diff
 
         BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();

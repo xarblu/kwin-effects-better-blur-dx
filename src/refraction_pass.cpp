@@ -48,3 +48,59 @@ BBDX::RefractionPass::RefractionPass() {
         m_rounded.opacityLocation = m_rounded.shader->uniformLocation("opacity");
     }
 }
+
+bool BBDX::RefractionPass::pushShaderRounded() const {
+    if (!enabled())
+        return false;
+
+    KWin::ShaderManager::instance()->pushShader(m_rounded.shader.get());
+
+    return true;
+}
+
+bool BBDX::RefractionPass::pushShaderRectangular() const {
+    if (!enabled())
+        return false;
+
+    KWin::ShaderManager::instance()->pushShader(m_rectangular.shader.get());
+
+    return true;
+}
+
+bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatrix,
+                                         const QMatrix4x4 &colorMatrix,
+                                         const QVector2D &halfpixel,
+                                         const float offset,
+                                         const QVector4D &box,
+                                         const QVector4D &cornerRadius,
+                                         const qreal opacity) const {
+
+    if (!enabled())
+        return false;
+
+    m_rounded.shader->setUniform(m_rounded.mvpMatrixLocation, projectionMatrix);
+    m_rounded.shader->setUniform(m_rounded.colorMatrixLocation, colorMatrix);
+    m_rounded.shader->setUniform(m_rounded.halfpixelLocation, halfpixel);
+    m_rounded.shader->setUniform(m_rounded.offsetLocation, offset);
+    m_rounded.shader->setUniform(m_rounded.boxLocation, box);
+    m_rounded.shader->setUniform(m_rounded.cornerRadiusLocation, cornerRadius);
+    m_rounded.shader->setUniform(m_rounded.opacityLocation, opacity);
+
+    return true;
+}
+
+bool BBDX::RefractionPass::setParametersRectangular(const QMatrix4x4 &projectionMatrix,
+                                         const QMatrix4x4 &colorMatrix,
+                                         const QVector2D &halfpixel,
+                                         const float offset) const {
+
+    if (!enabled())
+        return false;
+
+    m_rectangular.shader->setUniform(m_rectangular.mvpMatrixLocation, projectionMatrix);
+    m_rectangular.shader->setUniform(m_rectangular.colorMatrixLocation, colorMatrix);
+    m_rectangular.shader->setUniform(m_rectangular.halfpixelLocation, halfpixel);
+    m_rectangular.shader->setUniform(m_rectangular.offsetLocation, offset);
+
+    return true;
+}
