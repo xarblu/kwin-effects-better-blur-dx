@@ -27,8 +27,8 @@ private:
         int opacityLocation;
     };
 
-    Rectangular m_rectangular;
-    Rounded m_rounded;
+    Rectangular m_rectangular{};
+    Rounded m_rounded{};
 
 public:
     /**

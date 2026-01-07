@@ -17,8 +17,8 @@ BBDX::RefractionPass::RefractionPass() {
 
     m_rectangular.shader = KWin::ShaderManager::instance()->generateShaderFromFile(
             KWin::ShaderTrait::MapTexture,
-            QStringLiteral(":/effects/forceblur/shaders/vertex.vert"),
-            QStringLiteral(":/effects/forceblur/shaders/refraction.frag"));
+            QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
+            QStringLiteral(":/effects/better_blur_dx/shaders/refraction.frag"));
 
     if (!m_rectangular.shader) {
         qCWarning(REFRACTION_PASS) << BBDX::LOG_PREFIX << "Failed to load refraction pass shader";
@@ -32,8 +32,8 @@ BBDX::RefractionPass::RefractionPass() {
 
     m_rounded.shader = KWin::ShaderManager::instance()->generateShaderFromFile(
             KWin::ShaderTrait::MapTexture,
-            QStringLiteral(":/effects/forceblur/shaders/contrast_rounded.vert"),
-            QStringLiteral(":/effects/forceblur/shaders/refraction_rounded.frag"));
+            QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.vert"),
+            QStringLiteral(":/effects/better_blur_dx/shaders/refraction_rounded.frag"));
 
     if (!m_rounded.shader) {
         qCWarning(REFRACTION_PASS) << BBDX::LOG_PREFIX << "Failed to load refraction pass shader";
