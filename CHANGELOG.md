@@ -1,6 +1,8 @@
 # DEV
 Things not in any tagged release yet:
 
+# 2.1.0
+
 ### Features:
 - Match window classes with regular expressions
 - Improved "blur while transformed" behaviour - and thus compatibility with Wobbly Windows.  
