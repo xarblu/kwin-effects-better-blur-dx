@@ -52,32 +52,6 @@ private:
     bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
     /**
-     * reconfigure helpers
-     * TODO: maybe just inline into reconfigure?
-     */
-    void setWindowClassesFixed(QList<QString> windowClasses) {
-        m_windowClassesFixed = std::move(windowClasses);
-    }
-    void setWindowClassesRegex(QList<QRegularExpression> windowClasses) {
-        m_windowClassesRegex = std::move(windowClasses);
-    }
-    void setWindowClassMatchMode(WindowClassMatchMode mode) {
-        m_windowClassMatchMode = mode;
-    }
-    void setBlurDecorations(bool toggle) {
-        m_blurDecorations = toggle;
-    }
-    void setBlurDocks(bool toggle) {
-        m_blurDocks = toggle;
-    }
-    void setBlurMenus(bool toggle) {
-        m_blurMenus = toggle;
-    }
-    void setUserBorderRadius(qreal radius) {
-        m_userBorderRadius = radius;
-    }
-
-    /**
      * Find a managed window, nullptr if not found
      */
     BBDX::Window* findWindow(const KWin::EffectWindow *w) const;

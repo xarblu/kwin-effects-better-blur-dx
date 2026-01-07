@@ -97,20 +97,20 @@ void BBDX::WindowManager::reconfigure() {
         }
     }
 
-    setWindowClassesFixed(std::move(windowClassesFixed));
-    setWindowClassesRegex(std::move(windowClassesRegex));
+    m_windowClassesFixed = std::move(windowClassesFixed);
+    m_windowClassesRegex = std::move(windowClassesRegex);
 
     if (config->blurMatching()) {
-        setWindowClassMatchMode(WindowManager::WindowClassMatchMode::Whitelist);
+        m_windowClassMatchMode = WindowClassMatchMode::Whitelist;
     } else {
-        setWindowClassMatchMode(WindowManager::WindowClassMatchMode::Blacklist);
+        m_windowClassMatchMode = WindowClassMatchMode::Blacklist;
     }
 
-    setBlurDecorations(config->blurDecorations());
-    setBlurDocks(config->blurDocks());
-    setBlurMenus(config->blurMenus());
+    m_blurDecorations = config->blurDecorations();
+    m_blurDocks = config->blurDocks();
+    m_blurMenus = config->blurMenus();
 
-    setUserBorderRadius(config->cornerRadius());
+    m_userBorderRadius = config->cornerRadius();
 
     for (const auto &[_, window] : m_windows) {
         window->reconfigure();
