@@ -452,7 +452,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="widget">
+     <widget class="QWidget">
       <attribute name="title">
        <string>Refraction</string>
       </attribute>
@@ -465,9 +465,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionStrength">
          <item>
-          <spacer name="horizontalSpacer">
+          <spacer name="horizontalSpacerRefractionStrength">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -572,9 +572,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionEdgeSize">
          <item>
-          <spacer name="horizontalSpacer">
+          <spacer name="horizontalSpacerRefractionEdgeSize">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -638,9 +638,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionNormalPow">
          <item>
-          <spacer name="horizontalSpacer">
+          <spacer name="horizontalSpacerRefractionNormalPow">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -704,9 +704,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutCornerRadius">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionCornerRadius">
          <item>
-          <spacer name="horizontalSpacerCornerRadius">
+          <spacer name="horizontalSpacerRefractionCornerRadius">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -770,9 +770,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionRGBFringing">
          <item>
-          <spacer name="horizontalSpacer">
+          <spacer name="horizontalSpacerRefractionRGBFringing">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -836,9 +836,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutTextureRepeatMode">
+        <layout class="QHBoxLayout" name="horizontalLayoutRefractionTextureRepeatMode">
          <item>
-          <spacer name="horizontalSpacer">
+          <spacer name="horizontalSpacerRefractionTextureRepeatMode">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
