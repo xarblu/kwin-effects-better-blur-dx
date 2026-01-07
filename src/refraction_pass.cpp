@@ -135,10 +135,10 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
                                  std::min(static_cast<float>(m_edgeSize),
                                           static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
                                                                       deviceBackgroundRect.height() / 2))));
-    m_rounded.shader->setUniform(m_rounded.refractionCornerRadiusPixelsLocation, m_cornerRadius);
-    m_rounded.shader->setUniform(m_rounded.refractionStrengthLocation, m_strength);
-    m_rounded.shader->setUniform(m_rounded.refractionNormalPowLocation, m_normalPow);
-    m_rounded.shader->setUniform(m_rounded.refractionRGBFringingLocation, m_RGBFringing);
+    m_rounded.shader->setUniform(m_rounded.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadius));
+    m_rounded.shader->setUniform(m_rounded.refractionStrengthLocation, static_cast<float>(m_strength));
+    m_rounded.shader->setUniform(m_rounded.refractionNormalPowLocation, static_cast<float>(m_normalPow));
+    m_rounded.shader->setUniform(m_rounded.refractionRGBFringingLocation, static_cast<float>(m_RGBFringing));
     m_rounded.shader->setUniform(m_rounded.refractionTextureRepeatModeLocation, m_textureRepeatMode);
     m_rounded.shader->setUniform(m_rounded.refractionModeLocation, m_mode);
 
@@ -166,10 +166,10 @@ bool BBDX::RefractionPass::setParametersRectangular(const QMatrix4x4 &projection
                                      std::min(static_cast<float>(m_edgeSize),
                                               static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
                                                                           deviceBackgroundRect.height() / 2))));
-    m_rectangular.shader->setUniform(m_rectangular.refractionCornerRadiusPixelsLocation, m_cornerRadius);
-    m_rectangular.shader->setUniform(m_rectangular.refractionStrengthLocation, m_strength);
-    m_rectangular.shader->setUniform(m_rectangular.refractionNormalPowLocation, m_normalPow);
-    m_rectangular.shader->setUniform(m_rectangular.refractionRGBFringingLocation, m_RGBFringing);
+    m_rectangular.shader->setUniform(m_rectangular.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadius));
+    m_rectangular.shader->setUniform(m_rectangular.refractionStrengthLocation, static_cast<float>(m_strength));
+    m_rectangular.shader->setUniform(m_rectangular.refractionNormalPowLocation, static_cast<float>(m_normalPow));
+    m_rectangular.shader->setUniform(m_rectangular.refractionRGBFringingLocation, static_cast<float>(m_RGBFringing));
     m_rectangular.shader->setUniform(m_rectangular.refractionTextureRepeatModeLocation, m_textureRepeatMode);
     m_rectangular.shader->setUniform(m_rectangular.refractionModeLocation, m_mode);
 
