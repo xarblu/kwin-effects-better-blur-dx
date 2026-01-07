@@ -81,30 +81,33 @@ void BBDX::RefractionPass::reconfigure() {
         return;
     }
 
+    // mark enabled if strength > 0
+    m_enabled = config->refractionStrength() > 0;
+
     // scaled up by 10.0
     constexpr double scaleEdgeSizePixels{10.0};
-    m_edgeSizePixels = config->refractionEdgeSize() * scaleEdgeSizePixels;
+    m_edgeSizePixels = static_cast<double>(config->refractionEdgeSize()) * scaleEdgeSizePixels;
 
-    // snapped to nearest step (...for some reason)
-    constexpr double maxCorner{200.0};
+    // snapped to nearest step
+    constexpr double maxCornerRadiusPixels{200.0};
     constexpr double steps{30.0};
-    constexpr double stepSize{maxCorner / steps}; // ~6.6667
-    const double snapped{std::round(config->refractionCornerRadius() / stepSize) * stepSize};
+    constexpr double stepSize{maxCornerRadiusPixels / steps}; // ~6.6667, matching step size from blur_config.ui
+    const double snapped{std::round(static_cast<double>(config->refractionCornerRadius()) / stepSize) * stepSize};
     m_cornerRadiusPixels = snapped;
 
     // expects range 0.0-1.0
     // max value from blur_config.ui
     constexpr double maxStrength{30.0};
-    m_strength = config->refractionStrength() / maxStrength;
+    m_strength = static_cast<double>(config->refractionStrength()) / maxStrength;
 
     // XXX: why scaled down?
     constexpr double scaleNormalPow{0.5};
-    m_normalPow = config->refractionNormalPow() * scaleNormalPow;
+    m_normalPow = static_cast<double>(config->refractionNormalPow()) * scaleNormalPow;
 
     // expects range 0.0-1.0
     // max value from blur_config.ui
     constexpr double maxRGBFringing{30.0};
-    m_RGBFringing = config->refractionRGBFringing() / maxRGBFringing;
+    m_RGBFringing = static_cast<double>(config->refractionRGBFringing()) / maxRGBFringing;
 
     // integer mode selectors
     m_textureRepeatMode = config->refractionTextureRepeatMode();

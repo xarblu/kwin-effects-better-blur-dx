@@ -49,26 +49,25 @@ class3</default>
             <default>false</default>
         </entry>
         <!-- Refraction -->
-        <!-- TODO: should these be Int? -->
-        <entry name="RefractionNormalPow" type="Double">
-            <default>2.0</default>
-        </entry>
-        <entry name="RefractionStrength" type="Double">
-            <default>0.0</default>
-        </entry>
-        <entry name="RefractionEdgeSize" type="Double">
-            <default>20.0</default>
-        </entry>
-        <entry name="RefractionCornerRadius" type="Double">
-            <default>8.0</default>
-        </entry>
-        <entry name="RefractionRGBFringing" type="Double">
-            <default>1.0</default>
-        </entry>
-        <entry name="RefractionTextureRepeatMode" type="Int">
+        <entry name="RefractionStrength" type="Int">
             <default>0</default>
         </entry>
         <entry name="RefractionMode" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="RefractionEdgeSize" type="Int">
+            <default>20</default>
+        </entry>
+        <entry name="RefractionNormalPow" type="Int">
+            <default>2</default>
+        </entry>
+        <entry name="RefractionCornerRadius" type="Int">
+            <default>8</default>
+        </entry>
+        <entry name="RefractionRGBFringing" type="Int">
+            <default>1</default>
+        </entry>
+        <entry name="RefractionTextureRepeatMode" type="Int">
             <default>0</default>
         </entry>
     </group>

@@ -2,9 +2,10 @@
 
 #include <QMatrix4x4>
 #include <QVector2D>
+#include <QVector4D>
+#include <QtNumeric>
 
 #include <memory>
-#include <qvectornd.h>
 
 namespace KWin {
     class GLShader;
@@ -56,6 +57,8 @@ private:
     Rectangular m_rectangular{};
     Rounded m_rounded{};
 
+    bool m_enabled{false};
+
     // user settings
     qreal m_normalPow{};
     qreal m_strength{};
@@ -84,7 +87,7 @@ public:
     /**
      * Check if refraction pass is enabled
      */
-    bool enabled() const { return m_strength > 0.0; }
+    bool enabled() const { return m_enabled; }
 
     /**
      * Push respective shader to the ShaderManager
