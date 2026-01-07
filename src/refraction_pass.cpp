@@ -1,3 +1,4 @@
+#include "blurconfig.h"
 #include "refraction_pass.hpp"
 #include "utils.h"
 
@@ -47,6 +48,24 @@ BBDX::RefractionPass::RefractionPass() {
         m_rounded.cornerRadiusLocation = m_rounded.shader->uniformLocation("cornerRadius");
         m_rounded.opacityLocation = m_rounded.shader->uniformLocation("opacity");
     }
+}
+
+void BBDX::RefractionPass::reconfigure() {
+    auto config = KWin::BlurConfig::self();
+
+    if (!config) {
+        qCWarning(REFRACTION_PASS) << BBDX::LOG_PREFIX
+                                   << "RefractionPass::reconfigure() called before BlurConfig::read()";
+        return;
+    }
+
+    m_normalPow = config->refractionNormalPow();
+    m_strength = config->refractionStrength();
+    m_edgeSize = config->refractionEdgeSize();
+    m_cornerRadius = config->refractionCornerRadius();
+    m_RGBFringing = config->refractionRGBFringing();
+    m_textureRepeatMode = config->refractionTextureRepeatMode();
+    m_mode = config->refractionMode();
 }
 
 bool BBDX::RefractionPass::pushShaderRounded() const {

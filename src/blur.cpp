@@ -315,6 +315,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags);
     m_settings.read();
+    m_refractionPass.reconfigure();
     m_windowManager.reconfigure();
 
     int blurStrength = m_settings.general.blurStrength;

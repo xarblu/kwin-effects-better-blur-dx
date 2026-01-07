@@ -38,11 +38,25 @@ private:
 
     bool m_enabled{false};
 
+    // user settings
+    qreal m_normalPow{};
+    qreal m_strength{};
+    qreal m_edgeSize{};
+    qreal m_cornerRadius{};
+    qreal m_RGBFringing{};
+    int m_textureRepeatMode{};
+    int m_mode{};
+
 public:
     /**
      * Loads required shaders and sets up shader uniformLocations
      */
     explicit RefractionPass();
+
+    /**
+     * reconfigure from BlurConfig
+     */
+    void reconfigure();
 
     /**
      * Check if pass is ready i.e. all shaders loaded
