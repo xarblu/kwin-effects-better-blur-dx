@@ -38,6 +38,8 @@ private:
     void slotSpinboxSliderSyncBrightness(int value);
     void slotSpinboxSliderSyncSaturation(int value);
     void slotSpinboxSliderSyncContrast(int value);
+
+    void slotRefractionModeChanged(int index);
 };
 
 } // namespace KWin

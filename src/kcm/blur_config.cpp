@@ -38,6 +38,8 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
 
     setupContextualHelp();
     setupSpinboxSliderSync();
+
+    connect(ui.kcfg_RefractionMode, &QComboBox::currentIndexChanged, this, &BlurEffectConfig::slotRefractionModeChanged);
 }
 
 BlurEffectConfig::~BlurEffectConfig()
@@ -122,6 +124,34 @@ void BlurEffectConfig::slotSpinboxSliderSyncContrast(int value)
     }
     if (ui.spinboxContrast->value() != value) {
         ui.spinboxContrast->setValue(value);
+    }
+}
+
+void BlurEffectConfig::slotRefractionModeChanged(int index) {
+    // 1 = concave
+    // TODO: make this an enum
+    const bool concave{index == 1};
+
+    // Edge behaviour is not relevant for concave mode
+    if (ui.kcfg_RefractionTextureRepeatMode) {
+        ui.kcfg_RefractionTextureRepeatMode->setEnabled(!concave);
+    }
+    if (ui.labelRefractionTextureRepeatMode) {
+        ui.labelRefractionTextureRepeatMode->setEnabled(!concave);
+    }
+
+    // Corner radius is only relevant for Concave as Basic breaks with low values
+    if (ui.kcfg_RefractionCornerRadius) {
+        ui.kcfg_RefractionCornerRadius->setEnabled(concave);
+    }
+    if (ui.labelRefractionCornerRadius) {
+        ui.labelRefractionCornerRadius->setEnabled(concave);
+    }
+    if (ui.sliderLabelRefractionCornerRadiusSquare) {
+        ui.sliderLabelRefractionCornerRadiusSquare->setEnabled(concave);
+    }
+    if (ui.sliderLabelRefractionCornerRadiusRound) {
+        ui.sliderLabelRefractionCornerRadiusRound->setEnabled(concave);
     }
 }
 
