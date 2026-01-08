@@ -143,11 +143,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // This tracker allows us to later decide if we want
     // to trust the window or use user parameters
     // e.g. for corner radius.
-    if (content.has_value() || frame.has_value()) {
-        m_requestedBlur = true;
-    } else {
-        m_requestedBlur = false;
-    }
+    m_requestedBlur = content.has_value();
 
     // Normally we'd assume windows that set their own blur region
     // know what they're doing.
@@ -156,7 +152,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // overriding the blur area.
     // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
     // Most windows will provide opacity via WindowPaintData)
-    if (content.has_value() && m_effectwindow->opacity() >= 1.0) return;
+    if (m_requestedBlur && m_effectwindow->opacity() >= 1.0) return;
 
     // Apply potentially set forceblur regions
     // if (and only if) set in updateForceBlurRegion().
