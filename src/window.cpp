@@ -158,10 +158,19 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // Most windows will provide opacity via WindowPaintData)
     if (content.has_value() && m_effectwindow->opacity() >= 1.0) return;
 
-    // matched by user config
-    content = m_forceBlurContent;
-    frame = m_forceBlurFrame;
-    m_requestedBlur = false;
+    // Apply potentially set forceblur regions
+    // if (and only if) set in updateForceBlurRegion().
+    // We can't set these unconditionally (especially frame) because
+    // custom decorations might have set their own blur region.
+    if (m_forceBlurContent.has_value()) {
+        content = m_forceBlurContent;
+        m_requestedBlur = false;
+    }
+
+    if (m_forceBlurFrame.has_value()) {
+        frame = m_forceBlurFrame;
+        m_requestedBlur = false;
+    }
 }
 
 KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
