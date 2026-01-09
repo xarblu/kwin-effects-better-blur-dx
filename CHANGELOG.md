@@ -4,6 +4,9 @@ Things not in any tagged release yet:
 ### Features:
 - Re-implement refraction as an alternative to the default contrast pass
 
+### Bug Fixes:
+- Fixed falsely overwriting blur regions with empty force-blur regions resulting e.g. in decorations losing their blur.
+
 # 2.1.0
 
 ### Features:
