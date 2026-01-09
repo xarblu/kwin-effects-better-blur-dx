@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "window.hpp"
 #include "window_manager.hpp"
 
@@ -9,11 +10,14 @@
 #include <window.h>
 
 #include <QEasingCurve>
+#include <QLoggingCategory>
 #include <QVariant>
 #include <QtNumeric>
 
 #include <chrono>
 #include <optional>
+
+Q_LOGGING_CATEGORY(BBDX_WINDOW, "kwin_effect_better_blur_dx.window", QtWarningMsg)
 
 BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_windowManager = wm;
@@ -187,6 +191,23 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
     } else {
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedFrame);
+    }
+
+    // this isn't fatal but we only expect one to be set, so log if that's not the case
+    if ((m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent))
+            && (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent))) {
+        qCWarning(BBDX_WINDOW) << BBDX::LOG_PREFIX
+                               << "BlurOrigin::RequestedContent and BlurOrigin::ForcedContent"
+                               << "both set on window"
+                               << effectwindow()->window()->resourceClass();
+    }
+
+    if ((m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedFrame))
+            && (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame))) {
+        qCWarning(BBDX_WINDOW) << BBDX::LOG_PREFIX
+                               << "BlurOrigin::RequestedFrame and BlurOrigin::ForcedFrame"
+                               << "both set on window"
+                               << effectwindow()->window()->resourceClass();
     }
 }
 
