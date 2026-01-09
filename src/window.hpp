@@ -3,8 +3,8 @@
 #include <QObject>
 #include <QRegion>
 
-#include <optional>
 #include <chrono>
+#include <optional>
 
 namespace KWin {
     class BorderRadius;
@@ -34,7 +34,7 @@ public:
         Ended
     };
 
-    enum class BlurOrigin {
+    enum class BlurOrigin : unsigned int {
         RequestedContent = 1 << 0,
         RequestedFrame   = 1 << 1,
         ForcedContent    = 1 << 2,
@@ -58,7 +58,7 @@ private:
     std::optional<QRegion> m_forceBlurFrame{};
 
     // track whether this window requested a blur region
-    int m_blurOriginMask{0};
+    unsigned int m_blurOriginMask{0};
 
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};

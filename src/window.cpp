@@ -26,7 +26,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    if (m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedContent)) {
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent)) {
         // Don't allow blurring while transformed during move/resize
         // to avoid dragging an off-looking rectangular blur region
         // behind windows affected by Wobbly Windows.
@@ -40,7 +40,7 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    if (m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedContent)) {
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent)) {
         // After move/resize force blurring while transformed.
         // While still suboptimal (the Wobbly Windows effect doesn't end
         // after finishing move/resize) this at least assures blur
@@ -143,9 +143,9 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // to trust the window or use user parameters
     // e.g. for corner radius.
     if (content.has_value())
-        m_blurOriginMask |= static_cast<int>(BlurOrigin::RequestedContent);
+        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedContent);
     if (frame.has_value())
-        m_blurOriginMask |= static_cast<int>(BlurOrigin::RequestedFrame);
+        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedFrame);
 
     // Normally we'd assume windows that set their own blur region
     // know what they're doing.
@@ -154,7 +154,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // overriding the blur area.
     // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
     // Most windows will provide opacity via WindowPaintData)
-    if (m_blurOriginMask & static_cast<int>(BlurOrigin::RequestedContent)
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent)
             && qFuzzyCompare(m_effectwindow->opacity(), 1.0))
         return;
 
@@ -164,8 +164,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // custom decorations might have set their own blur region.
     if (m_forceBlurContent.has_value()) {
         content = m_forceBlurContent;
-        m_blurOriginMask |= static_cast<int>(BlurOrigin::ForcedContent);
-        m_blurOriginMask &= ~static_cast<int>(BlurOrigin::RequestedContent);
+        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedContent);
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
     }
 
     // Only override frame if it doesn't already specify a blur region.
@@ -175,8 +175,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // because CSD windows should never have a frame already set)
     if (m_forceBlurFrame.has_value() && !frame.has_value()) {
         frame = m_forceBlurFrame;
-        m_blurOriginMask |= static_cast<int>(BlurOrigin::ForcedFrame);
-        m_blurOriginMask &= ~static_cast<int>(BlurOrigin::RequestedFrame);
+        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedFrame);
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
     }
 }
 
@@ -200,7 +200,7 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
 
         // If not force-blurring decorations we don't need
         // any adjustments
-        if (!(m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedFrame)))
+        if (!(m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame)))
             return windowCornerRadius;
 
         // if top radius is set explicitly by decoration keep it
@@ -238,7 +238,7 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
         // Else we assume the decoration either set its blur region appropriately
         // or isn't blurred at all i.e. the top corners are already correct and we
         // only need to round the bottom ones.
-        if (m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedFrame)) {
+        if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame)) {
             return KWin::BorderRadius(m_userBorderRadius);
         } else if (!effectwindow()->hasDecoration()) {
             return KWin::BorderRadius(m_userBorderRadius);
@@ -328,7 +328,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
 
 bool BBDX::Window::isPlasmaSurface() const {
     // Plasma surfaces must specify their own blur
-    if (!(m_blurOriginMask & static_cast<int>(BlurOrigin::RequestedContent)))
+    if (!(m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent)))
         return false;
 
     // Plasma surfaces (afaik) never have decorations
