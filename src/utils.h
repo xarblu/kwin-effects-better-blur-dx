@@ -1,7 +1,5 @@
 #pragma once
 
-#include "effect/effectwindow.h"
-
 #include <opengl/gltexture.h>
 
 #include <QSize>
@@ -10,14 +8,6 @@ namespace BBDX
 {
 
 static const char LOG_PREFIX[]{"better_blur_dx:"};
-
-inline bool isDockFloating(const KWin::EffectWindow *dock, const QRegion blurRegion)
-{
-    // If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0) for vertical panels doesn't belong to
-    // the blur region, the dock is most likely floating. The (0,0) pixel may be outside the blur region if the dock
-    // can float but isn't at the moment.
-    return !blurRegion.intersects(QRect(0, dock->height() / 2, 1, 1)) && !blurRegion.intersects(QRect(dock->width() / 2, 0, 1, 1));
-}
 
 /**
  * Get texture size for offscreen framebuffer allocation during BlurEffect::blur()
