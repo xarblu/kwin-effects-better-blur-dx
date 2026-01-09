@@ -40,6 +40,7 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     setupSpinboxSliderSync();
 
     connect(ui.kcfg_RefractionMode, &QComboBox::currentIndexChanged, this, &BlurEffectConfig::slotRefractionModeChanged);
+    slotRefractionModeChanged(ui.kcfg_RefractionMode->currentIndex());
 }
 
 BlurEffectConfig::~BlurEffectConfig()
