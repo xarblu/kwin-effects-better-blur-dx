@@ -160,7 +160,13 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
         content = m_forceBlurContent;
         m_requestedBlur = false;
     }
-    if (m_forceBlurFrame.has_value()) {
+
+    // Only override frame if it doesn't already specify a blur region.
+    // The provided one is likely more accurate (e.g. already has its corners rounded
+    // or an outline that shouldn't be blured)
+    // (XXX: Shouldn't interfere with the "isX11WithCSD" hack
+    // because CSD windows should never have a frame already set)
+    if (m_forceBlurFrame.has_value() && !frame.has_value()) {
         frame = m_forceBlurFrame;
     }
 }
