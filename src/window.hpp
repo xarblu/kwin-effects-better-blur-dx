@@ -34,6 +34,13 @@ public:
         Ended
     };
 
+    enum class BlurOrigin {
+        RequestedContent = 1 << 0,
+        RequestedFrame   = 1 << 1,
+        ForcedContent    = 1 << 2,
+        ForcedFrame      = 1 << 3,
+    };
+
 private:
     // managing WindowManager instance
     WindowManager* m_windowManager;
@@ -51,7 +58,7 @@ private:
     std::optional<QRegion> m_forceBlurFrame{};
 
     // track whether this window requested a blur region
-    bool m_requestedBlur{false};
+    int m_blurOriginMask{0};
 
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};
@@ -81,7 +88,6 @@ public:
     /**
      * setters
      */
-    void setRequestedBlur(bool toggle) { m_requestedBlur = toggle; }
     void setIsTransformed(bool toggle);
 
     /**
@@ -90,8 +96,6 @@ public:
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
-    bool requestedBlur() const { return m_requestedBlur; };
-    bool forceBlurred() const { return m_shouldForceBlur && !m_requestedBlur; }
     bool shouldBlurWhileTransformed() const { return m_shouldBlurWhileTransformed; }
 
     /**
@@ -104,7 +108,7 @@ public:
      * the provided content/frame references
      *
      * If values already exists keeps them and sets
-     * m_requestedBlur flag, else writes the current force blur region
+     * m_blurOriginMask appropriately, else writes the current force blur region
      */
     void getFinalBlurRegion(std::optional<QRegion> &content, std::optional<QRegion> &frame);
 

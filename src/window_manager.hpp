@@ -93,17 +93,6 @@ public:
     void triggerBlurRegionUpdate(KWin::EffectWindow *w) const;
 
     /**
-     * Check if a window requested blur
-     */
-    bool windowRequestedBlur(const KWin::EffectWindow *w) const;
-
-    /**
-     * Check if a window is force blurred
-     * (blurred through user config, not requested)
-     */
-    bool windowForceBlurred(const KWin::EffectWindow *w) const;
-
-    /**
      * Set the "window is transformed" flag on a window
      * (scaled, translated or PAINT_WINDOW_TRANSFORMED set)
      */

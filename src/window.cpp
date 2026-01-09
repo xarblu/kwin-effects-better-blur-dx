@@ -10,6 +10,7 @@
 
 #include <QEasingCurve>
 #include <QVariant>
+#include <QtNumeric>
 
 #include <chrono>
 #include <optional>
@@ -25,7 +26,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    if (forceBlurred()) {
+    if (m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedContent)) {
         // Don't allow blurring while transformed during move/resize
         // to avoid dragging an off-looking rectangular blur region
         // behind windows affected by Wobbly Windows.
@@ -39,7 +40,7 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    if (forceBlurred()) {
+    if (m_blurOriginMask & static_cast<int>(BlurOrigin::ForcedContent)) {
         // After move/resize force blurring while transformed.
         // While still suboptimal (the Wobbly Windows effect doesn't end
         // after finishing move/resize) this at least assures blur
@@ -141,7 +142,10 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // This tracker allows us to later decide if we want
     // to trust the window or use user parameters
     // e.g. for corner radius.
-    m_requestedBlur = content.has_value();
+    if (content.has_value())
+        m_blurOriginMask |= static_cast<int>(BlurOrigin::RequestedContent);
+    if (frame.has_value())
+        m_blurOriginMask |= static_cast<int>(BlurOrigin::RequestedFrame);
 
     // Normally we'd assume windows that set their own blur region
     // know what they're doing.
@@ -150,7 +154,9 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // overriding the blur area.
     // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
     // Most windows will provide opacity via WindowPaintData)
-    if (m_requestedBlur && m_effectwindow->opacity() >= 1.0) return;
+    if (m_blurOriginMask & static_cast<int>(BlurOrigin::RequestedContent)
+            && qFuzzyCompare(m_effectwindow->opacity(), 1.0))
+        return;
 
     // Apply potentially set forceblur regions
     // if (and only if) set in updateForceBlurRegion().
@@ -158,7 +164,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // custom decorations might have set their own blur region.
     if (m_forceBlurContent.has_value()) {
         content = m_forceBlurContent;
-        m_requestedBlur = false;
+        m_blurOriginMask |= static_cast<int>(BlurOrigin::ForcedContent);
+        m_blurOriginMask &= ~static_cast<int>(BlurOrigin::RequestedContent);
     }
 
     // Only override frame if it doesn't already specify a blur region.
@@ -168,6 +175,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // because CSD windows should never have a frame already set)
     if (m_forceBlurFrame.has_value() && !frame.has_value()) {
         frame = m_forceBlurFrame;
+        m_blurOriginMask |= static_cast<int>(BlurOrigin::ForcedFrame);
+        m_blurOriginMask &= ~static_cast<int>(BlurOrigin::RequestedFrame);
     }
 }
 
@@ -230,7 +239,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
     // the blur e.g. to hide the blurred surface alongside
     // themselves.
     // Force blurred surfaces don't want/need this
-    if (requestedBlur()) {
+    if (isPlasmaSurface()) {
         return effectwindow()->opacity() * data.opacity();
     } else {
         // ease into and out of the phase without blur
@@ -303,7 +312,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
 
 bool BBDX::Window::isPlasmaSurface() const {
     // Plasma surfaces must specify their own blur
-    if (!m_requestedBlur)
+    if (!(m_blurOriginMask & static_cast<int>(BlurOrigin::RequestedContent)))
         return false;
 
     // Plasma surfaces (afaik) never have decorations
