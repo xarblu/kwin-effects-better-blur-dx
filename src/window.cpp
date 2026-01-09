@@ -142,10 +142,16 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
     // This tracker allows us to later decide if we want
     // to trust the window or use user parameters
     // e.g. for corner radius.
-    if (content.has_value())
+    if (content.has_value()) {
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedContent);
-    if (frame.has_value())
+    } else {
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
+    }
+    if (frame.has_value()) {
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+    } else {
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+    }
 
     // Normally we'd assume windows that set their own blur region
     // know what they're doing.
@@ -166,6 +172,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
         content = m_forceBlurContent;
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedContent);
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
+    } else {
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedContent);
     }
 
     // Only override frame if it doesn't already specify a blur region.
@@ -177,6 +185,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
         frame = m_forceBlurFrame;
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedFrame);
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+    } else {
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedFrame);
     }
 }
 
