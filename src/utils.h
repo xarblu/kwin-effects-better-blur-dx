@@ -11,11 +11,6 @@ namespace BBDX
 
 static const char LOG_PREFIX[]{"better_blur_dx:"};
 
-inline bool isMenu(const KWin::EffectWindow *w)
-{
-    return w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow();
-}
-
 inline bool isDockFloating(const KWin::EffectWindow *dock, const QRegion blurRegion)
 {
     // If the pixel at (0, height / 2) for horizontal panels and (width / 2, 0) for vertical panels doesn't belong to

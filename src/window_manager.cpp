@@ -121,7 +121,7 @@ bool BBDX::WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
     if (w->isDesktop())
         return true;
 
-    if (!m_blurMenus && isMenu(w))
+    if (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow()))
         return true;
 
     if (!m_blurDocks && w->isDock())
