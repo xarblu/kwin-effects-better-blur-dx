@@ -109,16 +109,14 @@ void BBDX::Window::updateForceBlurRegion() {
         frame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
     }
 
-    bool changed{false};
-    if (content != m_forceBlurContent || frame != m_forceBlurFrame) {
-        changed = true;
+    // unchanged
+    if (content == m_forceBlurContent && frame == m_forceBlurFrame) {
+        return;
     }
 
     m_forceBlurContent = std::move(content);
     m_forceBlurFrame = std::move(frame);
-
-    if (changed)
-        triggerBlurRegionUpdate();
+    triggerBlurRegionUpdate();
 }
 
 void BBDX::Window::triggerBlurRegionUpdate() {
