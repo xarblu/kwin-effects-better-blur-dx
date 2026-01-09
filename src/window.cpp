@@ -2,16 +2,16 @@
 #include "window_manager.hpp"
 
 #include <KDecoration3/Decoration>
-#include <chrono>
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
-#include <qeasingcurve.h>
+#include <effect/globals.h>
 #include <scene/borderradius.h>
 #include <window.h>
 
-#include <QVariant>
 #include <QEasingCurve>
+#include <QVariant>
 
+#include <chrono>
 #include <optional>
 
 BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
@@ -162,10 +162,8 @@ void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::opti
         content = m_forceBlurContent;
         m_requestedBlur = false;
     }
-
     if (m_forceBlurFrame.has_value()) {
         frame = m_forceBlurFrame;
-        m_requestedBlur = false;
     }
 }
 
@@ -200,9 +198,9 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
                                   windowCornerRadius.bottomRight());
     }
 
-    // assume the window knows what it's doing
-    // when it requested the blur
-    if (m_requestedBlur) {
+    // Plasma surfaces set their blur region
+    // in a way that *should* not bleed
+    if (isPlasmaSurface()) {
         return KWin::BorderRadius();
     }
 
@@ -297,4 +295,17 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
 
         return data.opacity();
     }
+}
+
+bool BBDX::Window::isPlasmaSurface() const {
+    // Plasma surfaces must specify their own blur
+    if (!m_requestedBlur)
+        return false;
+
+    // Plasma surfaces (afaik) never have decorations
+    if (effectwindow()->hasDecoration())
+        return false;
+
+    // very likely a plasma surface in this case
+    return true;
 }

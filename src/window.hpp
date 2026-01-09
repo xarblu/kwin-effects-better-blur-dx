@@ -122,6 +122,12 @@ public:
      * Get effective blur opacity
      */
     qreal getEffectiveBlurOpacity(KWin::WindowPaintData &data);
+
+    /**
+     * Check if this window (likely) is a Plasma surface that should
+     * get special treatment like non-rounded corners
+     */
+    bool isPlasmaSurface() const;
 };
 
 } // namespace BBDX
