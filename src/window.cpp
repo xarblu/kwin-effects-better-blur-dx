@@ -270,12 +270,8 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
         return KWin::BorderRadius();
     }
 
-    // Fullscreen windows don't need radius.
-    // Maximized/tiled likely don't either in most cases
-    // but those states need some extra work.
-    // (Sadly EffectWindow::windowMaximizedStateChanged
-    // doesn't seem to be that useful here.)
-    if (m_effectwindow->isFullScreen()) {
+    // Fullscreen/completely maximized windows don't need radius.
+    if (m_effectwindow->isFullScreen() || m_maximizedState == MaximizedState::Complete) {
         return KWin::BorderRadius();
     }
 
