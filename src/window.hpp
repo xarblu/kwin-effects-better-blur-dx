@@ -96,7 +96,7 @@ public:
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
     std::optional<QRegion> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<QRegion> forceBlurFrame() const { return m_forceBlurFrame; };
-    bool shouldBlurWhileTransformed() const { return m_shouldBlurWhileTransformed; }
+    bool shouldBlurWhileTransformed() const;
 
     /**
      * reconfigure hook

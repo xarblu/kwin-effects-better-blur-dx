@@ -90,6 +90,17 @@ void BBDX::Window::setIsTransformed(bool toggle) {
     }
 }
 
+bool BBDX::Window::shouldBlurWhileTransformed() const {
+    // While completely maximized we can always blur.
+    // Avoids weirdness while (de-)maximzing by dragging the
+    // titlebar with Wobbly Windows enabled.
+    if (m_maximizedState == MaximizedState::Complete) {
+        return true;
+    }
+
+    return m_shouldBlurWhileTransformed;
+}
+
 void BBDX::Window::updateForceBlurRegion() {
     if (!m_shouldForceBlur) {
         if (m_forceBlurContent.has_value() || m_forceBlurFrame.has_value()) {
