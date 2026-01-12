@@ -81,6 +81,13 @@ void BBDX::Window::setIsTransformed(bool toggle) {
         return;
 
     m_isTransformed = toggle;
+
+    // Unset m_shouldBlurWhileTransformed flag
+    // on the first non-transformed paint.
+    // Needed e.g. for Magic Lamp effect to not draw blur.
+    if (!toggle) {
+        m_shouldBlurWhileTransformed = false;
+    }
 }
 
 void BBDX::Window::updateForceBlurRegion() {
