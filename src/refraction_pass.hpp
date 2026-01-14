@@ -1,15 +1,13 @@
 #pragma once
 
+#include <opengl/glshader.h>
+
 #include <QMatrix4x4>
 #include <QVector2D>
 #include <QVector4D>
 #include <QtNumeric>
 
 #include <memory>
-
-namespace KWin {
-    class GLShader;
-}
 
 namespace BBDX {
 
