@@ -107,7 +107,7 @@ public:
                               const QVector4D &box,
                               const QVector4D &cornerRadius,
                               const qreal opacity,
-                              const QRect &deviceBackgroundRect) const;
+                              const QRect &scaledBackgroundRect) const;
 
     /**
      * Set GLSL parameters, rectangular version
@@ -118,7 +118,7 @@ public:
                                   const QMatrix4x4 &colorMatrix,
                                   const QVector2D &halfpixel,
                                   const float offset,
-                                  const QRect &deviceBackgroundRect) const;
+                                  const QRect &scaledBackgroundRect) const;
 };
 
 } // namespace BBDX

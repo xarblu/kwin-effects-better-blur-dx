@@ -139,7 +139,7 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
                                          const QVector4D &box,
                                          const QVector4D &cornerRadius,
                                          const qreal opacity,
-                                         const QRect &deviceBackgroundRect) const {
+                                         const QRect &scaledBackgroundRect) const {
 
     if (!enabled())
         return false;
@@ -154,11 +154,11 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
     m_rounded.shader->setUniform(m_rounded.opacityLocation, opacity);
     // refraction parameters
     m_rounded.shader->setUniform(m_rounded.refractionRectSizeLocation,
-                                 QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
+                                 QVector2D(scaledBackgroundRect.width(), scaledBackgroundRect.height()));
     m_rounded.shader->setUniform(m_rounded.refractionEdgeSizePixelsLocation,
                                  std::min(static_cast<float>(m_edgeSizePixels),
-                                          static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
-                                                                      deviceBackgroundRect.height() / 2))));
+                                          static_cast<float>(std::min(scaledBackgroundRect.width() / 2,
+                                                                      scaledBackgroundRect.height() / 2))));
     m_rounded.shader->setUniform(m_rounded.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadiusPixels));
     m_rounded.shader->setUniform(m_rounded.refractionStrengthLocation, static_cast<float>(m_strength));
     m_rounded.shader->setUniform(m_rounded.refractionNormalPowLocation, static_cast<float>(m_normalPow));
@@ -173,7 +173,7 @@ bool BBDX::RefractionPass::setParametersRectangular(const QMatrix4x4 &projection
                                          const QMatrix4x4 &colorMatrix,
                                          const QVector2D &halfpixel,
                                          const float offset,
-                                         const QRect &deviceBackgroundRect) const {
+                                         const QRect &scaledBackgroundRect) const {
 
     if (!enabled())
         return false;
@@ -185,11 +185,11 @@ bool BBDX::RefractionPass::setParametersRectangular(const QMatrix4x4 &projection
     m_rectangular.shader->setUniform(m_rectangular.offsetLocation, offset);
     // refraction parameters
     m_rectangular.shader->setUniform(m_rectangular.refractionRectSizeLocation,
-                                     QVector2D(deviceBackgroundRect.width(), deviceBackgroundRect.height()));
+                                     QVector2D(scaledBackgroundRect.width(), scaledBackgroundRect.height()));
     m_rectangular.shader->setUniform(m_rectangular.refractionEdgeSizePixelsLocation,
                                      std::min(static_cast<float>(m_edgeSizePixels),
-                                              static_cast<float>(std::min(deviceBackgroundRect.width() / 2,
-                                                                          deviceBackgroundRect.height() / 2))));
+                                              static_cast<float>(std::min(scaledBackgroundRect.width() / 2,
+                                                                          scaledBackgroundRect.height() / 2))));
     m_rectangular.shader->setUniform(m_rectangular.refractionCornerRadiusPixelsLocation, static_cast<float>(m_cornerRadiusPixels));
     m_rectangular.shader->setUniform(m_rectangular.refractionStrengthLocation, static_cast<float>(m_strength));
     m_rectangular.shader->setUniform(m_rectangular.refractionNormalPowLocation, static_cast<float>(m_normalPow));

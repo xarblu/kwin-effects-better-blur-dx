@@ -1066,7 +1066,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             w->frameGeometry().height() * data.yScale(),
         };
         const QRectF nativeBox = snapToPixelGridF(scaledRect(transformedRect, viewport.scale()))
-                                     .translated(-deviceBackgroundRect.topLeft());
+                                     .translated(-scaledBackgroundRect.topLeft());
         const BorderRadius nativeCornerRadius = cornerRadius.scaled(viewport.scale()).rounded();
 
         if (!m_refractionPass.setParametersRounded(projectionMatrix,
@@ -1076,7 +1076,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                    QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5),
                                                    nativeCornerRadius.toVector(),
                                                    opacity,
-                                                   deviceBackgroundRect)) {
+                                                   scaledBackgroundRect)) {
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.mvpMatrixLocation, projectionMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.colorMatrixLocation, colorMatrix);
         m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.halfpixelLocation, halfpixel);
@@ -1117,7 +1117,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                        colorMatrix,
                                                        halfpixel,
                                                        float(m_offset),
-                                                       deviceBackgroundRect)) {
+                                                       scaledBackgroundRect)) {
         m_contrastPass.shader->setUniform(m_contrastPass.mvpMatrixLocation, projectionMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.colorMatrixLocation, colorMatrix);
         m_contrastPass.shader->setUniform(m_contrastPass.halfpixelLocation, halfpixel);
