@@ -4,34 +4,40 @@ Better Blur DX is a loose continuation of [Better Blur](https://github.com/taj-n
 ![image](https://github.com/user-attachments/assets/f8a7c618-89b4-485a-b0f8-29dd5f77e3ca)
 
 ### Features
-- X11 and Wayland support
 - Force blur
 - Adjustable blur brightness, contrast and saturation
 - Adjustable corner radius
+- Refraction
 
 You may notice these are *less* features than the original Better Blur.
-*This is intentional* - this project focusses on bringing the KWin blur to arbitrary windows
-and nothing else.
-
-If you expect to see more features you should check out other projects - or feel free to fork
-and create your own.
+Notably ["Static Blur" is currently missing](https://github.com/xarblu/kwin-effects-better-blur-dx/issues/16)
+because it wasn't trivially portable to the Plasma 6.5 blur and needs to be reimplemented.
 
 ### Bug fixes
 Fixes for blur-related Plasma bugs that haven't been patched yet.
 
 - Blur may sometimes disappear during animations
-- [Transparent color schemes don't work properly with the Breeze application style](https://github.com/taj-ny/kwin-effects-better_blur_dx/pull/38)
+- [Transparent color schemes don't work properly with the Breeze application style](https://github.com/taj-ny/kwin-effects-forceblur/pull/38)
 
-### Support for previous Plasma releases
+### Supported Plasma releases
 Better Blur DX should always work on the current stable version of Plasma.
 Older versions aren't tested much and may or may not work.
 
-Currently supported versions: **6.5**
+Currently supported versions: **6.5**, **6.6**
+
+### X11 Support
+While building the effect is supported for both X11 and Wayland, X11 is more or less deprecated and not tested much.
+Thus the X11 version of the effect needs to be explicitly built using the `-DBETTERBLUR_X11=ON` `cmake` option.
+
+We'll see how feasible maintaining the X11 version is for future Plasma releases as it seems like
+KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X11 will keep drifting apart.
 
 # Installation
 > [!IMPORTANT]
 > If the effect stops working after a system upgrade, you will need to rebuild it or reinstall the package.
 > The effect only works for the *exact KWin* version it was built for.
+> Additionally KWin needs to be restarted (e.g. via logout+login) to load an *updated* version of the effect
+> (the initial install doesn't need this).
 
 ## Packages
 <details>
