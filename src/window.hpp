@@ -8,7 +8,7 @@
 #include <chrono>
 #include <optional>
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 #  include "kwin_compat_6_6.hpp"
 #else
 #  include <core/region.h>

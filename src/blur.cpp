@@ -14,7 +14,7 @@
 #include "window_manager.hpp"
 #include "kwin_version.hpp"
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 #  include "kwin_compat_6_6.hpp"
 #else
 #  include <core/rect.h>
@@ -582,7 +582,7 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseco
     effects->prePaintScreen(data, presentTime);
 }
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime)
 #else
 void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime)
@@ -590,7 +590,7 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
 {
     // this effect relies on prePaintWindow being called in the bottom to top order
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     effects->prePaintWindow(w, data, presentTime);
 
     const QRegion oldOpaque = data.opaque;
@@ -780,7 +780,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     const QRect backgroundRect = blurShape.boundingRect();
     const QRect scaledBackgroundRect = snapToPixelGrid(scaledRect(backgroundRect, viewport.scale()));
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     const QRect deviceBackgroundRect = scaledBackgroundRect;
 #else
     const QRect deviceBackgroundRect = snapToPixelGrid(viewport.mapToDeviceCoordinates(backgroundRect));
@@ -789,7 +789,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
     QList<RectF> effectiveShape;
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     effectiveShape.reserve(blurShape.rectCount());
     if (deviceRegion != infiniteRegion()) {
         for (const QRect &clipRect : deviceRegion) {
@@ -871,7 +871,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     // Fetch the pixels behind the shape that is going to be blurred.
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     const QRegion dirtyRegion = deviceRegion & backgroundRect;
     for (const QRect &dirtyRect : dirtyRegion) {
         renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));

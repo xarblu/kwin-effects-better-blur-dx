@@ -1,17 +1,15 @@
 #pragma once
 
-#include "kwin_version.hpp"
+// Compatibility bits for "upgrading"
+// KWin 6.5 API to 6.6
+// (and KWin-X11 to KWin-Wayland... *sigh*)
 
-// Some common compatibility things
-
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 class QRect;
 class QRectF;
 class QRegion;
+
 namespace KWin {
     using Rect = QRect;
     using RectF = QRectF;
     using Region = QRegion;
 }
-#endif
-

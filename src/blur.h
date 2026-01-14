@@ -12,7 +12,7 @@
 #include "window_manager.hpp"
 #include "kwin_version.hpp"
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 #  include "kwin_compat_6_6.hpp"
 #else
 #  include <core/rect.h>
@@ -83,7 +83,7 @@ public:
 
     void reconfigure(ReconfigureFlags flags) override;
     void prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
 #else
     void prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
