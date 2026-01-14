@@ -141,8 +141,9 @@ void BBDX::Window::updateForceBlurRegion() {
     // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
     // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
     // blur region to be off on X11. The frame region is not translated, so it is used instead.
-    const auto isX11WithCSD = m_effectwindow->isX11Client() &&
-                              m_effectwindow->frameGeometry() != m_effectwindow->bufferGeometry();
+    const auto isX11WithCSD = effectwindow()->isX11Client() &&
+                              !effectwindow()->hasDecoration() &&
+                              effectwindow()->frameGeometry() != effectwindow()->bufferGeometry();
     if (!isX11WithCSD) {
         // empty QRegion -> full window
         content = KWin::Region();
@@ -207,8 +208,9 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
     // Most windows will provide opacity via WindowPaintData)
     if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent)
-            && qFuzzyCompare(m_effectwindow->opacity(), 1.0))
+        && qFuzzyCompare(m_effectwindow->opacity(), 1.0)) {
         return;
+    }
 
     // Apply potentially set forceblur regions
     // if (and only if) set in updateForceBlurRegion().
