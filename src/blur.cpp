@@ -855,13 +855,11 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                 qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
                 return;
             }
-            auto *context =
 #ifdef BETTERBLUR_X11
-                OpenGlContext
+            auto *context = OpenGlContext::currentContext();
 #else
-                EglContext
+            auto *context = EglContext::currentContext();
 #endif
-                ::currentContext();
             context->pushFramebuffer(framebuffer.get());
             glClear(GL_COLOR_BUFFER_BIT);
             context->popFramebuffer();
