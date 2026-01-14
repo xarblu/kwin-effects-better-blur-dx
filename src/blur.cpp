@@ -627,9 +627,6 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
     }
 
     m_currentDeviceBlur += blurArea;
-    if (!blurArea.isEmpty()) {
-        data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
-    }
 
     m_paintedDeviceArea -= data.opaque;
     m_paintedDeviceArea += data.paint;
@@ -670,13 +667,15 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
     }
 
     m_currentDeviceBlur += blurArea;
-    if (!blurArea.isEmpty()) {
-        data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
-    }
 
     m_paintedDeviceArea -= data.deviceOpaque;
     m_paintedDeviceArea += data.devicePaint;
 #endif
+
+    // BBDX change
+    if (!blurArea.isEmpty()) {
+        data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
+    }
 }
 
 bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data)
