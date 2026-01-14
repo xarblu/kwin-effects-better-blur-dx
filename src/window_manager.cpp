@@ -1,6 +1,7 @@
 #include "window_manager.hpp"
 
 #include "blurconfig.h"
+#include "kwin_version.hpp"
 #include "utils.h"
 #include "window.hpp"
 
@@ -8,6 +9,12 @@
 #include <effect/effecthandler.h>
 #include <scene/borderradius.h>
 #include <window.h>
+
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#  include "kwin_compat_6_6.hpp"
+#else
+#  include <core/region.h>
+#endif
 
 #include <QList>
 #include <QLoggingCategory>
@@ -215,7 +222,7 @@ bool BBDX::WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWin
     return window->shouldBlurWhileTransformed();
 }
 
-void BBDX::WindowManager::getFinalBlurRegion(const KWin::EffectWindow *w, std::optional<QRegion> &content, std::optional<QRegion> &frame) const {
+void BBDX::WindowManager::getFinalBlurRegion(const KWin::EffectWindow *w, std::optional<KWin::Region> &content, std::optional<KWin::Region> &frame) const {
     const auto window = findWindow(w);
     if (!window)
         return;

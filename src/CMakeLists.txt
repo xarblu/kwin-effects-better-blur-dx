@@ -22,7 +22,11 @@ if(BETTERBLUR_X11)
         KF6::ConfigGui
         KWinX11::kwin
     )
-    target_compile_definitions(better_blur_dx PRIVATE BETTERBLUR_X11)
+    target_compile_definitions(better_blur_dx PRIVATE
+                               KWIN_VERSION_MAJOR=${KWin_VERSION_MAJOR}
+                               KWIN_VERSION_MINOR=${KWin_VERSION_MINOR}
+                               KWIN_VERSION_PATCH=${KWin_VERSION_PATCH}
+                               BETTERBLUR_X11)
     install(TARGETS better_blur_dx DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin-x11/effects/plugins)
 else()
     add_library(better_blur_dx MODULE ${better_blur_dx_SOURCES})
@@ -31,6 +35,10 @@ else()
         KF6::ConfigGui
         KWin::kwin
     )
+    target_compile_definitions(better_blur_dx PRIVATE
+                               KWIN_VERSION_MAJOR=${KWin_VERSION_MAJOR}
+                               KWIN_VERSION_MINOR=${KWin_VERSION_MINOR}
+                               KWIN_VERSION_PATCH=${KWin_VERSION_PATCH})
     install(TARGETS better_blur_dx DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)
 endif()
 

@@ -1,3 +1,4 @@
+#include "kwin_version.hpp"
 #include "utils.h"
 #include "window.hpp"
 #include "window_manager.hpp"
@@ -8,6 +9,12 @@
 #include <effect/globals.h>
 #include <scene/borderradius.h>
 #include <window.h>
+
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+#  include "kwin_compat_6_6.hpp"
+#else
+#  include <core/region.h>
+#endif
 
 #include <QEasingCurve>
 #include <QLoggingCategory>
@@ -111,8 +118,8 @@ void BBDX::Window::updateForceBlurRegion() {
         return;
     }
 
-    std::optional<QRegion> content{};
-    std::optional<QRegion> frame{};
+    std::optional<KWin::Region> content{};
+    std::optional<KWin::Region> frame{};
 
     // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
     // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
@@ -121,15 +128,15 @@ void BBDX::Window::updateForceBlurRegion() {
                               m_effectwindow->frameGeometry() != m_effectwindow->bufferGeometry();
     if (!isX11WithCSD) {
         // empty QRegion -> full window
-        content = QRegion();
+        content = KWin::Region();
 
         // only decorations in this case
         if (m_windowManager->blurDecorations() && m_effectwindow->decoration()) {
-            frame = QRegion(m_effectwindow->decoration()->rect().toAlignedRect()) - m_effectwindow->contentsRect().toRect();
+            frame = KWin::Region(KWin::Rect(effectwindow()->decoration()->rect().toAlignedRect())) - effectwindow()->contentsRect().toRect();
         }
     } else {
         // frame is full window
-        frame = m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect();
+        frame = KWin::Region(KWin::Rect(m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect()));
     }
 
     // unchanged
@@ -158,7 +165,7 @@ void BBDX::Window::reconfigure() {
     updateForceBlurRegion();
 }
 
-void BBDX::Window::getFinalBlurRegion(std::optional<QRegion> &content, std::optional<QRegion> &frame) {
+void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std::optional<KWin::Region> &frame) {
     // If we already have a blur region at this point
     // the window requested it.
     // This tracker allows us to later decide if we want
