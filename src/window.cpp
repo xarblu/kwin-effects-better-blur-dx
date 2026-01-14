@@ -30,10 +30,18 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_windowManager = wm;
     m_effectwindow = w;
     reconfigure();
+    connect(w, &KWin::EffectWindow::minimizedChanged, this, &BBDX::Window::slotMinimizedChanged);
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
     connect(w, &KWin::EffectWindow::windowMaximizedStateChanged, this, &BBDX::Window::slotWindowMaximizedStateChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
     connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
+}
+
+void BBDX::Window::slotMinimizedChanged() {
+    if (m_maximizedState == MaximizedState::Complete
+        && effectwindow()->isMinimized()) {
+        m_minimizedFromMaximized = true;
+    }
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
@@ -67,6 +75,10 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
     updateForceBlurRegion();
+
+    // Not sure if this is the best place to unset
+    // this but seems to work fine for now
+    m_minimizedFromMaximized = false;
 }
 
 void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertical) {
@@ -98,10 +110,15 @@ void BBDX::Window::setIsTransformed(bool toggle) {
 }
 
 bool BBDX::Window::shouldBlurWhileTransformed() const {
+    // While minimized there's no reason to blur
+    if (effectwindow()->isMinimized()) {
+        return false;
+    }
+
     // While completely maximized we can always blur.
     // Avoids weirdness while (de-)maximzing by dragging the
     // titlebar with Wobbly Windows enabled.
-    if (m_maximizedState == MaximizedState::Complete) {
+    if (m_maximizedState == MaximizedState::Complete && !m_minimizedFromMaximized) {
         return true;
     }
 
