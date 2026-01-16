@@ -405,11 +405,6 @@ bool BBDX::Window::isPlasmaSurface() const {
     if (effectwindow()->isSpecialWindow())
         return true;
 
-    // Plasma surfaces usually are above the NormalLayer
-    const KWin::Layer layer = effectwindow()->window()->layer();
-    if (layer <= KWin::Layer::NormalLayer)
-        return false;
-
     // assume it is as a fallback
     return true;
 }
