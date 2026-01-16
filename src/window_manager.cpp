@@ -13,6 +13,7 @@
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 #  include "kwin_compat_6_6.hpp"
 #else
+#  include <core/output.h>
 #  include <core/region.h>
 #endif
 
@@ -48,11 +49,19 @@ const BBDX::WindowManager* BBDX::WindowManager::instance() {
 void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
     auto window = std::make_unique<BBDX::Window>(this, w);
     m_windows.insert_or_assign(w, std::move(window));
+
+    if (w->isDock()) {
+        m_docks.insert(w);
+    }
 }
 
 void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
         m_windows.erase(it);
+    }
+
+    if (const auto it = m_docks.find(w); it != m_docks.end()) {
+        m_docks.erase(it);
     }
 }
 
@@ -121,6 +130,49 @@ void BBDX::WindowManager::reconfigure() {
 
     for (const auto &[_, window] : m_windows) {
         window->reconfigure();
+    }
+}
+
+void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) {
+    const auto window = findWindow(w);
+    if (!window)
+        return;
+
+    const KWin::LogicalOutput* screen = w->screen();
+
+    KWin::Region effectiveScreenRegion = KWin::Region(screen->geometry());
+
+    for (const auto &dock : m_docks) {
+        if (dock->screen() != screen)  {
+            continue;
+        }
+
+        effectiveScreenRegion -= KWin::Region(KWin::Rect(dock->frameGeometry().toRect()));
+    }
+
+    const KWin::Rect effectiveScreenRect{effectiveScreenRegion.boundingRect()};
+    const KWin::Rect windowRect{KWin::Rect(w->frameGeometry().toRect())};
+
+    bool maximizedHorizontal{false};
+    bool maximizedVertical{false};
+    if (windowRect.left() <= effectiveScreenRect.left()
+        && windowRect.right() >= effectiveScreenRect.right()) {
+        maximizedHorizontal = true;
+    }
+
+    if (windowRect.top() <= effectiveScreenRect.top()
+        && windowRect.bottom() >= effectiveScreenRect.bottom()) {
+        maximizedVertical = true;
+    }
+
+    if (maximizedHorizontal && maximizedVertical) {
+        window->setMaximizedState(Window::MaximizedState::Complete);
+    } else if (maximizedHorizontal && !maximizedVertical) {
+        window->setMaximizedState(Window::MaximizedState::Horizontal);
+    } else if (!maximizedHorizontal && maximizedVertical) {
+        window->setMaximizedState(Window::MaximizedState::Vertical);
+    } else {
+        window->setMaximizedState(Window::MaximizedState::Restored);
     }
 }
 

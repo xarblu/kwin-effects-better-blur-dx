@@ -9,6 +9,7 @@
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 #  include "kwin_compat_6_6.hpp"
 #else
+#  include <core/output.h>
 #  include <core/region.h>
 #endif
 
@@ -19,6 +20,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace KWin {
@@ -38,7 +40,11 @@ public:
     };
 
 private:
+    // managed windows
     std::unordered_map<const KWin::EffectWindow *, std::unique_ptr<BBDX::Window>> m_windows{};
+
+    // docks seperate for maximized calculation
+    std::unordered_set<const KWin::EffectWindow *> m_docks{};
 
     // window classes
     QList<QString> m_windowClassesFixed{};
@@ -82,6 +88,11 @@ public:
      * reconfigure from BlurConfig
      */
     void reconfigure();
+
+    /**
+     * Refresh maximized state of a window
+     */
+    void refreshMaximizedState(const KWin::EffectWindow *w);
 
     /**
      * getters

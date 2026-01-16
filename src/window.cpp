@@ -30,9 +30,10 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_windowManager = wm;
     m_effectwindow = w;
     reconfigure();
+    refreshMaximizedState();
     connect(w, &KWin::EffectWindow::minimizedChanged, this, &BBDX::Window::slotMinimizedChanged);
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
-    connect(w, &KWin::EffectWindow::windowMaximizedStateChanged, this, &BBDX::Window::slotWindowMaximizedStateChanged);
+    //connect(w, &KWin::EffectWindow::windowMaximizedStateChanged, this, &BBDX::Window::slotWindowMaximizedStateChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
     connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
 }
@@ -75,6 +76,7 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
 
 void BBDX::Window::slotWindowFrameGeometryChanged() {
     updateForceBlurRegion();
+    refreshMaximizedState();
 
     // Not sure if this is the best place to unset
     // this but seems to work fine for now
@@ -109,6 +111,10 @@ void BBDX::Window::setIsTransformed(bool toggle) {
     }
 }
 
+void BBDX::Window::setMaximizedState(MaximizedState state) {
+    m_maximizedState = state;
+}
+
 bool BBDX::Window::shouldBlurWhileTransformed() const {
     // While minimized there's no reason to blur
     if (effectwindow()->isMinimized()) {
@@ -123,6 +129,10 @@ bool BBDX::Window::shouldBlurWhileTransformed() const {
     }
 
     return m_shouldBlurWhileTransformed;
+}
+
+void BBDX::Window::refreshMaximizedState() {
+    m_windowManager->refreshMaximizedState(effectwindow());
 }
 
 void BBDX::Window::updateForceBlurRegion() {

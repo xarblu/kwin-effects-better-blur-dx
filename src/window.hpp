@@ -82,6 +82,7 @@ private:
     std::chrono::steady_clock::time_point m_blurWhileTransformedTransitionStart;
 
 private:
+    void refreshMaximizedState();
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();
 
@@ -99,6 +100,7 @@ public:
      * setters
      */
     void setIsTransformed(bool toggle);
+    void setMaximizedState(MaximizedState state);
 
     /**
      * getters
