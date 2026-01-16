@@ -52,6 +52,7 @@ void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
 
     if (w->isDock()) {
         m_docks.insert(w);
+        refreshMaximizedStateAll();
     }
 }
 
@@ -62,6 +63,7 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
 
     if (const auto it = m_docks.find(w); it != m_docks.end()) {
         m_docks.erase(it);
+        refreshMaximizedStateAll();
     }
 }
 
@@ -133,7 +135,7 @@ void BBDX::WindowManager::reconfigure() {
     }
 }
 
-void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) {
+void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) const {
     const auto window = findWindow(w);
     if (!window)
         return;
@@ -173,6 +175,12 @@ void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) {
         window->setMaximizedState(Window::MaximizedState::Vertical);
     } else {
         window->setMaximizedState(Window::MaximizedState::Restored);
+    }
+}
+
+void BBDX::WindowManager::refreshMaximizedStateAll() const {
+    for (const auto &[w, _] : m_windows) {
+        refreshMaximizedState(w);
     }
 }
 

@@ -90,9 +90,10 @@ public:
     void reconfigure();
 
     /**
-     * Refresh maximized state of a window
+     * Refresh maximized state of a window / of all windows
      */
-    void refreshMaximizedState(const KWin::EffectWindow *w);
+    void refreshMaximizedState(const KWin::EffectWindow *w) const;
+    void refreshMaximizedStateAll() const;
 
     /**
      * getters
