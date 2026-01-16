@@ -33,7 +33,6 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     refreshMaximizedState();
     connect(w, &KWin::EffectWindow::minimizedChanged, this, &BBDX::Window::slotMinimizedChanged);
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
-    //connect(w, &KWin::EffectWindow::windowMaximizedStateChanged, this, &BBDX::Window::slotWindowMaximizedStateChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
     connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
 }
@@ -81,20 +80,6 @@ void BBDX::Window::slotWindowFrameGeometryChanged() {
     // Not sure if this is the best place to unset
     // this but seems to work fine for now
     m_minimizedFromMaximized = false;
-}
-
-void BBDX::Window::slotWindowMaximizedStateChanged(bool horizontal, bool vertical) {
-    if (!horizontal && !vertical) {
-        m_maximizedState = MaximizedState::Restored;
-    } else if (horizontal && !vertical) {
-        m_maximizedState = MaximizedState::Horizontal;
-    } else if (!horizontal && vertical) {
-        m_maximizedState = MaximizedState::Vertical;
-    } else if (horizontal && vertical) {
-        m_maximizedState = MaximizedState::Complete;
-    } else {
-        m_maximizedState = MaximizedState::Unknown;
-    }
 }
 
 void BBDX::Window::setIsTransformed(bool toggle) {
