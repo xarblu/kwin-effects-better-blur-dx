@@ -191,12 +191,6 @@ private:
     int m_expandSize;
     int m_noiseStrength;
 
-    // BBDX Mixins
-    BlurSettings m_settings;
-    BBDX::RefractionPass m_refractionPass{};
-    BBDX::WindowManager m_windowManager{};
-    bool m_forceContrastParams{false};
-
     struct OffsetStruct
     {
         float minOffset;
@@ -223,6 +217,12 @@ private:
 
     static ContrastManagerInterface *s_contrastManager;
     static QTimer *s_contrastManagerRemoveTimer;
+
+    // BBDX Mixins
+    BlurSettings m_settings;
+    BBDX::RefractionPass m_refractionPass{};
+    BBDX::WindowManager m_windowManager{};
+    bool m_forceContrastParams{false};
 };
 
 inline bool BlurEffect::provides(Effect::Feature feature)
