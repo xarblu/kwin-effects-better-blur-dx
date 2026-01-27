@@ -1041,6 +1041,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->popShader();
     }
 
+    const float modulation = opacity * opacity;
+
     if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
         if (!m_refractionPass.pushShaderRounded()) {
         ShaderManager::instance()->pushShader(m_roundedOnscreenPass.shader.get());
@@ -1073,7 +1075,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                    float(m_offset),
                                                    QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5),
                                                    nativeCornerRadius.toVector(),
-                                                   opacity,
+                                                   modulation,
                                                    scaledBackgroundRect)) {
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.mvpMatrixLocation, projectionMatrix);
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.colorMatrixLocation, colorMatrix);
@@ -1081,7 +1083,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.offsetLocation, float(m_offset));
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.cornerRadiusLocation, nativeCornerRadius.toVector());
-        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.opacityLocation, opacity);
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.opacityLocation, modulation);
         } // indent intentional for KWin diff
 
         BBDX::setTextureSwizzle(read->colorAttachment());
@@ -1126,15 +1128,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         read->colorAttachment()->bind();
 
         // Modulate the blurred texture with the window opacity if the window isn't opaque
-        if (opacity < 1.0) {
+        if (modulation < 1.0) {
             glEnable(GL_BLEND);
-            glBlendColor(0, 0, 0, opacity * opacity);
+            glBlendColor(0, 0, 0, modulation);
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
         }
 
         vbo->draw(GL_TRIANGLES, 6, vertexCount);
 
-        if (opacity < 1.0) {
+        if (modulation < 1.0) {
             glDisable(GL_BLEND);
         }
 

@@ -138,7 +138,7 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
                                          const float offset,
                                          const QVector4D &box,
                                          const QVector4D &cornerRadius,
-                                         const qreal opacity,
+                                         const qreal modulation,
                                          const QRect &scaledBackgroundRect) const {
 
     if (!enabled())
@@ -151,7 +151,7 @@ bool BBDX::RefractionPass::setParametersRounded(const QMatrix4x4 &projectionMatr
     m_rounded.shader->setUniform(m_rounded.offsetLocation, offset);
     m_rounded.shader->setUniform(m_rounded.boxLocation, box);
     m_rounded.shader->setUniform(m_rounded.cornerRadiusLocation, cornerRadius);
-    m_rounded.shader->setUniform(m_rounded.opacityLocation, opacity);
+    m_rounded.shader->setUniform(m_rounded.opacityLocation, modulation);
     // refraction parameters
     m_rounded.shader->setUniform(m_rounded.refractionRectSizeLocation,
                                  QVector2D(scaledBackgroundRect.width(), scaledBackgroundRect.height()));

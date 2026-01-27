@@ -163,7 +163,7 @@ void main(void)
         sum /= weightSum;
     }
 
-    fragColor = sum * colorMatrix * opacity * opacity;
+    fragColor = sum * colorMatrix * opacity;
 
     float f = sdfRoundedBox(vertex, box.xy, box.zw, cornerRadius);
     float df = fwidth(f);

@@ -26,7 +26,7 @@ void main(void)
     sum += texture(texUnit, uv + vec2(0.0, -halfpixel.y * 2.0) * offset);
     sum += texture(texUnit, uv + vec2(-halfpixel.x, -halfpixel.y) * offset) * 2.0;
 
-    fragColor = (sum / 12.0) * colorMatrix * opacity * opacity;
+    fragColor = (sum / 12.0) * colorMatrix * opacity;
 
     float f = sdfRoundedBox(vertex, box.xy, box.zw, cornerRadius);
     float df = fwidth(f);
