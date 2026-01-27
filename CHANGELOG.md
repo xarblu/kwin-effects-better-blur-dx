@@ -2,6 +2,8 @@
 Things not in any tagged release yet:
 
 ### Features:
+- Port to Plasma 6.6 blur
+- Support Plasma 6.6
 - Re-implement refraction as an alternative to the default contrast pass
 
 ### Bug Fixes:
