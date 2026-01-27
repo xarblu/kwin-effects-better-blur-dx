@@ -79,6 +79,39 @@ QTimer *BlurEffect::s_blurManagerRemoveTimer = nullptr;
 ContrastManagerInterface *BlurEffect::s_contrastManager = nullptr;
 QTimer *BlurEffect::s_contrastManagerRemoveTimer = nullptr;
 
+static QMatrix4x4 colorTransformMatrix(qreal saturation, qreal contrast, qreal brightness)
+{
+    QMatrix4x4 saturationMatrix;
+    QMatrix4x4 contrastMatrix;
+    QMatrix4x4 brightnessMatrix;
+
+    if (!qFuzzyCompare(saturation, 1.0)) {
+        const qreal rval = (1.0 - saturation) * 0.2126;
+        const qreal gval = (1.0 - saturation) * 0.7152;
+        const qreal bval = (1.0 - saturation) * 0.0722;
+
+        saturationMatrix = QMatrix4x4(rval + saturation, rval, rval, 0.0,
+                                      gval, gval + saturation, gval, 0.0,
+                                      bval, bval, bval + saturation, 0.0,
+                                      0.0, 0.0, 0.0, 1.0);
+    }
+
+    if (!qFuzzyCompare(contrast, 1.0)) {
+        const float transl = (1.0 - contrast) / 2.0;
+
+        contrastMatrix = QMatrix4x4(contrast, 0.0, 0.0, 0.0,
+                                    0.0, contrast, 0.0, 0.0,
+                                    0.0, 0.0, contrast, 0.0,
+                                    transl, transl, transl, 1.0);
+    }
+
+    if (!qFuzzyCompare(brightness, 1.0)) {
+        brightnessMatrix.scale(brightness, brightness, brightness);
+    }
+
+    return contrastMatrix * saturationMatrix * brightnessMatrix;
+}
+
 BlurEffect::BlurEffect()
 {
     BlurConfig::instance(effects->config());
@@ -278,59 +311,22 @@ void BlurEffect::initBlurStrengthValues()
     }
 }
 
-QMatrix4x4 BlurEffect::colorMatrix(const BlurEffectData &params) const
-{
-    QMatrix4x4 satMatrix; // saturation
-    QMatrix4x4 contMatrix; // contrast
-    QMatrix4x4 brightMatrix; // brightess
-
-    // Saturation matrix
-    const qreal saturation = getContrastParam(params.saturation, m_settings.general.saturation);
-    if (!qFuzzyCompare(saturation, 1.0)) {
-        const qreal rval = (1.0 - saturation) * .2126;
-        const qreal gval = (1.0 - saturation) * .7152;
-        const qreal bval = (1.0 - saturation) * .0722;
-
-        satMatrix = QMatrix4x4(rval + saturation, rval, rval, 0.0,
-                               gval, gval + saturation, gval, 0.0,
-                               bval, bval, bval + saturation, 0.0,
-                               0, 0, 0, 1.0);
-    }
-
-    // Contrast Matrix
-    const qreal contrast = getContrastParam(params.contrast, m_settings.general.contrast);
-    if (!qFuzzyCompare(contrast, 1.0)) {
-        const float transl = (1.0 - contrast) / 2.0;
-
-        contMatrix = QMatrix4x4(contrast, 0, 0, 0.0,
-                                0, contrast, 0, 0.0,
-                                0, 0, contrast, 0.0,
-                                transl, transl, transl, 1.0);
-    }
-
-    // Brightness matrix
-    const qreal brightness = getContrastParam(params.brightness, m_settings.general.brightness);
-    if (!qFuzzyCompare(brightness, 1.0)) {
-        brightMatrix.scale(brightness, brightness, brightness);
-    }
-
-    QMatrix4x4 colorMatrix = contMatrix * satMatrix * brightMatrix;
-
-    return colorMatrix;
-}
-
 void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags);
     m_settings.read();
     m_refractionPass.reconfigure();
     m_windowManager.reconfigure();
+    m_forceContrastParams = BlurConfig::forceContrastParams();
 
     int blurStrength = m_settings.general.blurStrength;
     m_iterationCount = blurStrengthValues[blurStrength].iteration;
     m_offset = blurStrengthValues[blurStrength].offset;
     m_expandSize = blurOffsets[m_iterationCount - 1].expandSize;
     m_noiseStrength = m_settings.general.noiseStrength;
+    m_colorMatrix = colorTransformMatrix(BlurConfig::saturation() / 100.0,
+                                         BlurConfig::contrast() / 100.0,
+                                         BlurConfig::brightness() / 100.0);
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -392,8 +388,13 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         BlurEffectData &data = m_windows[w];
         data.content = content;
         data.frame = frame;
-        data.contrast = contrast;
-        data.saturation = saturation;
+        if (m_forceContrastParams) {
+            data.colorMatrix.reset();
+        } else if (saturation || contrast) {
+            data.colorMatrix = colorTransformMatrix(saturation.value_or(1.0), contrast.value_or(1.0), 1.0);
+        } else {
+            data.colorMatrix.reset();
+        }
         data.windowEffect = ItemEffect(w->windowItem());
     } else {
         if (auto it = m_windows.find(w); it != m_windows.end()) {
@@ -1041,6 +1042,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->popShader();
     }
 
+    const QMatrix4x4 &colorMatrix = blurInfo.colorMatrix ? *blurInfo.colorMatrix : m_colorMatrix;
     const float modulation = opacity * opacity;
 
     if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
@@ -1050,8 +1052,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
-
-        const QMatrix4x4 colorMatrix = BlurEffect::colorMatrix(blurInfo);
 
         GLFramebuffer::popFramebuffer();
         const auto &read = renderInfo.framebuffers[1];
@@ -1104,8 +1104,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
-
-        QMatrix4x4 colorMatrix = BlurEffect::colorMatrix(blurInfo);
 
         GLFramebuffer::popFramebuffer();
         const auto &read = renderInfo.framebuffers[1];

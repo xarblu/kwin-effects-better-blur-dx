@@ -65,9 +65,10 @@ struct BlurEffectData
 
     ItemEffect windowEffect;
 
-    std::optional<qreal> brightness;
-    std::optional<qreal> contrast;
-    std::optional<qreal> saturation;
+    /**
+     * Color transformation matrix (brightness, contrast, and saturation).
+     */
+    std::optional<QMatrix4x4> colorMatrix;
 };
 
 class BlurEffect : public KWin::Effect
@@ -116,7 +117,6 @@ public Q_SLOTS:
 
 private:
     void initBlurStrengthValues();
-    QMatrix4x4 colorMatrix(const BlurEffectData &params) const;
     Region blurRegion(EffectWindow *w) const;
     Region decorationBlurRegion(const EffectWindow *w) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
@@ -124,7 +124,6 @@ private:
     void updateBlurRegion(EffectWindow *w);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const Region &deviceRegion, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
-    qreal getContrastParam(std::optional<qreal> requested_value, qreal config_value) const;
 
 private:
     struct
@@ -186,14 +185,17 @@ private:
     RenderView *m_currentView = nullptr;
 #endif
 
+    QMatrix4x4 m_colorMatrix;
     size_t m_iterationCount; // number of times the texture will be downsized to half size
     int m_offset;
     int m_expandSize;
     int m_noiseStrength;
 
+    // BBDX Mixins
     BlurSettings m_settings;
     BBDX::RefractionPass m_refractionPass{};
     BBDX::WindowManager m_windowManager{};
+    bool m_forceContrastParams{false};
 
     struct OffsetStruct
     {
