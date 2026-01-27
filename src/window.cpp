@@ -257,6 +257,12 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
     // currently)
     const KWin::BorderRadius windowCornerRadius = m_effectwindow->window()->borderRadius();
 
+    // Plasma surfaces set their blur region
+    // in a way that *should* not bleed
+    if (isPlasmaSurface()) {
+        return windowCornerRadius;
+    }
+
     // Breeze has a "Round bottom corners of windows with no borders"
     // option which sets radius for the *bottom corners only* (because
     // it assumes no blur behind the top corners).
@@ -283,12 +289,6 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
                                   topRight,
                                   windowCornerRadius.bottomLeft(),
                                   windowCornerRadius.bottomRight());
-    }
-
-    // Plasma surfaces set their blur region
-    // in a way that *should* not bleed
-    if (isPlasmaSurface()) {
-        return KWin::BorderRadius();
     }
 
     // Fullscreen/completely maximized windows don't need radius.
