@@ -1,15 +1,15 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/effects/better_blur_dx/">
-  <file>shaders/contrast.frag</file>
-  <file>shaders/contrast_core.frag</file>
-  <file>shaders/contrast_rounded.frag</file>
-  <file>shaders/contrast_rounded.vert</file>
-  <file>shaders/contrast_rounded_core.frag</file>
-  <file>shaders/contrast_rounded_core.vert</file>
   <file>shaders/downsample.frag</file>
   <file>shaders/downsample_core.frag</file>
   <file>shaders/noise.frag</file>
   <file>shaders/noise_core.frag</file>
+  <file>shaders/onscreen.frag</file>
+  <file>shaders/onscreen_core.frag</file>
+  <file>shaders/onscreen_rounded_core.frag</file>
+  <file>shaders/onscreen_rounded.frag</file>
+  <file>shaders/onscreen_rounded_core.vert</file>
+  <file>shaders/onscreen_rounded.vert</file>
   <file>shaders/refraction.frag</file>
   <file>shaders/refraction_core.frag</file>
   <file>shaders/refraction_rounded.frag</file>

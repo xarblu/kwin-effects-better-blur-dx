@@ -134,7 +134,7 @@ private:
         int colorMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
-    } m_contrastPass;
+    } m_onscreenPass;
 
     struct
     {
@@ -146,7 +146,7 @@ private:
         int boxLocation;
         int cornerRadiusLocation;
         int opacityLocation;
-    } m_roundedContrastPass;
+    } m_roundedOnscreenPass;
 
     struct
     {

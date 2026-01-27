@@ -45,7 +45,7 @@ BBDX::RefractionPass::RefractionPass() {
 
     m_rounded.shader = KWin::ShaderManager::instance()->generateShaderFromFile(
             KWin::ShaderTrait::MapTexture,
-            QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.vert"),
+            QStringLiteral(":/effects/better_blur_dx/shaders/onscreen_rounded.vert"),
             QStringLiteral(":/effects/better_blur_dx/shaders/refraction_rounded.frag"));
 
     if (!m_rounded.shader) {

@@ -84,33 +84,33 @@ BlurEffect::BlurEffect()
     BlurConfig::instance(effects->config());
     ensureResources();
 
-    m_contrastPass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
+    m_onscreenPass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
                                                                               QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
-                                                                              QStringLiteral(":/effects/better_blur_dx/shaders/contrast.frag"));
-    if (!m_contrastPass.shader) {
-        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to load contrast pass shader";
+                                                                              QStringLiteral(":/effects/better_blur_dx/shaders/onscreen.frag"));
+    if (!m_onscreenPass.shader) {
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to load onscreen pass shader";
         return;
     } else {
-        m_contrastPass.mvpMatrixLocation = m_contrastPass.shader->uniformLocation("modelViewProjectionMatrix");
-        m_contrastPass.colorMatrixLocation = m_contrastPass.shader->uniformLocation("colorMatrix");
-        m_contrastPass.offsetLocation = m_contrastPass.shader->uniformLocation("offset");
-        m_contrastPass.halfpixelLocation = m_contrastPass.shader->uniformLocation("halfpixel");
+        m_onscreenPass.mvpMatrixLocation = m_onscreenPass.shader->uniformLocation("modelViewProjectionMatrix");
+        m_onscreenPass.colorMatrixLocation = m_onscreenPass.shader->uniformLocation("colorMatrix");
+        m_onscreenPass.offsetLocation = m_onscreenPass.shader->uniformLocation("offset");
+        m_onscreenPass.halfpixelLocation = m_onscreenPass.shader->uniformLocation("halfpixel");
     }
 
-    m_roundedContrastPass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
-                                                                                     QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.vert"),
-                                                                                     QStringLiteral(":/effects/better_blur_dx/shaders/contrast_rounded.frag"));
-    if (!m_roundedContrastPass.shader) {
-        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to load contrast pass shader";
+    m_roundedOnscreenPass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
+                                                                                     QStringLiteral(":/effects/better_blur_dx/shaders/onscreen_rounded.vert"),
+                                                                                     QStringLiteral(":/effects/better_blur_dx/shaders/onscreen_rounded.frag"));
+    if (!m_roundedOnscreenPass.shader) {
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to load onscreen pass shader";
         return;
     } else {
-        m_roundedContrastPass.mvpMatrixLocation = m_roundedContrastPass.shader->uniformLocation("modelViewProjectionMatrix");
-        m_roundedContrastPass.colorMatrixLocation = m_roundedContrastPass.shader->uniformLocation("colorMatrix");
-        m_roundedContrastPass.offsetLocation = m_roundedContrastPass.shader->uniformLocation("offset");
-        m_roundedContrastPass.halfpixelLocation = m_roundedContrastPass.shader->uniformLocation("halfpixel");
-        m_roundedContrastPass.boxLocation = m_roundedContrastPass.shader->uniformLocation("box");
-        m_roundedContrastPass.cornerRadiusLocation = m_roundedContrastPass.shader->uniformLocation("cornerRadius");
-        m_roundedContrastPass.opacityLocation = m_roundedContrastPass.shader->uniformLocation("opacity");
+        m_roundedOnscreenPass.mvpMatrixLocation = m_roundedOnscreenPass.shader->uniformLocation("modelViewProjectionMatrix");
+        m_roundedOnscreenPass.colorMatrixLocation = m_roundedOnscreenPass.shader->uniformLocation("colorMatrix");
+        m_roundedOnscreenPass.offsetLocation = m_roundedOnscreenPass.shader->uniformLocation("offset");
+        m_roundedOnscreenPass.halfpixelLocation = m_roundedOnscreenPass.shader->uniformLocation("halfpixel");
+        m_roundedOnscreenPass.boxLocation = m_roundedOnscreenPass.shader->uniformLocation("box");
+        m_roundedOnscreenPass.cornerRadiusLocation = m_roundedOnscreenPass.shader->uniformLocation("cornerRadius");
+        m_roundedOnscreenPass.opacityLocation = m_roundedOnscreenPass.shader->uniformLocation("opacity");
     }
 
     m_downsamplePass.shader = ShaderManager::instance()->generateShaderFromFile(ShaderTrait::MapTexture,
@@ -1043,7 +1043,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
         if (!m_refractionPass.pushShaderRounded()) {
-        ShaderManager::instance()->pushShader(m_roundedContrastPass.shader.get());
+        ShaderManager::instance()->pushShader(m_roundedOnscreenPass.shader.get());
         } // indent intentional for KWin diff
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
@@ -1075,13 +1075,13 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                    nativeCornerRadius.toVector(),
                                                    opacity,
                                                    scaledBackgroundRect)) {
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.mvpMatrixLocation, projectionMatrix);
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.colorMatrixLocation, colorMatrix);
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.halfpixelLocation, halfpixel);
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.offsetLocation, float(m_offset));
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.cornerRadiusLocation, nativeCornerRadius.toVector());
-        m_roundedContrastPass.shader->setUniform(m_roundedContrastPass.opacityLocation, opacity);
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.mvpMatrixLocation, projectionMatrix);
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.colorMatrixLocation, colorMatrix);
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.halfpixelLocation, halfpixel);
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.offsetLocation, float(m_offset));
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.cornerRadiusLocation, nativeCornerRadius.toVector());
+        m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.opacityLocation, opacity);
         } // indent intentional for KWin diff
 
         BBDX::setTextureSwizzle(read->colorAttachment());
@@ -1097,7 +1097,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->popShader();
     } else {
         if (!m_refractionPass.pushShaderRectangular()) {
-        ShaderManager::instance()->pushShader(m_contrastPass.shader.get());
+        ShaderManager::instance()->pushShader(m_onscreenPass.shader.get());
         } // indent intentional for KWin diff
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
@@ -1116,10 +1116,10 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                        halfpixel,
                                                        float(m_offset),
                                                        scaledBackgroundRect)) {
-        m_contrastPass.shader->setUniform(m_contrastPass.mvpMatrixLocation, projectionMatrix);
-        m_contrastPass.shader->setUniform(m_contrastPass.colorMatrixLocation, colorMatrix);
-        m_contrastPass.shader->setUniform(m_contrastPass.halfpixelLocation, halfpixel);
-        m_contrastPass.shader->setUniform(m_contrastPass.offsetLocation, float(m_offset));
+        m_onscreenPass.shader->setUniform(m_onscreenPass.mvpMatrixLocation, projectionMatrix);
+        m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, colorMatrix);
+        m_onscreenPass.shader->setUniform(m_onscreenPass.halfpixelLocation, halfpixel);
+        m_onscreenPass.shader->setUniform(m_onscreenPass.offsetLocation, float(m_offset));
         } // indent intentional for KWin diff
 
         BBDX::setTextureSwizzle(read->colorAttachment());
