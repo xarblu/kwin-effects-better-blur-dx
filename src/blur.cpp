@@ -21,23 +21,23 @@
 #  include <core/region.h>
 #endif
 
-#include "core/output.h"
-#include "core/pixelgrid.h"
-#include "core/rendertarget.h"
-#include "core/renderviewport.h"
-#include "effect/effect.h"
-#include "effect/effecthandler.h"
-#include "opengl/glplatform.h"
-#include "opengl/glutils.h"
-#include "scene/decorationitem.h"
-#include "scene/scene.h"
-#include "scene/surfaceitem.h"
-#include "scene/windowitem.h"
-#include "utils/xcbutils.h"
-#include "wayland/blur.h"
-#include "wayland/contrast.h"
-#include "wayland/display.h"
-#include "wayland/surface.h"
+#include <core/output.h>
+#include <core/pixelgrid.h>
+#include <core/rendertarget.h>
+#include <core/renderviewport.h>
+#include <effect/effect.h>
+#include <effect/effecthandler.h>
+#include <opengl/glplatform.h>
+#include <opengl/glutils.h>
+#include <scene/decorationitem.h>
+#include <scene/scene.h>
+#include <scene/surfaceitem.h>
+#include <scene/windowitem.h>
+#include <utils/xcbutils.h>
+#include <wayland/blur.h>
+#include <wayland/contrast.h>
+#include <wayland/display.h>
+#include <wayland/surface.h>
 
 #include <QGuiApplication>
 #include <QMatrix4x4>
