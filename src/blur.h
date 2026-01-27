@@ -120,7 +120,7 @@ private:
     Region blurRegion(EffectWindow *w) const;
     Region decorationBlurRegion(const EffectWindow *w) const;
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
-    bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data);
+    bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
     void updateBlurRegion(EffectWindow *w);
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const Region &deviceRegion, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();

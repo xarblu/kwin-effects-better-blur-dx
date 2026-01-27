@@ -679,7 +679,7 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
     }
 }
 
-bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data)
+bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const
 {
     if (effects->activeFullScreenEffect() && !w->data(WindowForceBlurRole).toBool()) {
         return false;
@@ -1125,7 +1125,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
-        // Modulate the blurred texture with the window opacity if the window isn't opaque
         if (modulation < 1.0) {
             glEnable(GL_BLEND);
             glBlendColor(0, 0, 0, modulation);
