@@ -298,13 +298,11 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
 
     // fallback to configured radius
     if (m_userBorderRadius > 0.0) {
-        // If decoration is force-blurred we need to round all corners because
-        // we simply extend a rectangle to the top window border.
-        // Same for CSD windows.
-        // Else we assume the decoration either set its blur region appropriately
-        // or isn't blurred at all i.e. the top corners are already correct and we
-        // only need to round the bottom ones.
-        if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame)) {
+        // If decoration is blurred or window has CSD we need to round all corners
+        // because blur might bleed from all corners.
+        // Else we assume the decoration isn't blurred at all i.e. the top corners
+        // are already correct and we only need to round the bottom ones.
+        if (m_blurOriginMask & (static_cast<unsigned int>(BlurOrigin::RequestedFrame) | static_cast<unsigned int>(BlurOrigin::ForcedFrame))) {
             return KWin::BorderRadius(m_userBorderRadius);
         } else if (!effectwindow()->hasDecoration()) {
             return KWin::BorderRadius(m_userBorderRadius);
