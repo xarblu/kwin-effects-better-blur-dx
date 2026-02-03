@@ -321,73 +321,73 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
     // Force blurred surfaces don't want/need this
     if (isPlasmaSurface()) {
         return effectwindow()->opacity() * data.opacity();
-    } else {
-        // ease into and out of the phase without blur
-        // if moving/resizing with Wobbly Windows
-        // TODO: maybe move partly this to a separate function
-        //       - feels kind of out-of place here
-        if (m_isTransformed && m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
-            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::steady_clock::now() - m_blurWhileTransformedTransitionStart).count();
-
-            // animation takes 250ms max for now
-            const qreal progress = elapsed / 250.0;
-
-            // we need to queue a full repaint here to 
-            // avoid flickering due to blur-region-clipping
-            effectwindow()->addRepaintFull();
-
-            switch (m_blurWhileTransformedTransitionState) {
-                case TransformState::Started:
-                    // De-maximizing a window by dragging the titlebar
-                    // while wobbly windows is active behaves weird:
-                    // - drag (before de-maximize) already marked "transformed" after mouse moved a bit
-                    // - on actual de-maximize blur briefly reappears (not marked "transformed"?)
-                    // - then it's marked "transformed" again
-                    // So while we're maximized stay fully blurred.
-                    if (m_maximizedState == MaximizedState::Complete) {
-                        m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
-                        return data.opacity();
-                    }
-
-                    if (progress >= 1.0) {
-                        // fade out done
-                        // We can stop blurring now until
-                        // slotWindowFinishUserMovedResized gets called.
-                        m_shouldBlurWhileTransformed = false;
-                        return 0.0;
-                    } else {
-                        // fade out in progress
-                        const QEasingCurve curve{QEasingCurve::OutCubic};
-                        return data.opacity() * (1.0 - curve.valueForProgress(progress));
-                    }
-                case TransformState::Ended:
-                    // Needed to avoid a flicker in case de-maximizing by dragging
-                    // the titlebar is cancelled (drag stopped before de-maximize)
-                    // which still triggers slotWindowFinishUserMovedResized
-                    // TODO: this should only be the case if MaximizedState stays Complete
-                    //       throughout the entire UserMovedResized i.e. we need to track that
-                    if (m_maximizedState == MaximizedState::Complete) {
-                        m_blurWhileTransformedTransitionState = TransformState::None;
-                        return data.opacity();
-                    }
-
-                    if (progress >= 1.0) {
-                        // fade in done
-                        m_blurWhileTransformedTransitionState = TransformState::None;
-                        return data.opacity();
-                    } else {
-                        // fade in in progress
-                        const QEasingCurve curve{QEasingCurve::InCubic};
-                        return data.opacity() * curve.valueForProgress(progress);
-                    }
-                default:
-                    break;
-            }
-        }
-
-        return data.opacity();
     }
+
+    // ease into and out of the phase without blur
+    // if moving/resizing with Wobbly Windows
+    // TODO: maybe move partly this to a separate function
+    //       - feels kind of out-of place here
+    if (m_isTransformed && m_blurWhileTransformedTransitionState != TransformState::None) [[unlikely]] {
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - m_blurWhileTransformedTransitionStart).count();
+
+        // animation takes 250ms max for now
+        const qreal progress = elapsed / 250.0;
+
+        // we need to queue a full repaint here to 
+        // avoid flickering due to blur-region-clipping
+        effectwindow()->addRepaintFull();
+
+        switch (m_blurWhileTransformedTransitionState) {
+            case TransformState::Started:
+                // De-maximizing a window by dragging the titlebar
+                // while wobbly windows is active behaves weird:
+                // - drag (before de-maximize) already marked "transformed" after mouse moved a bit
+                // - on actual de-maximize blur briefly reappears (not marked "transformed"?)
+                // - then it's marked "transformed" again
+                // So while we're maximized stay fully blurred.
+                if (m_maximizedState == MaximizedState::Complete) {
+                    m_blurWhileTransformedTransitionStart = std::chrono::steady_clock::now();
+                    return data.opacity();
+                }
+
+                if (progress >= 1.0) {
+                    // fade out done
+                    // We can stop blurring now until
+                    // slotWindowFinishUserMovedResized gets called.
+                    m_shouldBlurWhileTransformed = false;
+                    return 0.0;
+                } else {
+                    // fade out in progress
+                    const QEasingCurve curve{QEasingCurve::OutCubic};
+                    return data.opacity() * (1.0 - curve.valueForProgress(progress));
+                }
+            case TransformState::Ended:
+                // Needed to avoid a flicker in case de-maximizing by dragging
+                // the titlebar is cancelled (drag stopped before de-maximize)
+                // which still triggers slotWindowFinishUserMovedResized
+                // TODO: this should only be the case if MaximizedState stays Complete
+                //       throughout the entire UserMovedResized i.e. we need to track that
+                if (m_maximizedState == MaximizedState::Complete) {
+                    m_blurWhileTransformedTransitionState = TransformState::None;
+                    return data.opacity();
+                }
+
+                if (progress >= 1.0) {
+                    // fade in done
+                    m_blurWhileTransformedTransitionState = TransformState::None;
+                    return data.opacity();
+                } else {
+                    // fade in in progress
+                    const QEasingCurve curve{QEasingCurve::InCubic};
+                    return data.opacity() * curve.valueForProgress(progress);
+                }
+            default:
+                break;
+        }
+    }
+
+    return data.opacity();
 }
 
 bool BBDX::Window::isPlasmaSurface() const {
