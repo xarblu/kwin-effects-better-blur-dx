@@ -70,7 +70,7 @@ private:
 
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};
-    bool m_minimizedFromMaximized{false};
+    bool m_restoresMaximized{false};
 
     // track whether window is currently being transformed
     bool m_isTransformed{false};

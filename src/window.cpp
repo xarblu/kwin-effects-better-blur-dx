@@ -40,7 +40,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 void BBDX::Window::slotMinimizedChanged() {
     if (m_maximizedState == MaximizedState::Complete
         && effectwindow()->isMinimized()) {
-        m_minimizedFromMaximized = true;
+        m_restoresMaximized = true;
     }
 }
 
@@ -79,7 +79,7 @@ void BBDX::Window::slotWindowFrameGeometryChanged() {
 
     // Not sure if this is the best place to unset
     // this but seems to work fine for now
-    m_minimizedFromMaximized = false;
+    m_restoresMaximized = false;
 }
 
 void BBDX::Window::setIsTransformed(bool toggle) {
@@ -109,7 +109,7 @@ bool BBDX::Window::shouldBlurWhileTransformed() const {
     // While completely maximized we can always blur.
     // Avoids weirdness while (de-)maximzing by dragging the
     // titlebar with Wobbly Windows enabled.
-    if (m_maximizedState == MaximizedState::Complete && !m_minimizedFromMaximized) {
+    if (m_maximizedState == MaximizedState::Complete && !m_restoresMaximized) {
         return true;
     }
 
