@@ -36,7 +36,7 @@ public:
     /**
      * Check if pass is ready i.e. all shaders loaded
      */
-    bool ready() const { return m_shader != nullptr; }
+    bool ready() const { return !!m_shader; }
 
     /**
      * Apply rounded corners with a mask from renderInfo.framebuffer[0]
