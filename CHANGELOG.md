@@ -1,6 +1,8 @@
 # DEV
 Things not in any tagged release yet:
 
+# 2.2.0
+
 ### Features:
 - Port to Plasma 6.6 blur
 - Support Plasma 6.6
