@@ -1049,10 +1049,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     const float modulation = opacity * opacity;
 
 #if BETTERBLUR_NOT_NEEDED
-    if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull() && false) {
-        if (!m_refractionPass.pushShaderRounded()) {
+    if (const BorderRadius cornerRadius = w->window()->borderRadius(); !cornerRadius.isNull()) {
         ShaderManager::instance()->pushShader(m_roundedOnscreenPass.shader.get());
-        } // indent intentional for KWin diff
 
         QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
         projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
@@ -1073,14 +1071,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                      .translated(-scaledBackgroundRect.topLeft());
         const BorderRadius nativeCornerRadius = cornerRadius.scaled(viewport.scale()).rounded();
 
-        if (!m_refractionPass.setParametersRounded(projectionMatrix,
-                                                   colorMatrix,
-                                                   halfpixel,
-                                                   float(m_offset),
-                                                   QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5),
-                                                   nativeCornerRadius.toVector(),
-                                                   modulation,
-                                                   scaledBackgroundRect)) {
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.mvpMatrixLocation, projectionMatrix);
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.colorMatrixLocation, colorMatrix);
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.halfpixelLocation, halfpixel);
@@ -1088,9 +1078,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.cornerRadiusLocation, nativeCornerRadius.toVector());
         m_roundedOnscreenPass.shader->setUniform(m_roundedOnscreenPass.opacityLocation, modulation);
-        } // indent intentional for KWin diff
 
-        BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
         glEnable(GL_BLEND);
