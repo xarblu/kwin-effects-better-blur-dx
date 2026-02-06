@@ -14,6 +14,10 @@
   <file>shaders/refraction_core.frag</file>
   <file>shaders/refraction_rounded.frag</file>
   <file>shaders/refraction_rounded_core.frag</file>
+  <file>shaders/rounded_corners_core.frag</file>
+  <file>shaders/rounded_corners.frag</file>
+  <file>shaders/rounded_corners_core.vert</file>
+  <file>shaders/rounded_corners.vert</file>
   <file>shaders/upsample.frag</file>
   <file>shaders/upsample_core.frag</file>
   <file>shaders/vertex.vert</file>

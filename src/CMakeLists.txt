@@ -6,6 +6,7 @@ set(better_blur_dx_SOURCES
     blur_extensions.cpp
     main.cpp
     refraction_pass.cpp
+    rounded_corners_pass.cpp
     settings.cpp
     window.cpp
     window_manager.cpp

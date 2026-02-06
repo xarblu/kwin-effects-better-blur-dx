@@ -184,6 +184,9 @@ BlurEffect::BlurEffect()
     if (!m_refractionPass.ready())
         return;
 
+    if (!m_roundedCornersPass.ready())
+        return;
+
     initBlurStrengthValues();
     reconfigure(ReconfigureAll);
 
@@ -1045,7 +1048,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     const QMatrix4x4 &colorMatrix = blurInfo.colorMatrix ? *blurInfo.colorMatrix : m_colorMatrix;
     const float modulation = opacity * opacity;
 
-    if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
+#if BETTERBLUR_NOT_NEEDED
+    if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull() && false) {
         if (!m_refractionPass.pushShaderRounded()) {
         ShaderManager::instance()->pushShader(m_roundedOnscreenPass.shader.get());
         } // indent intentional for KWin diff
@@ -1098,6 +1102,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         ShaderManager::instance()->popShader();
     } else {
+#endif
         if (!m_refractionPass.pushShaderRectangular()) {
         ShaderManager::instance()->pushShader(m_onscreenPass.shader.get());
         } // indent intentional for KWin diff
@@ -1138,7 +1143,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
 
         ShaderManager::instance()->popShader();
+#if BETTERBLUR_NOT_NEEDED
     }
+#endif
 
     if (m_noiseStrength > 0) {
         // Apply an additive noise onto the blurred image. The noise is useful to mask banding
@@ -1168,6 +1175,10 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
 
         glDisable(GL_BLEND);
+    }
+
+    if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
+        m_roundedCornersPass.apply(cornerRadius, viewport, scaledBackgroundRect, renderInfo, w, data, vbo, vertexCount);
     }
 
     vbo->unbindArrays();

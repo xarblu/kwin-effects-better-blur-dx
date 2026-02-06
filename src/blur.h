@@ -8,6 +8,7 @@
 #pragma once
 
 #include "refraction_pass.hpp"
+#include "rounded_corners_pass.hpp"
 #include "settings.h"
 #include "window_manager.hpp"
 #include "kwin_version.hpp"
@@ -221,6 +222,7 @@ private:
     // BBDX Mixins
     BlurSettings m_settings;
     BBDX::RefractionPass m_refractionPass{};
+    BBDX::RoundedCornersPass m_roundedCornersPass{};
     BBDX::WindowManager m_windowManager{};
     bool m_forceContrastParams{false};
 };
