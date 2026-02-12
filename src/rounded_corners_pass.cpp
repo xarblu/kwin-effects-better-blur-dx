@@ -16,7 +16,7 @@
 #include <QImage>
 
 
-Q_LOGGING_CATEGORY(ROUNDED_CORNERS_PASS, "kwin_effect_better_blur_dx.rounded_corners_pass", QtWarningMsg)
+Q_LOGGING_CATEGORY(ROUNDED_CORNERS_PASS, "kwin_effect_better_blur_dx.rounded_corners_pass", QtInfoMsg)
 
 BBDX::RoundedCornersPass::RoundedCornersPass() {
     m_shader = KWin::ShaderManager::instance()->generateShaderFromFile(

@@ -24,7 +24,7 @@
 #include <chrono>
 #include <optional>
 
-Q_LOGGING_CATEGORY(BBDX_WINDOW, "kwin_effect_better_blur_dx.window", QtWarningMsg)
+Q_LOGGING_CATEGORY(BBDX_WINDOW, "kwin_effect_better_blur_dx.window", QtInfoMsg)
 
 BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_windowManager = wm;

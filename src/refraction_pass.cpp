@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-Q_LOGGING_CATEGORY(REFRACTION_PASS, "kwin_effect_better_blur_dx.refraction_pass", QtWarningMsg)
+Q_LOGGING_CATEGORY(REFRACTION_PASS, "kwin_effect_better_blur_dx.refraction_pass", QtInfoMsg)
 
 BBDX::RefractionPass::RefractionPass() {
     // The vertex shaders should always be the one of the

@@ -26,7 +26,7 @@
 #include <memory>
 #include <utility>
 
-Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtWarningMsg)
+Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtInfoMsg)
 
 static const BBDX::WindowManager *self;
 
