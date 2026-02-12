@@ -152,6 +152,6 @@ public:
     /**
      * Convert blurOriginMask to human readable string
      */
-    QString blurOriginToString() const;
+    static QString blurOriginToString(unsigned int mask);
 };
 } // namespace BBDX
