@@ -188,11 +188,13 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // e.g. for corner radius.
     if (content.has_value()) {
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedContent);
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedContent);
     } else {
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
     }
     if (frame.has_value()) {
         m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedFrame);
     } else {
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
     }
