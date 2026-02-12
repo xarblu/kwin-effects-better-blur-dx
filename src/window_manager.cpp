@@ -61,6 +61,7 @@ void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
 
 void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
     if (const auto it = m_windows.find(w); it != m_windows.end()) {
+        qCInfo(WINDOW_MANAGER) << BBDX::LOG_PREFIX << "Window removed:" << *(it->second);
         m_windows.erase(it);
     }
 
