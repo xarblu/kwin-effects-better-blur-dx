@@ -48,6 +48,9 @@ const BBDX::WindowManager* BBDX::WindowManager::instance() {
 
 void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
     auto window = std::make_unique<BBDX::Window>(this, w);
+
+    qCInfo(WINDOW_MANAGER) << BBDX::LOG_PREFIX << "Window added:" << *window;
+
     m_windows.insert_or_assign(w, std::move(window));
 
     if (w->isDock()) {

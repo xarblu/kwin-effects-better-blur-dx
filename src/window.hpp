@@ -143,6 +143,15 @@ public:
      * get special treatment like non-rounded corners
      */
     bool isPlasmaSurface() const;
-};
 
+    /**
+     * operator to facilitate logging of windows
+     */
+    friend QDebug operator<<(QDebug &debug, const Window &window);
+
+    /**
+     * Convert blurOriginMask to human readable string
+     */
+    QString blurOriginToString() const;
+};
 } // namespace BBDX

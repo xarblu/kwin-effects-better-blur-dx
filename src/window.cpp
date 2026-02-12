@@ -406,3 +406,32 @@ bool BBDX::Window::isPlasmaSurface() const {
     // assume it is as a fallback
     return true;
 }
+
+QString BBDX::Window::blurOriginToString() const {
+    QString s{};
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent))
+        s.append("RequestedContent,");
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedFrame))
+        s.append("RequestedFrame,");
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent))
+        s.append("ForcedContent,");
+    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame))
+        s.append("ForcedFrame,");
+
+    if (s.isEmpty()) {
+        s = "None";
+    } else {
+        s.removeLast();
+    }
+
+    return s;
+}
+
+namespace BBDX {
+QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
+    debug << "windowClass:" << window.effectwindow()->windowClass();
+    debug << "windowType:" << window.effectwindow()->windowType();
+    debug << "blurOrigin:" << window.blurOriginToString();
+    return debug;
+}
+} // namespace BBDX
