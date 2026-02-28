@@ -199,15 +199,13 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
         m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
     }
 
-    // Normally we'd assume windows that set their own blur region
-    // know what they're doing.
-    // However these windows probably don't expect users to decrease
-    // the window opacity via KWin rules in which case we'll allow
-    // overriding the blur area.
-    // (w->opacity() here is the *entire* windows opacity incl. decorations i.e. what KWin rules change.
-    // Most windows will provide opacity via WindowPaintData)
-    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent)
-        && qFuzzyCompare(m_effectwindow->opacity(), 1.0)) {
+    // Respect the requested blur region for Plasma surfaces.
+    // We used to respect all requested blur regions but some are just
+    // completely bogus (e.g. some KDE apps using Breeze like setting just part of the window blurred
+    // - even if by default that blur isn't even visible *sigh*).
+    // (This check implies BlurOrigin::RequestedContent + some extra heuristics
+    // and thus must occur after {conten,frame}.has_value() checks)
+    if (isPlasmaSurface()) {
         if (m_blurOriginMask != oldBlurOriginMask) {
             qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this
                                                     << "(was:" << Window::blurOriginToString(oldBlurOriginMask) << ")";
