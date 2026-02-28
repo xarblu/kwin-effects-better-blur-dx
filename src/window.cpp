@@ -20,6 +20,7 @@
 #include <QLoggingCategory>
 #include <QVariant>
 #include <QtNumeric>
+#include <QtPreprocessorSupport>
 
 #include <chrono>
 #include <optional>
@@ -35,6 +36,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
     connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
+    connect(w, &KWin::EffectWindow::windowOpacityChanged, this, &BBDX::Window::slotWindowOpacityChanged);
 }
 
 void BBDX::Window::slotMinimizedChanged() {
@@ -80,6 +82,15 @@ void BBDX::Window::slotWindowFrameGeometryChanged() {
     // Not sure if this is the best place to unset
     // this but seems to work fine for now
     m_restoresMaximized = false;
+}
+
+void BBDX::Window::slotWindowOpacityChanged(KWin::EffectWindow *w, qreal oldOpacity, qreal newOpacity) {
+    Q_UNUSED(oldOpacity);
+    if (w->window()->isActive() && !m_originalOpacityActive.has_value()) {
+        m_originalOpacityActive = newOpacity;
+    } else if (!w->window()->isActive() && !m_originalOpacityInactive.has_value()) {
+        m_originalOpacityInactive = newOpacity;
+    }
 }
 
 void BBDX::Window::setIsTransformed(bool toggle) {
@@ -175,12 +186,7 @@ void BBDX::Window::reconfigure() {
 
     m_userBorderRadius = m_windowManager->userBorderRadius();
 
-    // XXX: may not be the best place to store this
-    //      as changing opacity of an already open window via KWin rules
-    //      would trigger the "opacity affects blur" path
-    //      (at least for Plasma surfaces as others can never take that path)
-    m_originalOpacity = effectwindow()->opacity();
-
+    slotWindowOpacityChanged(effectwindow(), 0.0, effectwindow()->opacity());
     updateForceBlurRegion();
 }
 
@@ -337,7 +343,10 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
     // themselves by adjusting their opacity at run time.
     //
     // The vast majority of blurred surfaces don't want/need this
-    if (isPlasmaSurface() && !qFuzzyCompare(m_originalOpacity, effectwindow()->opacity())) [[unlikely]] {
+    if (isPlasmaSurface()
+        && !(qFuzzyCompare(m_originalOpacityActive.value_or(1.0), effectwindow()->opacity())
+             || qFuzzyCompare(m_originalOpacityInactive.value_or(1.0), effectwindow()->opacity())))
+        [[unlikely]] {
         return effectwindow()->opacity() * data.opacity();
     }
 

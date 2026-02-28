@@ -85,7 +85,8 @@ private:
     // window opacity at last reconfigure() call
     // used to decide whether opacity should affect blur
     // in getEffectiveBlurOpacity()
-    qreal m_originalOpacity{1.0};
+    std::optional<qreal> m_originalOpacityActive{};
+    std::optional<qreal> m_originalOpacityInactive{};
 
 private:
     void refreshMaximizedState();
@@ -97,6 +98,7 @@ public Q_SLOTS:
     void slotWindowFrameGeometryChanged();
     void slotWindowStartUserMovedResized();
     void slotWindowFinishUserMovedResized();
+    void slotWindowOpacityChanged(KWin::EffectWindow *w, qreal oldOpacity, qreal newOpacity);
 
 public:
     explicit Window(WindowManager *wm, KWin::EffectWindow *w);
