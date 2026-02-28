@@ -167,13 +167,19 @@ void BBDX::Window::triggerBlurRegionUpdate() {
 }
 
 void BBDX::Window::reconfigure() {
-    if (m_windowManager->shouldForceBlur(m_effectwindow)) {
+    if (m_windowManager->shouldForceBlur(effectwindow())) {
         m_shouldForceBlur = true;
     } else {
         m_shouldForceBlur = false;
     }
 
     m_userBorderRadius = m_windowManager->userBorderRadius();
+
+    // XXX: may not be the best place to store this
+    //      as changing opacity of an already open window via KWin rules
+    //      would trigger the "opacity affects blur" path
+    //      (at least for Plasma surfaces as others can never take that path)
+    m_originalOpacity = effectwindow()->opacity();
 
     updateForceBlurRegion();
 }
@@ -204,7 +210,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // completely bogus (e.g. some KDE apps using Breeze like setting just part of the window blurred
     // - even if by default that blur isn't even visible *sigh*).
     // (This check implies BlurOrigin::RequestedContent + some extra heuristics
-    // and thus must occur after {conten,frame}.has_value() checks)
+    // and thus must occur after {content,frame}.has_value() checks)
     if (isPlasmaSurface()) {
         if (m_blurOriginMask != oldBlurOriginMask) {
             qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this
@@ -328,9 +334,10 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
 qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
     // Plasma surfaces expect their opacity to affect
     // the blur e.g. to hide the blurred surface alongside
-    // themselves.
-    // Force blurred surfaces don't want/need this
-    if (isPlasmaSurface()) {
+    // themselves by adjusting their opacity at run time.
+    //
+    // The vast majority of blurred surfaces don't want/need this
+    if (isPlasmaSurface() && !qFuzzyCompare(m_originalOpacity, effectwindow()->opacity())) [[unlikely]] {
         return effectwindow()->opacity() * data.opacity();
     }
 

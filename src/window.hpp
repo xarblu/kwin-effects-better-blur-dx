@@ -66,6 +66,7 @@ private:
     std::optional<KWin::Region> m_forceBlurFrame{};
 
     // track whether this window requested a blur region
+    // and where it came from
     unsigned int m_blurOriginMask{0};
 
     // track mazimized state
@@ -80,6 +81,11 @@ private:
     bool m_shouldBlurWhileTransformed{false};
     TransformState m_blurWhileTransformedTransitionState{TransformState::None};
     std::chrono::steady_clock::time_point m_blurWhileTransformedTransitionStart;
+
+    // window opacity at last reconfigure() call
+    // used to decide whether opacity should affect blur
+    // in getEffectiveBlurOpacity()
+    qreal m_originalOpacity{1.0};
 
 private:
     void refreshMaximizedState();
