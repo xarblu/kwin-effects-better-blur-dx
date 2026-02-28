@@ -177,6 +177,14 @@ void BBDX::Window::triggerBlurRegionUpdate() {
     m_windowManager->triggerBlurRegionUpdate(m_effectwindow);
 }
 
+bool BBDX::Window::opacityChangedFromOriginal() {
+    if (effectwindow()->window()->isActive()) {
+        return !qFuzzyCompare(m_originalOpacityActive.value_or(1.0), effectwindow()->opacity());
+    } else {
+        return !qFuzzyCompare(m_originalOpacityInactive.value_or(1.0), effectwindow()->opacity());
+    }
+}
+
 void BBDX::Window::reconfigure() {
     if (m_windowManager->shouldForceBlur(effectwindow())) {
         m_shouldForceBlur = true;
@@ -343,10 +351,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
     // themselves by adjusting their opacity at run time.
     //
     // The vast majority of blurred surfaces don't want/need this
-    if (isPlasmaSurface()
-        && !(qFuzzyCompare(m_originalOpacityActive.value_or(1.0), effectwindow()->opacity())
-             || qFuzzyCompare(m_originalOpacityInactive.value_or(1.0), effectwindow()->opacity())))
-        [[unlikely]] {
+    if (isPlasmaSurface() && opacityChangedFromOriginal()) [[unlikely]] {
         return effectwindow()->opacity() * data.opacity();
     }
 

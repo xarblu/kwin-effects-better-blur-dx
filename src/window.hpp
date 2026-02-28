@@ -92,6 +92,7 @@ private:
     void refreshMaximizedState();
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();
+    bool opacityChangedFromOriginal();
 
 public Q_SLOTS:
     void slotMinimizedChanged();
