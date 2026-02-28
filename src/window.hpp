@@ -94,6 +94,14 @@ private:
     void triggerBlurRegionUpdate();
     bool opacityChangedFromOriginal();
 
+    /**
+     * Helpers for interacting with m_blurOriginMask
+     */
+    void blurOriginSet(BlurOrigin origin);
+    void blurOriginUnset(BlurOrigin origin);
+    bool blurOriginIs(BlurOrigin origin) const;
+    QString blurOriginToString() const;
+
 public Q_SLOTS:
     void slotMinimizedChanged();
     void slotWindowFrameGeometryChanged();
@@ -157,10 +165,5 @@ public:
      * operator to facilitate logging of windows
      */
     friend QDebug operator<<(QDebug &debug, const Window &window);
-
-    /**
-     * Convert blurOriginMask to human readable string
-     */
-    static QString blurOriginToString(unsigned int mask);
 };
 } // namespace BBDX

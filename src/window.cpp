@@ -47,7 +47,7 @@ void BBDX::Window::slotMinimizedChanged() {
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
-    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent)) {
+    if (blurOriginIs(BlurOrigin::ForcedContent)) {
         // Don't allow blurring while transformed during move/resize
         // to avoid dragging an off-looking rectangular blur region
         // behind windows affected by Wobbly Windows.
@@ -61,7 +61,7 @@ void BBDX::Window::slotWindowStartUserMovedResized() {
 }
 
 void BBDX::Window::slotWindowFinishUserMovedResized() {
-    if (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent)) {
+    if (blurOriginIs(BlurOrigin::ForcedContent)) {
         // After move/resize force blurring while transformed.
         // While still suboptimal (the Wobbly Windows effect doesn't end
         // after finishing move/resize) this at least assures blur
@@ -185,6 +185,38 @@ bool BBDX::Window::opacityChangedFromOriginal() {
     }
 }
 
+void BBDX::Window::blurOriginSet(BlurOrigin origin) {
+    m_blurOriginMask |= static_cast<unsigned int>(origin);
+}
+
+void BBDX::Window::blurOriginUnset(BlurOrigin origin) {
+    m_blurOriginMask &= ~static_cast<unsigned int>(origin);
+}
+
+bool BBDX::Window::blurOriginIs(BlurOrigin origin) const {
+    return !!(m_blurOriginMask & static_cast<unsigned int>(origin));
+}
+
+QString BBDX::Window::blurOriginToString() const {
+    QString s{};
+    if (blurOriginIs(BlurOrigin::RequestedContent))
+        s.append("RequestedContent,");
+    if (blurOriginIs(BlurOrigin::RequestedFrame))
+        s.append("RequestedFrame,");
+    if (blurOriginIs(BlurOrigin::ForcedContent))
+        s.append("ForcedContent,");
+    if (blurOriginIs(BlurOrigin::ForcedFrame))
+        s.append("ForcedFrame,");
+
+    if (s.isEmpty()) {
+        s = "None";
+    } else {
+        s.removeLast();
+    }
+
+    return s;
+}
+
 void BBDX::Window::reconfigure() {
     if (m_windowManager->shouldForceBlur(effectwindow())) {
         m_shouldForceBlur = true;
@@ -207,16 +239,16 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // to trust the window or use user parameters
     // e.g. for corner radius.
     if (content.has_value()) {
-        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedContent);
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedContent);
+        blurOriginSet(BlurOrigin::RequestedContent);
+        blurOriginUnset(BlurOrigin::ForcedContent);
     } else {
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
+        blurOriginUnset(BlurOrigin::RequestedContent);
     }
     if (frame.has_value()) {
-        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::RequestedFrame);
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedFrame);
+        blurOriginSet(BlurOrigin::RequestedFrame);
+        blurOriginUnset(BlurOrigin::ForcedFrame);
     } else {
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+        blurOriginUnset(BlurOrigin::RequestedFrame);
     }
 
     // Respect the requested blur region for Plasma surfaces.
@@ -227,8 +259,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // and thus must occur after {content,frame}.has_value() checks)
     if (isPlasmaSurface()) {
         if (m_blurOriginMask != oldBlurOriginMask) {
-            qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this
-                                                    << "(was:" << Window::blurOriginToString(oldBlurOriginMask) << ")";
+            qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
         }
         return;
     }
@@ -239,10 +270,10 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // custom decorations might have set their own blur region.
     if (m_forceBlurContent.has_value()) {
         content = m_forceBlurContent;
-        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedContent);
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedContent);
+        blurOriginSet(BlurOrigin::ForcedContent);
+        blurOriginUnset(BlurOrigin::RequestedContent);
     } else {
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedContent);
+        blurOriginUnset(BlurOrigin::ForcedContent);
     }
 
     // Only override frame if it doesn't already specify a blur region.
@@ -252,28 +283,25 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // because CSD windows should never have a frame already set)
     if (m_forceBlurFrame.has_value() && !frame.has_value()) {
         frame = m_forceBlurFrame;
-        m_blurOriginMask |= static_cast<unsigned int>(BlurOrigin::ForcedFrame);
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::RequestedFrame);
+        blurOriginSet(BlurOrigin::ForcedFrame);
+        blurOriginUnset(BlurOrigin::RequestedFrame);
     } else {
-        m_blurOriginMask &= ~static_cast<unsigned int>(BlurOrigin::ForcedFrame);
+        blurOriginUnset(BlurOrigin::ForcedFrame);
     }
 
     if (m_blurOriginMask != oldBlurOriginMask) {
-        qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this
-                                                << "(was:" << Window::blurOriginToString(oldBlurOriginMask) << ")";
+        qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
     }
 
     // this isn't fatal but we only expect one to be set, so log if that's not the case
-    if ((m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent))
-            && (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedContent))) {
+    if (blurOriginIs(BlurOrigin::RequestedContent) && blurOriginIs(BlurOrigin::ForcedContent)) {
         qCWarning(BBDX_WINDOW) << BBDX::LOG_PREFIX
                                << "BlurOrigin::RequestedContent and BlurOrigin::ForcedContent"
                                << "both set on window"
                                << effectwindow()->window()->resourceClass();
     }
 
-    if ((m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedFrame))
-            && (m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame))) {
+    if (blurOriginIs(BlurOrigin::RequestedFrame) && blurOriginIs(BlurOrigin::ForcedFrame)) {
         qCWarning(BBDX_WINDOW) << BBDX::LOG_PREFIX
                                << "BlurOrigin::RequestedFrame and BlurOrigin::ForcedFrame"
                                << "both set on window"
@@ -307,7 +335,7 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
 
         // If not force-blurring decorations we don't need
         // any adjustments
-        if (!(m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::ForcedFrame)))
+        if (!(blurOriginIs(BlurOrigin::ForcedFrame)))
             return windowCornerRadius;
 
         // if top radius is set explicitly by decoration keep it
@@ -333,7 +361,7 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
         // because blur might bleed from all corners.
         // Else we assume the decoration isn't blurred at all i.e. the top corners
         // are already correct and we only need to round the bottom ones.
-        if (m_blurOriginMask & (static_cast<unsigned int>(BlurOrigin::RequestedFrame) | static_cast<unsigned int>(BlurOrigin::ForcedFrame))) {
+        if (blurOriginIs(BlurOrigin::RequestedFrame) || blurOriginIs(BlurOrigin::ForcedFrame)) {
             return KWin::BorderRadius(m_userBorderRadius);
         } else if (!effectwindow()->hasDecoration()) {
             return KWin::BorderRadius(m_userBorderRadius);
@@ -424,7 +452,7 @@ qreal BBDX::Window::getEffectiveBlurOpacity(KWin::WindowPaintData &data) {
 
 bool BBDX::Window::isPlasmaSurface() const {
     // Plasma surfaces must specify their own blur
-    if (!(m_blurOriginMask & static_cast<unsigned int>(BlurOrigin::RequestedContent)))
+    if (!(blurOriginIs(BlurOrigin::RequestedContent)))
         return false;
 
     // Plasma surfaces (afaik) never have decorations
@@ -453,31 +481,11 @@ bool BBDX::Window::isPlasmaSurface() const {
     return false;
 }
 
-QString BBDX::Window::blurOriginToString(unsigned int mask) {
-    QString s{};
-    if (mask & static_cast<unsigned int>(BlurOrigin::RequestedContent))
-        s.append("RequestedContent,");
-    if (mask & static_cast<unsigned int>(BlurOrigin::RequestedFrame))
-        s.append("RequestedFrame,");
-    if (mask & static_cast<unsigned int>(BlurOrigin::ForcedContent))
-        s.append("ForcedContent,");
-    if (mask & static_cast<unsigned int>(BlurOrigin::ForcedFrame))
-        s.append("ForcedFrame,");
-
-    if (s.isEmpty()) {
-        s = "None";
-    } else {
-        s.removeLast();
-    }
-
-    return s;
-}
-
 namespace BBDX {
 QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
     debug << "windowClass:" << window.effectwindow()->windowClass();
     debug << "windowType:" << window.effectwindow()->windowType();
-    debug << "blurOrigin:" << Window::blurOriginToString(window.m_blurOriginMask);
+    debug << "blurOrigin:" << window.blurOriginToString();
     return debug;
 }
 } // namespace BBDX
