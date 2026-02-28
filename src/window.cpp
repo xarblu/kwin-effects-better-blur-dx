@@ -412,12 +412,26 @@ bool BBDX::Window::isPlasmaSurface() const {
     if (effectwindow()->hasDecoration())
         return false;
 
+    // These window classes are known to be Plasma surfaces
+    const auto resourceClass = effectwindow()->window()->resourceClass();
+    if (resourceClass == QStringLiteral("org.kde.plasmashell")
+        || resourceClass == QStringLiteral("plasmashell")
+        || resourceClass == QStringLiteral("org.kde.krunner")
+        || resourceClass == QStringLiteral("krunner"))
+        return true;
+
     // If a window is special it's very likely a Plasma surface
     if (effectwindow()->isSpecialWindow())
         return true;
 
-    // assume it is as a fallback
-    return true;
+    // Some popups like the Meta+Ctrl+ESC killer have an empty window class,
+    // but are still considered KWin::WindowType::Normal
+    // Let's just assume an empty class means they're likely Plasma surfaces as well
+    if (resourceClass == QStringLiteral(""))
+        return true;
+
+    // Likely not a Plasma surface then
+    return false;
 }
 
 QString BBDX::Window::blurOriginToString(unsigned int mask) {
