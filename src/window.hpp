@@ -115,6 +115,7 @@ private:
     void blurOriginUnset(BlurOrigin origin);
     bool blurOriginIs(BlurOrigin origin) const;
     QString blurOriginToString() const;
+    QString maximizedStateToString() const;
 
 public Q_SLOTS:
     void slotMinimizedChanged();

@@ -108,7 +108,12 @@ void BBDX::Window::setIsTransformed(bool toggle) {
 }
 
 void BBDX::Window::setMaximizedState(MaximizedState state) {
+    if (m_maximizedState == state)
+        return;
+
     m_maximizedState = state;
+
+    qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "MaximizedState changed:" << *this;
 }
 
 bool BBDX::Window::shouldBlurWhileTransformed() const {
@@ -213,6 +218,36 @@ QString BBDX::Window::blurOriginToString() const {
     } else {
         s.removeLast();
     }
+
+    return s;
+}
+
+QString BBDX::Window::maximizedStateToString() const {
+    QString s;
+
+    switch (m_maximizedState) {
+        case MaximizedState::Restored:
+            s = QStringLiteral("Restored");
+            break;
+        case MaximizedState::Vertical:
+            s = QStringLiteral("Vertical");
+            break;
+        case MaximizedState::Horizontal:
+            s = QStringLiteral("Horizontal");
+            break;
+        case MaximizedState::Complete:
+            s = QStringLiteral("Complete");
+            break;
+        default:
+            s = QStringLiteral("Unknown");
+            break;
+    }
+
+    if (effectwindow()->isFullScreen())
+        s.append("+Fullscreen");
+
+    if (effectwindow()->isMinimized())
+        s.append("+Minimized");
 
     return s;
 }
@@ -541,6 +576,7 @@ QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
     debug << "isPlasmaSurface:" << window.isPlasmaSurface() << "\n";
     debug << "isMenu:" << window.isMenu() << "\n";
     debug << "blurOrigin:" << window.blurOriginToString() << "\n";
+    debug << "maximizedState:" << window.maximizedStateToString() << "\n";
     return debug;
 }
 } // namespace BBDX
