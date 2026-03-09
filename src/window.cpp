@@ -510,6 +510,12 @@ bool BBDX::Window::isPlasmaSurface() const {
     if (effectwindow()->isSpecialWindow())
         return true;
 
+    // (right-click) menus (while technically not Plasma surfaces) behave pretty much the same
+    // i.e. they also set their own apropriate roundness and shouldn't need the
+    // user override
+    if (isMenu())
+        return true;
+
     // Some popups like the Meta+Ctrl+ESC killer have an empty window class,
     // but are still considered KWin::WindowType::Normal
     // Let's just assume an empty class means they're likely Plasma surfaces as well
@@ -529,9 +535,12 @@ bool BBDX::Window::isMenu() const {
 
 namespace BBDX {
 QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
-    debug << "windowClass:" << window.effectwindow()->windowClass();
-    debug << "windowType:" << window.effectwindow()->windowType();
-    debug << "blurOrigin:" << window.blurOriginToString();
+    debug << "\n";
+    debug << "windowClass:" << window.effectwindow()->windowClass() << "\n";
+    debug << "windowType:" << window.effectwindow()->windowType() << "\n";
+    debug << "isPlasmaSurface:" << window.isPlasmaSurface() << "\n";
+    debug << "isMenu:" << window.isMenu() << "\n";
+    debug << "blurOrigin:" << window.blurOriginToString() << "\n";
     return debug;
 }
 } // namespace BBDX
