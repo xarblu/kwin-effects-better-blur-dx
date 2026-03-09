@@ -33,6 +33,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     reconfigure();
     slotWindowFrameGeometryChanged();
     connect(w, &KWin::EffectWindow::minimizedChanged, this, &BBDX::Window::slotMinimizedChanged);
+    connect(w, &KWin::EffectWindow::windowFullScreenChanged, this, &BBDX::Window::slotWindowFullScreenChanged);
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
     connect(w, &KWin::EffectWindow::windowFinishUserMovedResized, this, &BBDX::Window::slotWindowFinishUserMovedResized);
@@ -45,6 +46,12 @@ void BBDX::Window::slotMinimizedChanged() {
         && m_isMinimized) {
         m_restoresMaximized = true;
     }
+}
+
+void BBDX::Window::slotWindowFullScreenChanged() {
+    // windowFrameGeometryChanged occurs before this
+    // so we need to catch it explicitly to update our tracker
+    refreshMaximizedState();
 }
 
 void BBDX::Window::slotWindowStartUserMovedResized() {
@@ -252,7 +259,7 @@ QString BBDX::Window::maximizedStateToString() const {
     }
 
     if (m_isFullScreen)
-        s.append("+Fullscreen");
+        s.append("+FullScreen");
 
     if (m_isMinimized)
         s.append("+Minimized");

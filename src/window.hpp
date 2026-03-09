@@ -121,6 +121,7 @@ private:
 
 public Q_SLOTS:
     void slotMinimizedChanged();
+    void slotWindowFullScreenChanged();
     void slotWindowFrameGeometryChanged();
     void slotWindowStartUserMovedResized();
     void slotWindowFinishUserMovedResized();
