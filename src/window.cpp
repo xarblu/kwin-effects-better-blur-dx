@@ -31,7 +31,7 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
     m_windowManager = wm;
     m_effectwindow = w;
     reconfigure();
-    refreshMaximizedState();
+    slotWindowFrameGeometryChanged();
     connect(w, &KWin::EffectWindow::minimizedChanged, this, &BBDX::Window::slotMinimizedChanged);
     connect(w, &KWin::EffectWindow::windowFrameGeometryChanged, this, &BBDX::Window::slotWindowFrameGeometryChanged);
     connect(w, &KWin::EffectWindow::windowStartUserMovedResized, this, &BBDX::Window::slotWindowStartUserMovedResized);
