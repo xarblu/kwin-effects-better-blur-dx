@@ -59,7 +59,6 @@ private:
     qreal m_userBorderRadius{0.0};
 
     // match helpers
-    bool ignoreWindow(const KWin::EffectWindow *w) const;
     bool matchesWindowClassFixed(const KWin::EffectWindow *w) const;
     bool matchesWindowClassRegex(const KWin::EffectWindow *w) const;
 
@@ -98,12 +97,15 @@ public:
      * getters
      */
     bool blurDecorations() const { return m_blurDecorations; }
+    bool blurDocks() const { return m_blurDocks; }
+    bool blurMenus() const { return m_blurMenus; }
     qreal userBorderRadius() const { return m_userBorderRadius; }
 
     /**
-     * Match an EffectWindow instance
+     * Match an EffectWindow instance in the black/white list
+     * XXX: should this also be moved to BBDX::Window?
      */
-    bool shouldForceBlur(const KWin::EffectWindow *w) const;
+    bool shouldForceBlurWindowClass(const KWin::EffectWindow *w) const;
 
     /**
      * emits the wantsBlurRegionUpdate signal

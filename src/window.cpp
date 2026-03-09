@@ -217,8 +217,47 @@ QString BBDX::Window::blurOriginToString() const {
     return s;
 }
 
+bool BBDX::Window::neverForceBlur() const {
+    if (effectwindow()->isDesktop())
+        return true;
+
+    if (!m_blurMenus && isMenu())
+        return true;
+
+    if (!m_blurDocks && effectwindow()->isDock())
+        return true;
+
+    const QString windowClass = effectwindow()->window()->resourceClass();
+    const KWin::Layer layer = effectwindow()->window()->layer();
+
+    if (windowClass == QStringLiteral("xwaylandvideobridge"))
+        return true;
+
+    if ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
+        && (layer == KWin::Layer::OverlayLayer || layer == KWin::Layer::ActiveLayer))
+        return true;
+
+    // don't touch KWin internal windows
+    // this includes the snapping assistant zones
+    // and they don't handle blur well at all
+    if (effectwindow()->internalWindow()) return true;
+
+    return false;
+}
+
+bool BBDX::Window::shouldForceBlur() const {
+    if (neverForceBlur())
+        return false;
+
+    return m_windowManager->shouldForceBlurWindowClass(effectwindow());
+}
+
 void BBDX::Window::reconfigure() {
-    if (m_windowManager->shouldForceBlur(effectwindow())) {
+    // must be set before shouldForceBlur()
+    m_blurMenus = m_windowManager->blurMenus();
+    m_blurDocks = m_windowManager->blurDocks();
+
+    if (shouldForceBlur()) {
         m_shouldForceBlur = true;
     } else {
         m_shouldForceBlur = false;

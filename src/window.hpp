@@ -56,9 +56,13 @@ private:
     // underlying KWin::EffectWindow
     KWin::EffectWindow* m_effectwindow;
 
-    // User config related attributes
-    // track whether this window should be force blurred
+    // "cache" for whether this window should
+    // be force blurred - re-evaluated with BBDX::Window::reconfigure()
     bool m_shouldForceBlur{false};
+
+    // user config related attributes
+    bool m_blurMenus{false};
+    bool m_blurDocks{false};
     qreal m_userBorderRadius{0.0};
 
     // if force blurred, contain content/frame of the blur region
@@ -89,6 +93,16 @@ private:
     std::optional<qreal> m_originalOpacityInactive{};
 
 private:
+    /**
+     * Whether this window should never be force blurred
+     */
+    bool neverForceBlur() const;
+
+    /**
+     * Whether this window should be force blurred
+     */
+    bool shouldForceBlur() const;
+
     void refreshMaximizedState();
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate();

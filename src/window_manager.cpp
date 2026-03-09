@@ -188,34 +188,6 @@ void BBDX::WindowManager::refreshMaximizedStateAll() const {
     }
 }
 
-bool BBDX::WindowManager::ignoreWindow(const KWin::EffectWindow *w) const {
-    if (w->isDesktop())
-        return true;
-
-    if (!m_blurMenus && (w->isMenu() || w->isDropdownMenu() || w->isPopupMenu() || w->isPopupWindow()))
-        return true;
-
-    if (!m_blurDocks && w->isDock())
-        return true;
-
-    const QString windowClass = w->window()->resourceClass();
-    const KWin::Layer layer = w->window()->layer();
-
-    if (windowClass == QStringLiteral("xwaylandvideobridge"))
-        return true;
-
-    if ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
-        && (layer == KWin::Layer::OverlayLayer || layer == KWin::Layer::ActiveLayer))
-        return true;
-
-    // don't touch KWin internal windows
-    // this includes the snapping assistant zones
-    // and they don't handle blur well at all
-    if (w->internalWindow()) return true;
-
-    return false;
-}
-
 bool BBDX::WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
@@ -238,10 +210,7 @@ bool BBDX::WindowManager::matchesWindowClassRegex(const KWin::EffectWindow *w) c
     return false;
 }
 
-bool BBDX::WindowManager::shouldForceBlur(const KWin::EffectWindow *w) const {
-    if (ignoreWindow(w))
-        return false;
-
+bool BBDX::WindowManager::shouldForceBlurWindowClass(const KWin::EffectWindow *w) const {
     if (matchesWindowClassFixed(w) || matchesWindowClassRegex(w)) {
         switch (m_windowClassMatchMode) {
             case WindowManager::WindowClassMatchMode::Whitelist:
