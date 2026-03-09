@@ -76,6 +76,8 @@ private:
     // track mazimized state
     MaximizedState m_maximizedState{MaximizedState::Unknown};
     bool m_restoresMaximized{false};
+    bool m_isFullScreen{false};
+    bool m_isMinimized{false};
 
     // track whether window is currently being transformed
     bool m_isTransformed{false};

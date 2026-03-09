@@ -40,8 +40,9 @@ BBDX::Window::Window(BBDX::WindowManager *wm, KWin::EffectWindow *w) {
 }
 
 void BBDX::Window::slotMinimizedChanged() {
+    refreshMaximizedState();
     if (m_maximizedState == MaximizedState::Complete
-        && effectwindow()->isMinimized()) {
+        && m_isMinimized) {
         m_restoresMaximized = true;
     }
 }
@@ -108,17 +109,24 @@ void BBDX::Window::setIsTransformed(bool toggle) {
 }
 
 void BBDX::Window::setMaximizedState(MaximizedState state) {
-    if (m_maximizedState == state)
+    const bool fullscreen = effectwindow()->isFullScreen();
+    const bool minimized = effectwindow()->isMinimized();
+
+    if (m_maximizedState == state
+        && m_isFullScreen == fullscreen
+        && m_isMinimized == minimized)
         return;
 
     m_maximizedState = state;
+    m_isFullScreen = fullscreen;
+    m_isMinimized = minimized;
 
     qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "MaximizedState changed:" << *this;
 }
 
 bool BBDX::Window::shouldBlurWhileTransformed() const {
     // While minimized there's no reason to blur
-    if (effectwindow()->isMinimized()) {
+    if (m_isMinimized) {
         return false;
     }
 
@@ -243,10 +251,10 @@ QString BBDX::Window::maximizedStateToString() const {
             break;
     }
 
-    if (effectwindow()->isFullScreen())
+    if (m_isFullScreen)
         s.append("+Fullscreen");
 
-    if (effectwindow()->isMinimized())
+    if (m_isMinimized)
         s.append("+Minimized");
 
     return s;
@@ -425,7 +433,7 @@ KWin::BorderRadius BBDX::Window::getEffectiveBorderRadius() {
     }
 
     // Fullscreen/completely maximized windows don't need radius.
-    if (m_effectwindow->isFullScreen() || m_maximizedState == MaximizedState::Complete) {
+    if (m_isFullScreen || m_maximizedState == MaximizedState::Complete) {
         return KWin::BorderRadius();
     }
 
