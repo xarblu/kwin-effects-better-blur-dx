@@ -148,7 +148,7 @@ bool BBDX::Window::shouldBlurWhileTransformed() const {
 }
 
 void BBDX::Window::refreshMaximizedState() {
-    m_windowManager->refreshMaximizedState(effectwindow());
+    m_windowManager->refreshMaximizedState(this);
 }
 
 void BBDX::Window::updateForceBlurRegion() {

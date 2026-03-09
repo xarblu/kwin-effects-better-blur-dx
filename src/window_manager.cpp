@@ -139,10 +139,8 @@ void BBDX::WindowManager::reconfigure() {
     }
 }
 
-void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) const {
-    const auto window = findWindow(w);
-    if (!window)
-        return;
+void BBDX::WindowManager::refreshMaximizedState(BBDX::Window *window) const {
+    const KWin::EffectWindow *w = window->effectwindow();
 
     const KWin::LogicalOutput* screen = w->screen();
 
@@ -183,8 +181,8 @@ void BBDX::WindowManager::refreshMaximizedState(const KWin::EffectWindow *w) con
 }
 
 void BBDX::WindowManager::refreshMaximizedStateAll() const {
-    for (const auto &[w, _] : m_windows) {
-        refreshMaximizedState(w);
+    for (const auto &[w, window] : m_windows) {
+        refreshMaximizedState(window.get());
     }
 }
 

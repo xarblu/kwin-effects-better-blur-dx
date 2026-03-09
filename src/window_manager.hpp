@@ -90,7 +90,7 @@ public:
     /**
      * Refresh maximized state of a window / of all windows
      */
-    void refreshMaximizedState(const KWin::EffectWindow *w) const;
+    void refreshMaximizedState(BBDX::Window *w) const;
     void refreshMaximizedStateAll() const;
 
     /**
