@@ -162,6 +162,11 @@ public:
     bool isPlasmaSurface() const;
 
     /**
+     * Whether this window is a menu (or menu adjacent) in BBDX terms
+     */
+    bool isMenu() const;
+
+    /**
      * operator to facilitate logging of windows
      */
     friend QDebug operator<<(QDebug &debug, const Window &window);

@@ -481,6 +481,13 @@ bool BBDX::Window::isPlasmaSurface() const {
     return false;
 }
 
+bool BBDX::Window::isMenu() const {
+    return (effectwindow()->isMenu()
+            || effectwindow()->isDropdownMenu()
+            || effectwindow()->isPopupMenu()
+            || effectwindow()->isPopupWindow());
+}
+
 namespace BBDX {
 QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
     debug << "windowClass:" << window.effectwindow()->windowClass();
