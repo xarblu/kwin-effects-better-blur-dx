@@ -1,6 +1,8 @@
 # DEV
 Things not in any tagged release yet:
 
+# 2.3.0
+
 ### Features:
 - New rounded corners pass to stop rectangular noise texture from "leaking"
 - Debug logging for (toggled with `QT_LOGGING_RULES=kwin_effect_better_blur_dx.*.debug=true`):
