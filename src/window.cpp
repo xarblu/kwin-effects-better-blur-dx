@@ -128,7 +128,7 @@ void BBDX::Window::setMaximizedState(MaximizedState state) {
     m_isFullScreen = fullscreen;
     m_isMinimized = minimized;
 
-    qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "MaximizedState changed:" << *this;
+    qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "MaximizedState changed:" << *this;
 }
 
 bool BBDX::Window::shouldBlurWhileTransformed() const {
@@ -348,7 +348,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     // and thus must occur after {content,frame}.has_value() checks)
     if (isPlasmaSurface()) {
         if (m_blurOriginMask != oldBlurOriginMask) {
-            qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
+            qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
         }
         return;
     }
@@ -379,7 +379,7 @@ void BBDX::Window::getFinalBlurRegion(std::optional<KWin::Region> &content, std:
     }
 
     if (m_blurOriginMask != oldBlurOriginMask) {
-        qCInfo(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
+        qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "Blur origin changed:" << *this;
     }
 
     // this isn't fatal but we only expect one to be set, so log if that's not the case

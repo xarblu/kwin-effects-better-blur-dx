@@ -22,7 +22,6 @@ include(CPack)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose Release or Debug" FORCE)
 endif()
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT")
 
 # User Build Options
 option(BETTERBLUR_X11 "Build Better Blur DX for KWin X11 instead of KWin Wayland" OFF)
