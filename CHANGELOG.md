@@ -1,6 +1,29 @@
 # DEV
 Things not in any tagged release yet:
 
+### Features:
+- New rounded corners pass to stop rectangular noise texture from "leaking"
+- Debug logging for (toggled with `QT_LOGGING_RULES=kwin_effect_better_blur_dx.*.debug=true`):
+  - Added windows
+  - Removed windows
+  - `blurOrigin` changes
+  - `maximizedState` changes
+
+### Bug Fixes:
+- More pedantic `isPlasmaSurface` check. We now need to be *very sure* something
+  is a special Plasma surface (to the degree of matching window classes) and else
+  assume it isn't; should be the better trade-off because most bugs I keep seeing
+  boil down to "this is a false-positive in `isPlasmaSurface`" and only rarely
+  "this should be treated as a Plasma surface"
+- Only take "opacity affects blur" path if opacity changed at during a window's lifetime.
+- Explicitly calculate `maximizedState` once on `BBDX::Window` creation and
+  track our own `isFullscreen`/`isMinimized`. Fixes rounding of windows that spawn
+  fullscreen/maximized and don't change their geometry after (like the Plasma logout greeter).
+
+### Internal:
+- Most `shouldForceBlur` logic is now attached to `BBDX::Window` (instead of `BBDX::WindowManager`)
+  which saves some `std::unordered_map` lookups.
+
 # 2.2.0
 
 ### Features:
