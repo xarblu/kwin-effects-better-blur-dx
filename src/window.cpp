@@ -287,6 +287,16 @@ bool BBDX::Window::neverForceBlur() const {
         && (layer == KWin::Layer::OverlayLayer || layer == KWin::Layer::ActiveLayer))
         return true;
 
+    // Some application-managed popups (notably browser extension panels on Wayland)
+    // show up as undecorated Unknown windows with no caption. They don't expose a
+    // useful opaque region to the compositor, so force-blurring them produces a
+    // rectangular halo around the popup body.
+    if (effectwindow()->windowType() == KWin::WindowType::Unknown
+        && !effectwindow()->hasDecoration()
+        && effectwindow()->caption().isEmpty()) {
+        return true;
+    }
+
     // don't touch KWin internal windows
     // this includes the snapping assistant zones
     // and they don't handle blur well at all
