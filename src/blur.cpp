@@ -714,6 +714,9 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
 
     // Draw the window over the blurred area
     effects->drawWindow(renderTarget, viewport, w, mask, deviceRegion, data);
+
+    // repaint blurred windows above
+    m_windowManager.repaintBlurredWindowsAbove(w);
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()

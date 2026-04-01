@@ -185,6 +185,11 @@ public:
     bool isMenu() const;
 
     /**
+     * Whether this window is blurred in any way (requested or forced)
+     */
+    bool isBlurred() const;
+
+    /**
      * operator to facilitate logging of windows
      */
     friend QDebug operator<<(QDebug &debug, const Window &window);

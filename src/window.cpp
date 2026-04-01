@@ -593,6 +593,10 @@ bool BBDX::Window::isMenu() const {
             || effectwindow()->isPopupWindow());
 }
 
+bool BBDX::Window::isBlurred() const {
+    return m_blurOriginMask > 0;
+}
+
 namespace BBDX {
 QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
     debug << "\n";
