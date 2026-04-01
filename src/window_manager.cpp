@@ -305,6 +305,8 @@ void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::EffectWindow *w
         }
     }
 
+    KWin::Region needsRepaint{};
+
     // repaint windows above, if any
     for (; it != stackingOrder.end(); it++) {
         const auto w_above = *it;
@@ -316,8 +318,12 @@ void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::EffectWindow *w
 
         if (const auto bbdx_w_above = findWindow(w_above); bbdx_w_above != nullptr) {
             if (bbdx_w_above->isBlurred()) {
-                w_above->addRepaintFull();
+                needsRepaint += KWin::Rect(w_above->frameGeometry().toRect());
             }
         }
+    }
+
+    if (!needsRepaint.isEmpty()) {
+        KWin::effects->addRepaint(needsRepaint);
     }
 }
