@@ -146,7 +146,7 @@ public:
     /**
      * Schedule a repaint for all blurred windows above the given KWin::EffectWindow
      */
-    void repaintBlurredWindowsAbove(const KWin::EffectWindow *w) const;
+    void repaintBlurredWindowsAbove(const KWin::RenderViewport &viewport, KWin::EffectWindow *w, const KWin::Region &deviceRegion) const;
 };
 
 } // namespace KWin

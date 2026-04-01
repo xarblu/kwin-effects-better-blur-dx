@@ -5,8 +5,9 @@
 #include "utils.h"
 #include "window.hpp"
 
-#include <effect/effectwindow.h>
+#include <core/renderviewport.h>
 #include <effect/effecthandler.h>
+#include <effect/effectwindow.h>
 #include <scene/borderradius.h>
 #include <window.h>
 
@@ -293,7 +294,7 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
     return window->getEffectiveBlurOpacity(data);
 }
 
-void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::EffectWindow *w) const {
+void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::RenderViewport &viewport, KWin::EffectWindow *w, const KWin::Region &deviceRegion) const {
     const auto stackingOrder = KWin::effects->stackingOrder();
 
     auto it = stackingOrder.begin();
@@ -305,12 +306,14 @@ void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::EffectWindow *w
         }
     }
 
+    const auto repaintedRect = viewport.mapFromDeviceCoordinatesContained(deviceRegion).boundingRect();
+
     // repaint windows above, if any
     for (; it != stackingOrder.end(); it++) {
         const auto w_above = *it;
 
         // ignore if windows don't overlap
-        if (!w->frameGeometry().intersects(w_above->frameGeometry())) {
+        if (!repaintedRect.intersects(w_above->frameGeometry().toRect())) {
             continue;
         }
 
