@@ -171,17 +171,15 @@ void BBDX::WindowManager::refreshMaximizedState(BBDX::Window *window) const {
     const KWin::Rect effectiveScreenRect{effectiveScreenRegion.boundingRect()};
     const KWin::Rect windowRect{KWin::Rect(w->frameGeometry().toRect())};
 
-    bool maximizedHorizontal{false};
-    bool maximizedVertical{false};
-    if (windowRect.left() <= effectiveScreenRect.left()
-        && windowRect.right() >= effectiveScreenRect.right()) {
-        maximizedHorizontal = true;
-    }
+    bool maximizedHorizontal{
+        windowRect.left() <= effectiveScreenRect.left()
+        && windowRect.right() >= effectiveScreenRect.right()
+    };
 
-    if (windowRect.top() <= effectiveScreenRect.top()
-        && windowRect.bottom() >= effectiveScreenRect.bottom()) {
-        maximizedVertical = true;
-    }
+    bool maximizedVertical{
+        windowRect.top() <= effectiveScreenRect.top()
+        && windowRect.bottom() >= effectiveScreenRect.bottom()
+    };
 
     if (maximizedHorizontal && maximizedVertical) {
         window->setMaximizedState(Window::MaximizedState::Complete);
