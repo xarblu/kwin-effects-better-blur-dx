@@ -151,7 +151,21 @@ void BBDX::WindowManager::refreshMaximizedState(BBDX::Window *window) const {
             continue;
         }
 
-        effectiveScreenRegion -= KWin::Region(KWin::Rect(dock->frameGeometry().toRect()));
+        // we need to "expand" the docks to their entire screen edge
+        // or the boundingRect is wrong
+        KWin::Rect dock_rect{dock->frameGeometry().toRect()};
+
+        if (dock_rect.width() > dock_rect.height()) {
+            // horizontal
+            dock_rect.setX(dock->screen()->geometry().x());
+            dock_rect.setWidth(dock->screen()->geometry().width());
+        } else {
+            // vertical
+            dock_rect.setY(dock->screen()->geometry().y());
+            dock_rect.setHeight(dock->screen()->geometry().height());
+        }
+
+        effectiveScreenRegion -= KWin::Region(dock_rect);
     }
 
     const KWin::Rect effectiveScreenRect{effectiveScreenRegion.boundingRect()};
