@@ -716,7 +716,7 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     effects->drawWindow(renderTarget, viewport, w, mask, deviceRegion, data);
 
     // repaint blurred windows above
-    m_windowManager.repaintBlurredWindowsAbove(viewport, w, deviceRegion);
+    //m_windowManager.repaintBlurredWindowsAbove(viewport, w, deviceRegion);
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
