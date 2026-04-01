@@ -8,6 +8,7 @@
 #include <core/renderviewport.h>
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
+#include <qtpreprocessorsupport.h>
 #include <scene/borderradius.h>
 #include <window.h>
 
@@ -306,7 +307,12 @@ void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::RenderViewport 
         }
     }
 
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
+    Q_UNUSED(viewport);
+    const auto repaintedRect = deviceRegion.boundingRect();
+#else
     const auto repaintedRect = viewport.mapFromDeviceCoordinatesContained(deviceRegion).boundingRect();
+#endif
 
     // repaint windows above, if any
     for (; it != stackingOrder.end(); it++) {
