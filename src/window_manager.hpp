@@ -142,11 +142,6 @@ public:
      * Get effective blur opacity for requested window
      */
     qreal getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const;
-
-    /**
-     * Schedule a repaint for all blurred windows above the given KWin::EffectWindow
-     */
-    void repaintBlurredWindowsAbove(const KWin::RenderViewport &viewport, KWin::EffectWindow *w, const KWin::Region &deviceRegion) const;
 };
 
 } // namespace KWin

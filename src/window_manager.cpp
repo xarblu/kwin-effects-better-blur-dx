@@ -294,39 +294,3 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
 
     return window->getEffectiveBlurOpacity(data);
 }
-
-void BBDX::WindowManager::repaintBlurredWindowsAbove(const KWin::RenderViewport &viewport, KWin::EffectWindow *w, const KWin::Region &deviceRegion) const {
-    const auto stackingOrder = KWin::effects->stackingOrder();
-
-    auto it = stackingOrder.begin();
-    // find next window in stacking order
-    for (; it != stackingOrder.end(); it++) {
-        if (*it == w) {
-            it++;
-            break;
-        }
-    }
-
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
-    Q_UNUSED(viewport);
-    const auto repaintedRect = deviceRegion.boundingRect();
-#else
-    const auto repaintedRect = viewport.mapFromDeviceCoordinatesContained(deviceRegion).boundingRect();
-#endif
-
-    // repaint windows above, if any
-    for (; it != stackingOrder.end(); it++) {
-        const auto w_above = *it;
-
-        // ignore if windows don't overlap
-        if (!repaintedRect.intersects(w_above->frameGeometry().toRect())) {
-            continue;
-        }
-
-        if (const auto bbdx_w_above = findWindow(w_above); bbdx_w_above != nullptr) {
-            if (bbdx_w_above->isBlurred()) {
-                w_above->addRepaintFull();
-            }
-        }
-    }
-}

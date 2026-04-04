@@ -37,6 +37,7 @@ namespace KWin
 
 class BlurManagerInterface;
 class ContrastManagerInterface;
+class BackgroundEffectItem;
 
 struct BlurRenderData
 {
@@ -64,7 +65,11 @@ struct BlurEffectData
     std::unordered_map<RenderView *, BlurRenderData> render;
 #endif
 
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     ItemEffect windowEffect;
+#else
+    std::unique_ptr<BackgroundEffectItem> blurItem;
+#endif
 
     /**
      * Color transformation matrix (brightness, contrast, and saturation).
@@ -87,7 +92,7 @@ public:
     void prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
     void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
-#else
+#elif KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     void prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
 #endif
     void drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const Region &deviceRegion, WindowPaintData &data) override;
@@ -177,8 +182,10 @@ private:
 
     bool m_valid = false;
     long net_wm_blur_region = 0;
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     Region m_paintedDeviceArea; // keeps track of all painted areas (from bottom to top)
     Region m_currentDeviceBlur; // keeps track of currently blurred area of the windows (from bottom to top)
+#endif
 
 #ifdef BETTERBLUR_X11
     Output *m_currentView = nullptr;

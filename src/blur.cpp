@@ -29,6 +29,9 @@
 #include <effect/effecthandler.h>
 #include <opengl/glplatform.h>
 #include <opengl/glutils.h>
+#if KWIN_VERSION >= KWIN_VERSION_CODE(6, 6, 4)
+#include <scene/backgroundeffectitem.h>
+#endif
 #include <scene/decorationitem.h>
 #include <scene/scene.h>
 #include <scene/surfaceitem.h>
@@ -330,6 +333,11 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_colorMatrix = colorTransformMatrix(BlurConfig::saturation() / 100.0,
                                          BlurConfig::contrast() / 100.0,
                                          BlurConfig::brightness() / 100.0);
+#if KWIN_VERSION >= KWIN_VERSION_CODE(6, 6, 4)
+    for (auto &[window, data] : m_windows) {
+        data.blurItem->setPixelsToExpandRepaintsBelowOpaqueRegions(m_expandSize);
+    }
+#endif
 
     for (EffectWindow *w : effects->stackingOrder()) {
         updateBlurRegion(w);
@@ -398,7 +406,15 @@ void BlurEffect::updateBlurRegion(EffectWindow *w)
         } else {
             data.colorMatrix.reset();
         }
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
         data.windowEffect = ItemEffect(w->windowItem());
+#else
+        if (!data.blurItem) {
+            data.blurItem = std::make_unique<BackgroundEffectItem>(w->windowItem());
+        }
+        data.blurItem->setPixelsToExpandRepaintsBelowOpaqueRegions(m_expandSize);
+        data.blurItem->setEffectBoundingRect(blurRegion(w).boundingRect());
+#endif
     } else {
         if (auto it = m_windows.find(w); it != m_windows.end()) {
             effects->makeOpenGLContextCurrent();
@@ -575,8 +591,10 @@ Region BlurEffect::blurRegion(EffectWindow *w) const
 
 void BlurEffect::prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime)
 {
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     m_paintedDeviceArea = Region();
     m_currentDeviceBlur = Region();
+#endif // KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
 #ifdef BETTERBLUR_X11
     m_currentView = nullptr;
 #else
@@ -586,6 +604,7 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseco
     effects->prePaintScreen(data, presentTime);
 }
 
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
 void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime)
 #else
@@ -681,6 +700,7 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
         data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
     }
 }
+#endif // KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
 
 bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const
 {
@@ -714,9 +734,6 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
 
     // Draw the window over the blurred area
     effects->drawWindow(renderTarget, viewport, w, mask, deviceRegion, data);
-
-    // repaint blurred windows above
-    //m_windowManager.repaintBlurredWindowsAbove(viewport, w, deviceRegion);
 }
 
 GLTexture *BlurEffect::ensureNoiseTexture()
