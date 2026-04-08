@@ -6,7 +6,7 @@
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 #  include "kwin_compat_6_5.hpp"
 #else
 #  include <core/output.h>

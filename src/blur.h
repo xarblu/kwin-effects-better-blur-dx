@@ -13,7 +13,7 @@
 #include "window_manager.hpp"
 #include "kwin_version.hpp"
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 #  include "kwin_compat_6_5.hpp"
 #else
 #  include <core/rect.h>
@@ -59,7 +59,7 @@ struct BlurEffectData
      * The render data per render view, as they can have different
      *  color spaces and even different windows on them
      */
-#ifdef BETTERBLUR_X11
+#if defined(BETTERBLUR_X11)
     std::unordered_map<Output *, BlurRenderData> render;
 #else
     std::unordered_map<RenderView *, BlurRenderData> render;
@@ -90,7 +90,7 @@ public:
 
     void reconfigure(ReconfigureFlags flags) override;
     void prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80) || defined(BETTERBLUR_X11)
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
     void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
 #elif KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     void prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime) override;
@@ -113,7 +113,7 @@ public Q_SLOTS:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotWindowWantsBlurRegionUpdate(EffectWindow *w);
-#ifdef BETTERBLUR_X11
+#if defined(BETTERBLUR_X11)
     void slotScreenRemoved(KWin::Output *view);
 #else
     void slotViewRemoved(KWin::RenderView *view);
@@ -187,7 +187,7 @@ private:
     Region m_currentDeviceBlur; // keeps track of currently blurred area of the windows (from bottom to top)
 #endif
 
-#ifdef BETTERBLUR_X11
+#if defined(BETTERBLUR_X11)
     Output *m_currentView = nullptr;
 #else
     RenderView *m_currentView = nullptr;
