@@ -604,7 +604,6 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data, std::chrono::milliseco
     effects->prePaintScreen(data, presentTime);
 }
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 void BlurEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds presentTime)
 #else
@@ -653,7 +652,7 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
 
     m_paintedDeviceArea -= data.opaque;
     m_paintedDeviceArea += data.paint;
-#else
+#elif KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     effects->prePaintWindow(view, w, data, presentTime);
 
     const Region oldOpaque = data.deviceOpaque;
@@ -693,14 +692,17 @@ void BlurEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePain
 
     m_paintedDeviceArea -= data.deviceOpaque;
     m_paintedDeviceArea += data.devicePaint;
+#else
+    effects->prePaintWindow(view, w, data, presentTime);
 #endif
 
-    // BBDX change
-    if (!blurArea.isEmpty()) {
-        data.mask |= Effect::PAINT_WINDOW_TRANSLUCENT;
+    // BBDX change:
+    // blurred windows should be painted translucent
+    // to avoid issues with repainting
+    if (m_windowManager.windowIsBlurred(w)) {
+        data.setTranslucent();
     }
 }
-#endif // KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
 
 bool BlurEffect::shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const
 {

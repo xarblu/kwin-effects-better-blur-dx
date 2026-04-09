@@ -125,6 +125,11 @@ public:
     bool windowShouldBlurWhileTransformed(const KWin::EffectWindow *w) const;
 
     /**
+     * Check if this window is blurred in any way (requested or forced)
+     */
+    bool windowIsBlurred(const KWin::EffectWindow *w) const;
+
+    /**
      * Get the final blur region for a window, set in content/frame.
      *
      * Forwarded to BBDX::Window::getFinalBlurRegion() if w is managed

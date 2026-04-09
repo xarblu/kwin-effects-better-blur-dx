@@ -267,6 +267,16 @@ bool BBDX::WindowManager::windowShouldBlurWhileTransformed(const KWin::EffectWin
     return window->shouldBlurWhileTransformed();
 }
 
+bool BBDX::WindowManager::windowIsBlurred(const KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
+
+    // assume false for unmanaged windows
+    if (!window)
+        return false;
+
+    return window->isBlurred();
+}
+
 void BBDX::WindowManager::getFinalBlurRegion(const KWin::EffectWindow *w, std::optional<KWin::Region> &content, std::optional<KWin::Region> &frame) const {
     const auto window = findWindow(w);
     if (!window)
