@@ -81,6 +81,18 @@ void BlurEffectConfig::setupContextualHelp()
         QStringLiteral("Use the special value <code>$blank</code> to match empty window classes.</p>"),
         ui.windowClassesBriefDescription
     );
+
+    setContextualHelp(ui.contextualHelpBlurCulling,
+        QStringLiteral("<p>Blur Culling is an attempt to improve performance of the blur effect.</p>") +
+
+        QStringLiteral("<p>Instead of always blurring everything only the \"topmost layer\" is blurred.</p>") +
+
+        QStringLiteral("<p>This should especially help cases with a lot of stacked, blurred windows ") +
+        QStringLiteral("where any repaint of a \"low\" window will trigger repain (and reblur) of all windows above it.</p>") +
+
+        QStringLiteral("<p>This is an <strong>experimental</strong> feature - so <italic>here be dragons!</italic><br>") +
+        QStringLiteral("Some things (especially rounded corners) are still a bit buggy.</p>")
+    );
 }
 
 void BlurEffectConfig::setupSpinboxSliderSync()

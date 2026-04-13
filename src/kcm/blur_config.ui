@@ -380,9 +380,16 @@
         </widget>
        </item>
        <item row="8" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_7">
+        <layout class="QVBoxLayout" name="verticalLayoutBlurCulling">
          <item>
-          <widget class="QCheckBox" name="kcfg_BlurCulling"/>
+          <layout class="QHBoxLayout" name="horizontalLayoutBlurCulling">
+           <item>
+            <widget class="QCheckBox" name="kcfg_BlurCulling"/>
+           </item>
+           <item>
+            <widget class="KContextualHelpButton" name="contextualHelpBlurCulling"/>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
