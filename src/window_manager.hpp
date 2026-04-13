@@ -55,8 +55,9 @@ private:
     bool m_blurDocks{false};
     bool m_blurMenus{false};
 
-    // user configured border radius
+    // misc user configuration
     qreal m_userBorderRadius{0.0};
+    bool m_userBlurCulling{false};
 
     // match helpers
     bool matchesWindowClassFixed(const KWin::EffectWindow *w) const;
@@ -150,12 +151,15 @@ public:
 
     /**
      * Apply culling to the painted blur region, i.e.
-     * skip painting of areas covered by other windows
+     * skip painting of areas covered by other windows.
+     *
+     * blurRegion is the raw pre-scaled/translated region
+     * blurShape is what gets modified
      *
      * TODO: rounded corners need more work, they
      *       currently just "punch a hole" through everything
      */
-    KWin::Region applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, const KWin::WindowPaintData &data) const;
+    void applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, KWin::Region &blurShape, const KWin::WindowPaintData &data) const;
 };
 
 } // namespace KWin

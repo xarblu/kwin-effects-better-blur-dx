@@ -135,6 +135,7 @@ void BBDX::WindowManager::reconfigure() {
     m_blurMenus = config->blurMenus();
 
     m_userBorderRadius = config->cornerRadius();
+    m_userBlurCulling = config->blurCulling();
 
     for (const auto &[_, window] : m_windows) {
         window->reconfigure();
@@ -305,7 +306,11 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
     return window->getEffectiveBlurOpacity(data);
 }
 
-KWin::Region BBDX::WindowManager::applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, const KWin::WindowPaintData &data) const {
+void BBDX::WindowManager::applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, KWin::Region &blurShape, const KWin::WindowPaintData &data) const {
+    if (!m_userBlurCulling) {
+        return;
+    }
+
     KWin::Region mask{};
 
     for (const auto &[kWindow, bbdxWindow] : m_windows) {
@@ -343,7 +348,7 @@ KWin::Region BBDX::WindowManager::applyBlurRegionCulling(const KWin::EffectWindo
     // Basically a copy of the version in Effect::blur().
     // TODO: This is kinda stupid but backgroundRect in Effect::blur() needs
     //       the non-culled version of the blurShape.
-    KWin::Region blurShape = blurRegion.subtracted(mask).translated(w->pos().toPoint());
+    blurShape = blurRegion.subtracted(mask).translated(w->pos().toPoint());
     if (data.xScale() != 1 || data.yScale() != 1) {
         QPoint pt = blurShape.boundingRect().topLeft();
         KWin::Region scaledShape;
@@ -358,6 +363,4 @@ KWin::Region BBDX::WindowManager::applyBlurRegionCulling(const KWin::EffectWindo
     } else if (data.xTranslation() || data.yTranslation()) {
         blurShape.translate(std::round(data.xTranslation()), std::round(data.yTranslation()));
     }
-
-    return blurShape;
 }
