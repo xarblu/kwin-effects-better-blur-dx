@@ -1,6 +1,9 @@
 # DEV
 Things not in any tagged release yet:
 
+### Features:
+- *Experimental* Blur Culling - an attempt to make the effect slightly less resource hungry.
+
 ### Bug Fixes:
 - Fixed `maximizedState` detection with "slim" panels that don't cover a full screen edge
 - Fixed incomplete repaints e.g. when a video is playing behind a blurred surface
