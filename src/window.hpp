@@ -142,6 +142,7 @@ public:
     KWin::EffectWindow* effectwindow() const { return m_effectwindow; }
     std::optional<KWin::Region> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<KWin::Region> forceBlurFrame() const { return m_forceBlurFrame; };
+    bool isTransformed() const { return m_isTransformed; };
     bool shouldBlurWhileTransformed() const;
 
     /**

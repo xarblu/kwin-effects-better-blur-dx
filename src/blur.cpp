@@ -813,6 +813,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 #endif
     const auto opacity = m_windowManager.getEffectiveBlurOpacity(w, data);
 
+    // BBDX: apply culling
+    blurShape = m_windowManager.applyBlurRegionCulling(w, blurRegion(w), data);
+
     // Get the effective shape that will be actually blurred. It's possible that all of it will be clipped.
     QList<RectF> effectiveShape;
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)

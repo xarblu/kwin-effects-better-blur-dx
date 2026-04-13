@@ -147,6 +147,15 @@ public:
      * Get effective blur opacity for requested window
      */
     qreal getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const;
+
+    /**
+     * Apply culling to the painted blur region, i.e.
+     * skip painting of areas covered by other windows
+     *
+     * TODO: rounded corners need more work, they
+     *       currently just "punch a hole" through everything
+     */
+    KWin::Region applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, const KWin::WindowPaintData &data) const;
 };
 
 } // namespace KWin

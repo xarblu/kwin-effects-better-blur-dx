@@ -304,3 +304,60 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
 
     return window->getEffectiveBlurOpacity(data);
 }
+
+KWin::Region BBDX::WindowManager::applyBlurRegionCulling(const KWin::EffectWindow *w, const KWin::Region &blurRegion, const KWin::WindowPaintData &data) const {
+    KWin::Region mask{};
+
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+        // only windows higher in the stack should cull
+        if (kWindow->window()->stackingOrder() <= w->window()->stackingOrder()) {
+            continue;
+        }
+
+        // filter some incompatible window types
+        if (kWindow->isSpecialWindow()
+            || kWindow->window()->isInternal()
+            || !kWindow->isVisible()
+            || bbdxWindow->isMenu()
+            || bbdxWindow->isTransformed()) {
+            continue;
+        }
+
+        KWin::Region windowMask{KWin::RectF{kWindow->frameGeometry().translated(-w->pos().toPoint())}.rounded()};
+
+        // clip corners with border radius because we may still need blur underneath
+        // TODO: figure out good minimum (or grab from user config)
+        constexpr qreal minRadius{5.0};
+        KWin::BorderRadius borderRadius{bbdxWindow->getEffectiveBorderRadius()};
+        borderRadius = KWin::BorderRadius{
+            std::max(minRadius, borderRadius.topLeft()),
+            std::max(minRadius, borderRadius.topRight()),
+            std::max(minRadius, borderRadius.bottomLeft()),
+            std::max(minRadius, borderRadius.bottomRight()),
+        };
+
+        mask += borderRadius.clip(windowMask, windowMask.boundingRect());
+    }
+
+    // Compute the effective blur shape, now with culling. Note that if the window is transformed, so will be the blur shape.
+    // Basically a copy of the version in Effect::blur().
+    // TODO: This is kinda stupid but backgroundRect in Effect::blur() needs
+    //       the non-culled version of the blurShape.
+    KWin::Region blurShape = blurRegion.subtracted(mask).translated(w->pos().toPoint());
+    if (data.xScale() != 1 || data.yScale() != 1) {
+        QPoint pt = blurShape.boundingRect().topLeft();
+        KWin::Region scaledShape;
+        for (const KWin::Rect &r : blurShape.rects()) {
+            const QPointF topLeft(pt.x() + (r.x() - pt.x()) * data.xScale() + data.xTranslation(),
+                                  pt.y() + (r.y() - pt.y()) * data.yScale() + data.yTranslation());
+            const QPoint bottomRight(std::floor(topLeft.x() + r.width() * data.xScale()) - 1,
+                                     std::floor(topLeft.y() + r.height() * data.yScale()) - 1);
+            scaledShape += QRect(QPoint(std::floor(topLeft.x()), std::floor(topLeft.y())), bottomRight);
+        }
+        blurShape = scaledShape;
+    } else if (data.xTranslation() || data.yTranslation()) {
+        blurShape.translate(std::round(data.xTranslation()), std::round(data.yTranslation()));
+    }
+
+    return blurShape;
+}
