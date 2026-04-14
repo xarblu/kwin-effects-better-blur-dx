@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "window_manager.hpp"
 #include "kwin_version.hpp"
+#include <epoxy/gl_generated.h>
 #include <opengl/glshadermanager.h>
 #include <qsize.h>
 
@@ -1237,18 +1238,14 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     {
-        ShaderManager::instance()->pushShader(m_texturePass.shader.get());
-
-        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
-        projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
-
-        m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
-
-        renderInfo.blurCacheFramebuffer->colorAttachment()->bind();
-
-        vbo->draw(GL_TRIANGLES, 6, vertexCount);
-
-        ShaderManager::instance()->popShader();
+        const auto &read = renderInfo.blurCacheFramebuffer->colorAttachment();
+        read->bind();
+        glBlitFramebuffer(
+            0, 0, read->width(), read->height(),
+            scaledBackgroundRect.x(), scaledBackgroundRect.y(), scaledBackgroundRect.width(), scaledBackgroundRect.height(),
+            GL_COLOR_BUFFER_BIT,
+            GL_NEAREST
+        );
     }
 
     vbo->unbindArrays();
