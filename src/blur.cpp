@@ -907,9 +907,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
     }
 
-    if (!renderInfo.blurCacheTexture || renderInfo.blurCacheTexture->size() != scaledBackgroundRect.size() || renderInfo.blurCacheTexture->internalFormat() != textureFormat) {
+    if (!renderInfo.blurCacheTexture || renderInfo.blurCacheTexture->size() != backgroundRect.size() || renderInfo.blurCacheTexture->internalFormat() != textureFormat) {
         glClearColor(0, 0, 0, 0);
-        auto texture = GLTexture::allocate(textureFormat, scaledBackgroundRect.size());
+        auto texture = GLTexture::allocate(textureFormat, backgroundRect.size());
         if (!texture) {
             qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
             return;
@@ -1157,8 +1157,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->pushShader(m_onscreenPass.shader.get());
         } // indent intentional for KWin diff
 
-        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
-        projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
+        QMatrix4x4 projectionMatrix;
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         GLFramebuffer::popFramebuffer();
         const auto &read = renderInfo.framebuffers[1];
@@ -1170,7 +1170,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                        colorMatrix,
                                                        halfpixel,
                                                        float(m_offset),
-                                                       scaledBackgroundRect)) {
+                                                       backgroundRect)) {
         m_onscreenPass.shader->setUniform(m_onscreenPass.mvpMatrixLocation, projectionMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, colorMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.halfpixelLocation, halfpixel);
@@ -1186,8 +1186,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
         }
 
+        // BBDX: draw to cache texture, in local pixels
         GLFramebuffer::pushFramebuffer(renderInfo.blurCacheFramebuffer.get());
-        vbo->draw(GL_TRIANGLES, 6, vertexCount);
+        vbo->draw(GL_TRIANGLES, 0, 6);
         GLFramebuffer::popFramebuffer();
 
         if (modulation < 1.0) {
@@ -1213,16 +1214,17 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         if (GLTexture *noiseTexture = ensureNoiseTexture()) {
             ShaderManager::instance()->pushShader(m_noisePass.shader.get());
 
-            QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
-            projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
+            QMatrix4x4 projectionMatrix;
+            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
             m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
             m_noisePass.shader->setUniform(m_noisePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
 
             noiseTexture->bind();
 
+            // BBDX: draw to cache texture, in local pixels
             GLFramebuffer::pushFramebuffer(renderInfo.blurCacheFramebuffer.get());
-            vbo->draw(GL_TRIANGLES, 6, vertexCount);
+            vbo->draw(GL_TRIANGLES, 0, 6);
             GLFramebuffer::popFramebuffer();
 
             ShaderManager::instance()->popShader();
@@ -1233,19 +1235,24 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     if (const BorderRadius cornerRadius = m_windowManager.getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
         GLFramebuffer::pushFramebuffer(renderInfo.blurCacheFramebuffer.get());
-        m_roundedCornersPass.apply(cornerRadius, viewport, scaledBackgroundRect, renderInfo, w, data, vbo, vertexCount);
+        m_roundedCornersPass.apply(cornerRadius, viewport, backgroundRect, renderInfo, w, data, vbo, vertexCount);
         GLFramebuffer::popFramebuffer();
     }
 
     {
+        ShaderManager::instance()->pushShader(m_texturePass.shader.get());
+        
+        QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
+        projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
+
         const auto &read = renderInfo.blurCacheFramebuffer->colorAttachment();
+
+        m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
         read->bind();
-        glBlitFramebuffer(
-            0, 0, read->width(), read->height(),
-            scaledBackgroundRect.x(), scaledBackgroundRect.y(), scaledBackgroundRect.width(), scaledBackgroundRect.height(),
-            GL_COLOR_BUFFER_BIT,
-            GL_NEAREST
-        );
+
+        vbo->draw(GL_TRIANGLES, 6, vertexCount);
+
+        ShaderManager::instance()->popShader();
     }
 
     vbo->unbindArrays();
