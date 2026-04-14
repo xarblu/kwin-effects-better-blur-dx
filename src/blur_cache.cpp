@@ -12,6 +12,16 @@
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
 
+void BBDX::BlurCacheData::invalidate() {
+    if (!valid) {
+        return;
+    }
+
+    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Cache hits before invalidation:" << hits;
+    valid = false;
+    hits = 0;
+}
+
 BBDX::BlurCache::BlurCache() {
     m_texturePass.shader = KWin::ShaderManager::instance()->generateShaderFromFile(KWin::ShaderTrait::MapTexture,
                                                                            QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
@@ -130,6 +140,11 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
     }
 
     KWin::ShaderManager::instance()->popShader();
+
+    // if we drew it, it has to valid, right?
+    // also bump cache hits
+    renderInfo.cache.valid = true;
+    renderInfo.cache.hits += 1;
 }
 
 void BBDX::BlurCache::drawToCache(const KWin::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo) const {

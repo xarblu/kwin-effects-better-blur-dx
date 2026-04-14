@@ -22,6 +22,9 @@ struct BlurCacheData {
     // whether the cache is valid or not
     bool valid{false};
 
+    // cache hits
+    uint hits{0};
+
     // texture and framebuffer for the cache
     // with the size of scaledBackgroundRect from BlurEffect::blur()
     std::unique_ptr<KWin::GLTexture> texture;
@@ -29,6 +32,10 @@ struct BlurCacheData {
 
     // things that affect validity of the cache
     std::optional<qreal> opacity{};
+
+    // helper to invalidate cache, reset the hit counter
+    // and print debug stats
+    void invalidate();
 };
 
 class BlurCache {

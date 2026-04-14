@@ -885,7 +885,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         renderInfo.framebuffers.clear();
         renderInfo.textures.clear();
         // BBDX:
-        renderInfo.cache.valid = false;
+        renderInfo.cache.invalidate();
 
         glClearColor(0, 0, 0, 0);
         for (size_t i = 0; i <= m_iterationCount; ++i) {
@@ -1234,7 +1234,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     // BBDX:
     m_blurCache->drawCached(scaledBackgroundRect, viewport, renderInfo, vbo, vertexCount, modulation);
-    renderInfo.cache.valid = true;
 
     vbo->unbindArrays();
 }
