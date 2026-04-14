@@ -310,20 +310,12 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
 }
 
 void BBDX::WindowManager::invalidateBlurCacheAbove(const KWin::EffectWindow *w, const KWin::Region &deviceRegion) const {
-    // Only the "most normal" windows, visible
-    // windows should invalidate the cache to
-    // make it live longer.
+    // Only the "most normal", visible windows should
+    // invalidate the cache to make it live longer.
     if (w->isSpecialWindow()
         || w->window()->isInternal()
         || !w->isVisible()) {
         return;
-    }
-
-    // same, but for BBDX::Window specific checks
-    if (const auto window = findWindow(w)) {
-        if (window->isMenu()) {
-            return;
-        }
     }
 
     // invalidate
