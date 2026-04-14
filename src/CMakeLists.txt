@@ -4,7 +4,6 @@ set(better_blur_dx_SOURCES
     blur.cpp
     blur.qrc
     blur_cache.cpp
-    blur_extensions.cpp
     main.cpp
     refraction_pass.cpp
     rounded_corners_pass.cpp
