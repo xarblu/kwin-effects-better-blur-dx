@@ -323,6 +323,12 @@ void BBDX::WindowManager::invalidateBlurCacheAbove(const KWin::EffectWindow *w, 
     //   (user configurable "Max blur repaints per second" defaulting to ~15 fps?
     //   The window itself can of course always invalidate its cache for drag operations etc.
     //   or when relevant blur parameters change.)
+    
+    // filter some windows that never should
+    // invalidate cache
+    if (!w->isVisible()) {
+        return;
+    }
 
     // Ivalidate
     //
