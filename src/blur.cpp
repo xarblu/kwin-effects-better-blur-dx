@@ -1178,18 +1178,22 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
+#if BETTERBLUR_NOT_NEEDED
         if (modulation < 1.0) {
             glEnable(GL_BLEND);
             glBlendColor(0, 0, 0, modulation);
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
         }
+#endif
 
         // BBDX:
         m_blurCache->drawToCache(renderInfo, vbo);
 
+#if BETTERBLUR_NOT_NEEDED
         if (modulation < 1.0) {
             glDisable(GL_BLEND);
         }
+#endif
 
         ShaderManager::instance()->popShader();
 #if BETTERBLUR_NOT_NEEDED
@@ -1201,11 +1205,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         // artifacts, which often happens due to the smooth color transitions in the blurred image.
 
         glEnable(GL_BLEND);
+#if BETTERBLUR_NOT_NEEDED
         if (opacity < 1.0) {
             glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
         } else {
+#endif
             glBlendFunc(GL_ONE, GL_ONE);
+#if BETTERBLUR_NOT_NEEDED
         }
+#endif
 
         if (GLTexture *noiseTexture = ensureNoiseTexture()) {
             ShaderManager::instance()->pushShader(m_noisePass.shader.get());
