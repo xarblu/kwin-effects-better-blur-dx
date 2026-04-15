@@ -198,7 +198,7 @@ public:
     /**
      * Invalidate the blur cache for this window
      */
-    void invalidateBlurCache() const;
+    bool invalidateBlurCache() const;
 
     /**
      * Returns true if this window can receive a cache invalidation

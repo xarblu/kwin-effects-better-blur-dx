@@ -35,7 +35,8 @@ struct BlurCacheData {
 
     // helper to invalidate cache, reset the hit counter
     // and print debug stats
-    void invalidate();
+    // returns true if invalidated
+    bool invalidate();
 };
 
 class BlurCache {

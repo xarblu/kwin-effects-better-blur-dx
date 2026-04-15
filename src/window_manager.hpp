@@ -71,6 +71,11 @@ private:
      */
     BBDX::Window* findWindow(const KWin::EffectWindow *w) const;
 
+    /**
+     * Collect BBDX Windows sorted by stackingOrder
+     */
+    std::vector<BBDX::Window *> windowsByStackingOrder() const;
+
 public Q_SLOT:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
@@ -111,7 +116,7 @@ public:
     /**
      * emits the windowInvalidatedBlurCache signal
      */
-    void invalidateBlurCache(KWin::EffectWindow *w) const;
+    bool invalidateBlurCache(KWin::EffectWindow *w) const;
 
     /**
      * Set the "window is transformed" flag on a window
@@ -150,9 +155,14 @@ public:
     qreal getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const;
 
     /**
-     * Invalidate cache for all overlapping windows above
+     * Invalidate cache for all windows directly above w, with rate limiting
      */
-    void invalidateBlurCacheAbove(const KWin::EffectWindow *w, const KWin::RenderViewport &viewport, const KWin::Region &deviceRegion) const;
+    void invalidateBlurCacheAbove(const KWin::EffectWindow *w) const;
+
+    /**
+     * Invalidate cache for all windows directly below w
+     */
+    void invalidateBlurCacheBelow(const KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 Q_LOGGING_CATEGORY(WINDOW_MANAGER, "kwin_effect_better_blur_dx.window_manager", QtInfoMsg)
 
@@ -73,6 +74,28 @@ BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const
         return it->second.get();
     }
     return nullptr;
+}
+
+std::vector<BBDX::Window *> BBDX::WindowManager::windowsByStackingOrder() const {
+    std::vector<BBDX::Window *> windows{};
+
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+
+        // insert sorted by stackingOrder
+        for (auto it = windows.begin(); ; it++) {
+            if (it == windows.end()) {
+                windows.insert(it, bbdxWindow.get());
+                break;
+            }
+
+            if ((*it)->effectwindow()->window()->stackingOrder() > kWindow->window()->stackingOrder()) {
+                windows.insert(it, bbdxWindow.get());
+                break;
+            }
+        }
+    }
+
+    return windows;
 }
 
 void BBDX::WindowManager::reconfigure() {
@@ -243,13 +266,19 @@ void BBDX::WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const {
     m_effect->updateBlurRegion(w);
 }
 
-void BBDX::WindowManager::invalidateBlurCache(KWin::EffectWindow *w) const {
+bool BBDX::WindowManager::invalidateBlurCache(KWin::EffectWindow *w) const {
+    bool anyInvalidated{false};
+
     if (auto it = m_effect->m_windows.find(w); it != m_effect->m_windows.end()) {
         KWin::BlurEffectData &blurInfo = it->second;
         for (auto &[_, renderInfo] : blurInfo.render) {
-            renderInfo.cache.invalidate();
+            if (renderInfo.cache.invalidate()) {
+                anyInvalidated = true;
+            }
         }
     }
+
+    return anyInvalidated;
 }
 
 void BBDX::WindowManager::setWindowIsTransformed(const KWin::EffectWindow *w, bool toggle) const {
@@ -309,7 +338,7 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
     return window->getEffectiveBlurOpacity(data);
 }
 
-void BBDX::WindowManager::invalidateBlurCacheAbove(const KWin::EffectWindow *w, const KWin::RenderViewport &viewport, const KWin::Region &deviceRegion) const {
+void BBDX::WindowManager::invalidateBlurCacheAbove(const KWin::EffectWindow *w) const {
     // Currently this uses a simple rate limit based approach
     // to avoid excessive invalidations.
     //
@@ -323,39 +352,76 @@ void BBDX::WindowManager::invalidateBlurCacheAbove(const KWin::EffectWindow *w, 
     //   (user configurable "Max blur repaints per second" defaulting to ~15 fps?
     //   The window itself can of course always invalidate its cache for drag operations etc.
     //   or when relevant blur parameters change.)
-    
+
     // filter some windows that never should
     // invalidate cache
     if (!w->isVisible()) {
         return;
     }
 
-    // Ivalidate
-    //
-    // TODO: Not sure if using deviceRegion is the best call here.
-    //       It's usually quite a bit larger than the actual window
-    //       and thus neighbouring windows (e.g. when tiling vertically)
-    //       can still invalidate eachother... but just going with frameGeometry
-    //       also has issues, especially around rounded corners.
-    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+    auto candidates = windowsByStackingOrder();
+    auto targetRegion = KWin::Region{KWin::Rect{w->frameGeometry().toRect()}};
+
+    // in order invalidate caches until the entire target region is convered
+    for (auto it = candidates.begin(); it != candidates.end(); it++) {
+        const auto bbdxWindow = *it;
+        const auto kWindow = bbdxWindow->effectwindow();
+
+        // must be higher in stacking order
         if (kWindow->window()->stackingOrder() <= w->window()->stackingOrder()) {
             continue;
         }
 
-        const QRect windowRect = kWindow->frameGeometry().toRect();
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
-        const QRect deviceWindowRect = snapToPixelGrid(scaledRect(windowRect, viewport.scale()));
-#else
-        const QRect deviceWindowRect = snapToPixelGrid(viewport.mapToDeviceCoordinates(windowRect));
-#endif
-
-        for (const KWin::Rect &rect : deviceRegion.rects()) {
-            if (deviceWindowRect.intersects(rect)) {
-                if (bbdxWindow->canReceiveBlurCacheInvalidation()) {
-                    bbdxWindow->invalidateBlurCache();
+        auto rect = kWindow->frameGeometry().toRect();
+        if (targetRegion.intersects(rect)) {
+            // invalidation above is rate limited for higher cache TTL
+            // we'll still treat it as invalidated though
+            if (bbdxWindow->canReceiveBlurCacheInvalidation()) {
+                if (bbdxWindow->invalidateBlurCache()){
+                    qCDebug(WINDOW_MANAGER) << w->windowClass() << "invalidated cache of"
+                                            << bbdxWindow->effectwindow()->windowClass() << "above";
                 }
-                break;
             }
+            targetRegion -= rect;
+        }
+
+        if (targetRegion.isEmpty()) {
+            break;
+        }
+    }
+}
+
+void BBDX::WindowManager::invalidateBlurCacheBelow(const KWin::EffectWindow *w) const {
+    // filter some windows that never should
+    // invalidate cache
+    if (!w->isVisible()) {
+        return;
+    }
+
+    auto candidates = windowsByStackingOrder();
+    auto targetRegion = KWin::Region{KWin::Rect{w->frameGeometry().toRect()}};
+
+    // in reverse invalidate caches until the entire target region is convered
+    for (auto it = candidates.rbegin(); it != candidates.rend(); it++) {
+        const auto bbdxWindow = *it;
+        const auto kWindow = bbdxWindow->effectwindow();
+
+        // must be lower in stacking order
+        if (kWindow->window()->stackingOrder() >= w->window()->stackingOrder()) {
+            continue;
+        }
+
+        auto rect = kWindow->frameGeometry().toRect();
+        if (targetRegion.intersects(rect)) {
+            if (bbdxWindow->invalidateBlurCache()) {
+                qCDebug(WINDOW_MANAGER) << w->windowClass() << "invalidated cache of"
+                                        << bbdxWindow->effectwindow()->windowClass() << "below";
+            }
+            targetRegion -= rect;
+        }
+
+        if (targetRegion.isEmpty()) {
+            break;
         }
     }
 }

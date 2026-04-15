@@ -749,7 +749,7 @@ void BlurEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewpo
     // BBDX:
     // invalidate first so actual paint
     // should have the info ready
-    m_windowManager->invalidateBlurCacheAbove(w, viewport, deviceRegion);
+    m_windowManager->invalidateBlurCacheAbove(w);
 
     blur(renderTarget, viewport, w, mask, deviceRegion, data);
 

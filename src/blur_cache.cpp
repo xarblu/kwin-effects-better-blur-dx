@@ -14,9 +14,9 @@ Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMs
 
 constexpr uint CACHE_HITS_LOGGED_MIN = 5;
 
-void BBDX::BlurCacheData::invalidate() {
+bool BBDX::BlurCacheData::invalidate() {
     if (!valid) {
-        return;
+        return false;
     }
 
     if (hits >= CACHE_HITS_LOGGED_MIN) {
@@ -25,6 +25,8 @@ void BBDX::BlurCacheData::invalidate() {
 
     valid = false;
     hits = 0;
+
+    return true;
 }
 
 BBDX::BlurCache::BlurCache() {
