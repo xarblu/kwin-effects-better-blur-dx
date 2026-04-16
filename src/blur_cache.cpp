@@ -4,7 +4,7 @@
 
 #include <core/rect.h>
 #include <core/renderviewport.h>
-#include <epoxy/gl_generated.h>
+#include <epoxy/gl.h>
 #include <opengl/eglcontext.h>
 #include <opengl/glframebuffer.h>
 #include <opengl/glshadermanager.h>
@@ -137,23 +137,26 @@ void BBDX::BlurCache::maybeInvalidateCache(KWin::BlurRenderData &renderInfo,
     GLuint query;
     glGenQueries(1, &query);
 
-    // count non-discarded pixels without actually drawing
+    // don't acctually draw anything
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glBeginQuery(GL_SAMPLES_PASSED, query);
+
+    // count non-discarded pixels without actually drawing
+    // GL_ANY_SAMPLES_PASSED_CONSERVATIVE is the fastest option
+    // (implementation dependent; may have false positive but it's probably fine)
+    // but needs OpenGL 4.3 (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml)
+    glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
     vbo->draw(GL_TRIANGLES, 0, 6);
-    glEndQuery(GL_SAMPLES_PASSED);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
 
-    // await query
-    GLuint pixelsDifferent;
-    glGetQueryObjectuiv(query, GL_QUERY_RESULT, &pixelsDifferent);
-
-    // TODO: maybe we relax this a bit to improve cache TTL
-    if (pixelsDifferent > 0) {
+    // await query and check
+    GLuint anyPixelsDifferent;
+    glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
+    if (anyPixelsDifferent == GL_TRUE) {
         cacheData.invalidate();
     }
 
     // cleanup
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDeleteQueries(1, &query);
     glActiveTexture(GL_TEXTURE0);
 
