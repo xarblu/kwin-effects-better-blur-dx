@@ -331,6 +331,7 @@ void BBDX::Window::reconfigure() {
     m_userBorderRadius = m_windowManager->userBorderRadius();
 
     slotWindowOpacityChanged(effectwindow(), 0.0, effectwindow()->opacity());
+    invalidateBlurCache(QStringLiteral("Reconfigured window"));
     updateForceBlurRegion();
 }
 
