@@ -2,7 +2,13 @@
 Things not in any tagged release yet:
 
 ### Features:
-- Blur Caching to (hopefully) improve performance of the effect
+- **Blur Caching** to (hopefully) improve performance of the effect.
+  This is my 3rd attempt at "making the effect less GPU hungry"
+  and changes a good chunk of the rendering pipeline.
+  At least on my machine and testing VM it does look quite promising
+  and I've been running it for about a week now any without major issues.
+  (But then seeing the bug reports here a lot of you seem to use blur a lot
+  more than me so I'm sure at least someone will find a bug here, heh)
 
 ### Bug Fixes:
 - Fixed `maximizedState` detection with "slim" panels that don't cover a full screen edge
