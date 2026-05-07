@@ -29,6 +29,9 @@
 #include <opengl/glutils.h>
 #include <scene/item.h>
 #include <scene/scene.h>
+#if KWIN_VERSION >= KWIN_VERSION_CODE(6, 6, 4)
+#include <scene/backgroundeffectitem.h>
+#endif
 #include <window.h>
 
 #include <QList>
