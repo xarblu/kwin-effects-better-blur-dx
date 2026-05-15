@@ -6,9 +6,11 @@
 
 #include <core/renderviewport.h>
 #include <epoxy/gl.h>
+#include <epoxy/gl_generated.h>
 #include <opengl/eglcontext.h>
 #include <opengl/glframebuffer.h>
 #include <opengl/glshadermanager.h>
+#include <qloggingcategory.h>
 #include <qobject.h>
 
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
@@ -159,13 +161,24 @@ void BBDX::BlurCache::maybeInvalidateCache(KWin::BlurRenderData &renderInfo,
     // don't acctually draw anything
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-    // count non-discarded pixels without actually drawing
-    // GL_ANY_SAMPLES_PASSED_CONSERVATIVE is the fastest option
-    // (implementation dependent; may have false positive but it's probably fine)
-    // but needs OpenGL 4.3 (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml)
-    glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+    // check for non-discarded pixels
+    // GL_ANY_SAMPLES_PASSED_CONSERVATIVE is supposedly faster but
+    // implementation dependent, may have false positives (meaning cache invalidation when not needed)
+    // and needs new-ish OpenGL 4.3 (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml)
+    // so let's just use the slightly slower GL_ANY_SAMPLES_PASSED (OpenGL 3.3)
+    glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
+    
+    // if the query isn't available just invalidate, not much we can do here
+    if (glGetError() == GL_INVALID_ENUM) [[unlikely]] {
+        qCWarning(BLUR_CACHE) << "OpenGL error: GL_ANY_SAMPLES_PASSED query not available";
+        cacheData.invalidate(QStringLiteral("GL_ANY_SAMPLES_PASSED query not available - assuming blit pixel difference"));
+        glEndQuery(GL_ANY_SAMPLES_PASSED);
+        goto cleanup;
+    }
+
+    // perform query
     vbo->draw(GL_TRIANGLES, 0, 6);
-    glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+    glEndQuery(GL_ANY_SAMPLES_PASSED);
 
     // await query and check
     GLuint anyPixelsDifferent;
@@ -174,7 +187,7 @@ void BBDX::BlurCache::maybeInvalidateCache(KWin::BlurRenderData &renderInfo,
         cacheData.invalidate(QStringLiteral("Blit pixel difference"));
     }
 
-    // cleanup
+cleanup:
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDeleteQueries(1, &query);
     glActiveTexture(GL_TEXTURE0);
