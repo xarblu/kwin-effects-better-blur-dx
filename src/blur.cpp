@@ -916,9 +916,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
     }
 
-    // BBDX:
-    m_blurCache->updateBlurCacheDataBuffers(renderInfo, scaledBackgroundRect, textureFormat);
-
     // Fetch the pixels behind the shape that is going to be blurred.
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
     const QRegion dirtyRegion = deviceRegion & backgroundRect;
@@ -1042,12 +1039,15 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     vbo->bindArrays();
 
     // BBDX:
-    m_blurCache->maybeInvalidateCache(renderInfo, opacity, vbo);
-    if (renderInfo.cache.valid) {
+    m_blurCache->selectCacheEntry(renderInfo, opacity, vbo);
+    if (renderInfo.cache.lru.valid()) {
         const float modulation = opacity * opacity;
         m_blurCache->drawCached(scaledBackgroundRect, viewport, renderInfo, vbo, vertexCount, modulation);
         vbo->unbindArrays();
         return;
+    } else {
+        auto cacheEntry = std::make_unique<BBDX::BlurCacheEntry>(scaledBackgroundRect, textureFormat, renderInfo.framebuffers[0].get());
+        renderInfo.cache.lru.add(std::move(cacheEntry));
     }
 
     // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.

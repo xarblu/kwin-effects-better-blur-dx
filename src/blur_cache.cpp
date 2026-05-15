@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include <epoxy/gl.h>
+#include <qloggingcategory.h>
 #include <sys/types.h>
 
 #include <core/renderviewport.h>
@@ -23,13 +24,135 @@
 #include <QVector2D>
 #include <QtNumeric>
 
+#include <memory>
+#include <vector>
+
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
 
-bool BBDX::BlurCacheData::invalidate(QStringView reason) {
-    if (!valid) {
-        return false;
+BBDX::BlurCacheEntry::BlurCacheEntry(const KWin::Rect &scaledBackgroundRect, GLenum textureFormat, KWin::GLFramebuffer *sourceBlitFramebuffer) {
+    // allocate new cached texture + framebuffer
+    glClearColor(0, 0, 0, 0);
+    cachedTexture = KWin::GLTexture::allocate(textureFormat, scaledBackgroundRect.size());
+    if (!cachedTexture) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
+        return;
+    }
+    cachedTexture->setFilter(GL_LINEAR);
+    cachedTexture->setWrapMode(GL_CLAMP_TO_EDGE);
+
+    cachedFramebuffer = std::make_unique<KWin::GLFramebuffer>(cachedTexture.get());
+    if (!cachedFramebuffer->valid()) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
+        return;
+    }
+#if defined(BETTERBLUR_X11)
+    auto *context = KWin::OpenGlContext::currentContext();
+#else
+    auto *context = KWin::EglContext::currentContext();
+#endif
+    context->pushFramebuffer(cachedFramebuffer.get());
+    glClear(GL_COLOR_BUFFER_BIT);
+    context->popFramebuffer();
+
+
+    // clone the blitTexture from the given framebuffer
+    KWin::GLTexture *sourceTexture = sourceBlitFramebuffer->colorAttachment();
+
+    blitTexture = KWin::GLTexture::allocate(sourceTexture->internalFormat(), sourceTexture->size());
+    if (!blitTexture) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
+        return;
+    }
+    blitTexture->setFilter(GL_LINEAR);
+    blitTexture->setWrapMode(GL_CLAMP_TO_EDGE);
+
+    auto blitFramebuffer = std::make_unique<KWin::GLFramebuffer>(blitTexture.get());
+    if (!blitFramebuffer->valid()) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
+        return;
     }
 
+    KWin::GLFramebuffer::pushFramebuffer(sourceBlitFramebuffer);
+    blitFramebuffer->blitFromFramebuffer();
+    KWin::GLFramebuffer::popFramebuffer();
+}
+
+void BBDX::BlurCacheLRU::reset() {
+    m_next = 0;
+    m_valid = nullptr;
+}
+
+const BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::next() {
+    // wrap and empty cases
+    if (m_next >= m_entries.size()) {
+        return nullptr;
+    }
+
+    if (m_valid) {
+        return nullptr;
+    }
+
+    return m_entries[m_next++].get();
+}
+
+void BBDX::BlurCacheLRU::select() {
+    if (m_entries.empty()) {
+        qCCritical(BLUR_CACHE) << "BlurCacheLRU::select(): Called with no entries";
+        return;
+    }
+
+    size_t idx;
+    if (m_next == 0) {
+        idx = 0;
+    } else {
+        idx = m_next - 1;
+    }
+
+    auto selected = m_entries[idx].get();
+
+    m_next = 0;
+    m_valid = selected;
+
+    qCDebug(BLUR_CACHE) << "Selected BlurCacheEntry:" << idx;
+
+    for (auto &entry : m_entries) {
+        if (entry->priority < selected->priority) {
+            entry->priority += 1;
+        }
+    }
+    selected->priority = 0;
+}
+
+void BBDX::BlurCacheLRU::add(std::unique_ptr<BlurCacheEntry> entry) {
+    m_entries.insert(m_entries.begin(), std::move(entry));
+
+    m_entries[0]->priority = 0;
+    m_next = 0;
+    select();
+
+    qCDebug(BLUR_CACHE) << "Added new BlurCacheEntry";
+
+    for (size_t i = 1; i < m_entries.size(); i++) {
+        m_entries[i]->priority += 1;
+    }
+
+    while (m_entries.size() > m_max) {
+        for (auto it = m_entries.begin(); it != m_entries.end(); it++) {
+            if ((*it)->priority >= m_max) {
+                m_entries.erase(it);
+                qCDebug(BLUR_CACHE) << "Dropped old BlurCacheEntry";
+                break;
+            }
+        }
+    }
+}
+
+void BBDX::BlurCacheLRU::clear() {
+    m_entries.clear();
+    reset();
+}
+
+bool BBDX::BlurCacheData::invalidate(QStringView reason) {
     QString windowClass;
     pid_t windowPID;
     if (w) [[likely]] {
@@ -45,8 +168,7 @@ bool BBDX::BlurCacheData::invalidate(QStringView reason) {
                         << "Hits:"   << hits << "\n"
                         << "Reason:" << reason;
 
-    valid = false;
-    hits = 0;
+    lru.clear();
 
     return true;
 }
@@ -77,36 +199,7 @@ BBDX::BlurCache::BlurCache() {
     }
 }
 
-void BBDX::BlurCache::updateBlurCacheDataBuffers(KWin::BlurRenderData &renderInfo, const KWin::Rect &scaledBackgroundRect, GLenum textureFormat) const {
-    if (!renderInfo.cache.texture || renderInfo.cache.texture->size() != scaledBackgroundRect.size() || renderInfo.cache.texture->internalFormat() != textureFormat) {
-        glClearColor(0, 0, 0, 0);
-        auto texture = KWin::GLTexture::allocate(textureFormat, scaledBackgroundRect.size());
-        if (!texture) {
-            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
-            return;
-        }
-        texture->setFilter(GL_LINEAR);
-        texture->setWrapMode(GL_CLAMP_TO_EDGE);
-
-        auto framebuffer = std::make_unique<KWin::GLFramebuffer>(texture.get());
-        if (!framebuffer->valid()) {
-            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
-            return;
-        }
-#if defined(BETTERBLUR_X11)
-        auto *context = KWin::OpenGlContext::currentContext();
-#else
-        auto *context = KWin::EglContext::currentContext();
-#endif
-        context->pushFramebuffer(framebuffer.get());
-        glClear(GL_COLOR_BUFFER_BIT);
-        context->popFramebuffer();
-        renderInfo.cache.texture = std::move(texture);
-        renderInfo.cache.framebuffer = std::move(framebuffer);
-    }
-}
-
-void BBDX::BlurCache::maybeInvalidateCache(KWin::BlurRenderData &renderInfo,
+void BBDX::BlurCache::selectCacheEntry(KWin::BlurRenderData &renderInfo,
                                            qreal opacity,
                                            KWin::GLVertexBuffer *vbo) {
     auto &cacheData = renderInfo.cache;
@@ -115,106 +208,95 @@ void BBDX::BlurCache::maybeInvalidateCache(KWin::BlurRenderData &renderInfo,
         cacheData.invalidate(QStringLiteral("Opacity changed"));
     }
 
-    // Fast path in case we invalidated earlier.
-    // Note that this should still come after opacity checks et al
-    // because those update data.
-    if (!cacheData.valid) {
-        return;
-    }
+    cacheData.lru.reset();
+    while (auto cacheEntry = cacheData.lru.next()) {
+        KWin::GLTexture *prevBlitTexture = cacheEntry->blitTexture.get();
+        KWin::GLFramebuffer *blitFramebuffer = renderInfo.framebuffers[0].get();
+        KWin::GLTexture *blitTexture = blitFramebuffer->colorAttachment();
 
-    KWin::GLTexture *prevBlitTexture = cacheData.prevBlitTexture.get();
-    KWin::GLFramebuffer *blitFramebuffer = renderInfo.framebuffers[0].get();
-    KWin::GLTexture *blitTexture = blitFramebuffer->colorAttachment();
+        // previous blit texture is definitely different
+        if (!prevBlitTexture) {
+            continue;
+        }
+        if (prevBlitTexture->size() != blitTexture->size()) {
+            continue;
+        }
+        if (prevBlitTexture->internalFormat() != blitTexture->internalFormat()) {
+            continue;
+        }
 
-    // previous blit texture is definitely different
-    if (!prevBlitTexture) {
-        cacheData.invalidate(QStringLiteral("No prevBlitTexture"));
-        return;
-    }
+        // fast path in case we already determined we
+        // can't perform texture comparison
+        if (!m_glQueryAvailable) [[unlikely]] {
+            continue;
+        }
 
-    if (prevBlitTexture->size() != blitTexture->size()) {
-        cacheData.invalidate(QStringLiteral("Blit texture size mismatch"));
-        return;
-    }
+        // check if textures differ on the pixel level
+        // we'll just (ab)use the provided framebuffer for this
+        // as it *should* always be correct
+        KWin::ShaderManager::instance()->pushShader(m_textureComparePass.shader.get());
+        KWin::GLFramebuffer::pushFramebuffer(blitFramebuffer);
 
-    if (prevBlitTexture->internalFormat() != blitTexture->internalFormat()) {
-        cacheData.invalidate(QStringLiteral("Blit texture format mismatch"));
-        return;
-    }
+        QMatrix4x4 projectionMatrix;
+        projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width(), blitTexture->height()));
 
-    // fast path in case we already determined we
-    // can't perform texture comparison
-    if (!m_glQueryAvailable) [[unlikely]] {
-        cacheData.invalidate(QStringLiteral("GL_ANY_SAMPLES_PASSED query not available - assuming blit pixel difference"));
-        return;
-    }
+        m_textureComparePass.shader->setUniform(m_textureComparePass.mvpMatrixLocation, projectionMatrix);
 
-    // check if textures differ on the pixel level
-    // we'll just (ab)use the provided framebuffer for this
-    // as it *should* always be correct
-    KWin::ShaderManager::instance()->pushShader(m_textureComparePass.shader.get());
-    KWin::GLFramebuffer::pushFramebuffer(blitFramebuffer);
+        m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitOldLocation, 0);
+        glActiveTexture(GL_TEXTURE0);
+        prevBlitTexture->bind();
 
-    QMatrix4x4 projectionMatrix;
-    projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width(), blitTexture->height()));
+        m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitNewLocation, 1);
+        glActiveTexture(GL_TEXTURE1);
+        blitTexture->bind();
 
-    m_textureComparePass.shader->setUniform(m_textureComparePass.mvpMatrixLocation, projectionMatrix);
+        m_textureComparePass.shader->setUniform(m_textureComparePass.halfpixelLocation,
+                                                QVector2D(0.5 / blitTexture->width(), 0.5 / blitTexture->height()));
 
-    m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitOldLocation, 0);
-    glActiveTexture(GL_TEXTURE0);
-    prevBlitTexture->bind();
+        // pixels at window borders are fairly unreliable so ignore a slim border (1% of the texture size)
+        m_textureComparePass.shader->setUniform(m_textureComparePass.borderIgnore, 0.01);
 
-    m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitNewLocation, 1);
-    glActiveTexture(GL_TEXTURE1);
-    blitTexture->bind();
+        GLuint query;
+        glGenQueries(1, &query);
 
-    m_textureComparePass.shader->setUniform(m_textureComparePass.halfpixelLocation,
-                                            QVector2D(0.5 / blitTexture->width(), 0.5 / blitTexture->height()));
+        // don't acctually draw anything
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-    // pixels at window borders are fairly unreliable so ignore a slim border (1% of the texture size)
-    m_textureComparePass.shader->setUniform(m_textureComparePass.borderIgnore, 0.01);
+        // check for non-discarded pixels
+        // GL_ANY_SAMPLES_PASSED_CONSERVATIVE is supposedly faster but
+        // implementation dependent, may have false positives (meaning cache invalidation when not needed)
+        // and needs new-ish OpenGL 4.3 (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml)
+        // so let's just use the slightly slower GL_ANY_SAMPLES_PASSED (OpenGL 3.3)
+        glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
 
-    GLuint query;
-    glGenQueries(1, &query);
+        // if the query isn't available just invalidate, not much we can do here
+        if (glGetError() == GL_INVALID_ENUM) [[unlikely]] {
+            qCWarning(BLUR_CACHE) << "OpenGL error: GL_ANY_SAMPLES_PASSED query not available";
+            m_glQueryAvailable = false;
+            glEndQuery(GL_ANY_SAMPLES_PASSED);
+            goto cleanup;
+        }
 
-    // don't acctually draw anything
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-    // check for non-discarded pixels
-    // GL_ANY_SAMPLES_PASSED_CONSERVATIVE is supposedly faster but
-    // implementation dependent, may have false positives (meaning cache invalidation when not needed)
-    // and needs new-ish OpenGL 4.3 (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml)
-    // so let's just use the slightly slower GL_ANY_SAMPLES_PASSED (OpenGL 3.3)
-    glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
-
-    // if the query isn't available just invalidate, not much we can do here
-    if (glGetError() == GL_INVALID_ENUM) [[unlikely]] {
-        qCWarning(BLUR_CACHE) << "OpenGL error: GL_ANY_SAMPLES_PASSED query not available";
-        cacheData.invalidate(QStringLiteral("GL_ANY_SAMPLES_PASSED query not available - assuming blit pixel difference"));
-        m_glQueryAvailable = false;
-
+        // perform query
+        vbo->draw(GL_TRIANGLES, 0, 6);
         glEndQuery(GL_ANY_SAMPLES_PASSED);
-        goto cleanup;
-    }
 
-    // perform query
-    vbo->draw(GL_TRIANGLES, 0, 6);
-    glEndQuery(GL_ANY_SAMPLES_PASSED);
-
-    // await query and check
-    GLuint anyPixelsDifferent;
-    glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
-    if (anyPixelsDifferent == GL_TRUE) {
-        cacheData.invalidate(QStringLiteral("Blit pixel difference"));
-    }
+        // await query and check
+        GLuint anyPixelsDifferent;
+        glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
+        if (anyPixelsDifferent == GL_FALSE) {
+            qCDebug(BLUR_CACHE) << "Found cache entry for" << cacheData.w->windowClass();
+            cacheData.lru.select();
+        }
 
 cleanup:
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glDeleteQueries(1, &query);
-    glActiveTexture(GL_TEXTURE0);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDeleteQueries(1, &query);
+        glActiveTexture(GL_TEXTURE0);
 
-    KWin::GLFramebuffer::popFramebuffer();
-    KWin::ShaderManager::instance()->popShader();
+        KWin::GLFramebuffer::popFramebuffer();
+        KWin::ShaderManager::instance()->popShader();
+    }
 }
 
 void BBDX::BlurCache::setupVBO(const KWin::Rect &scaledBackgroundRect, std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
@@ -269,7 +351,15 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
     QMatrix4x4 projectionMatrix = viewport.projectionMatrix();
     projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
 
-    const auto &read = renderInfo.cache.framebuffer->colorAttachment();
+    KWin::GLTexture* read;
+    if (const auto &cacheEntry = renderInfo.cache.lru.valid()) {
+        read = cacheEntry->cachedTexture.get();
+    } else {
+        // bail if we didn't select or add a cache entry
+        qCritical(BLUR_CACHE) << "drawCached() called without a valid cache entry";
+        KWin::ShaderManager::instance()->popShader();
+        return;
+    }
 
     m_texturePass.shader->setUniform(m_texturePass.mvpMatrixLocation, projectionMatrix);
     read->bind();
@@ -287,20 +377,11 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
     }
 
     KWin::ShaderManager::instance()->popShader();
-
-    // if we drew it, it has to valid, right?
-    if (!renderInfo.cache.valid) {
-        renderInfo.cache.valid = true;
-
-        // clone current blit for next draw
-        renderInfo.cache.prevBlitTexture = cloneBlitTexture(renderInfo);
-    } else {
-        renderInfo.cache.hits += 1;
-    }
 }
 
-void BBDX::BlurCache::drawToCache(const KWin::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo) const {
-    KWin::GLFramebuffer::pushFramebuffer(renderInfo.cache.framebuffer.get());
+void BBDX::BlurCache::drawToCache(KWin::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo) const {
+    auto cachedFramebuffer = renderInfo.cache.lru.valid()->cachedFramebuffer.get();
+    KWin::GLFramebuffer::pushFramebuffer(cachedFramebuffer);
     vbo->draw(GL_TRIANGLES, 6, 6);
     KWin::GLFramebuffer::popFramebuffer();
 }

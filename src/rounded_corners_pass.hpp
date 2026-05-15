@@ -49,7 +49,7 @@ public:
     void apply(const KWin::BorderRadius &cornerRadius,
                const KWin::RenderViewport &viewport,
                const QRect &scaledBackgroundRect,
-               const KWin::BlurRenderData &renderInfo,
+               KWin::BlurRenderData &renderInfo,
                const KWin::EffectWindow *w,
                const KWin::WindowPaintData &data,
                KWin::GLVertexBuffer *vbo,
