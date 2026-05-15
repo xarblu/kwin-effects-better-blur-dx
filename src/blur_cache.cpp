@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include <epoxy/gl.h>
+#include <sys/types.h>
 
 #include <core/renderviewport.h>
 #include <opengl/eglcontext.h>
@@ -30,13 +31,17 @@ bool BBDX::BlurCacheData::invalidate(QStringView reason) {
     }
 
     QString windowClass;
+    pid_t windowPID;
     if (w) [[likely]] {
         windowClass = w->windowClass();
+        windowPID = w->pid();
     } else {
         windowClass = QStringLiteral("unknown window");
+        windowPID = 0;
     }
 
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Cache invalidated:" << windowClass << "\n"
+                        << "PID:" << windowPID << "\n"
                         << "Hits:"   << hits << "\n"
                         << "Reason:" << reason;
 
