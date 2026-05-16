@@ -226,21 +226,6 @@ BBDX::BlurCache::BlurCache() {
 
 void BBDX::BlurCache::selectCacheEntry(KWin::BlurRenderData &renderInfo,
                                        KWin::GLVertexBuffer *vbo) {
-    /**
-     * TODO: Ideas to make this faster
-     *  Downsample compared textures:
-     *   *After* we verified the size would match
-     *   we can downsample the texture to some maximum
-     *   which would mean less fragments to check.
-     *   Pro: Scaling down to 50% would already reduce
-     *        the checked fragments to 25% of the original.
-     *        The scaling factor could potentially be configurable
-     *        as a sort of "cache accuracy".
-     *   Con: Less accurate
-     *   Impl: Just add 6 more vertices to VBO for
-     *         backgroundRect.scaled(0.5) and use that to draw
-     */
-
     auto &cache = renderInfo.cache;
     std::unique_ptr<KWin::GLTexture> compareTexture{nullptr};
     std::unique_ptr<KWin::GLFramebuffer> compareFramebuffer{nullptr};
