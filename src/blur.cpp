@@ -92,7 +92,7 @@ namespace KWin
 
 static const QByteArray s_blurAtomName = QByteArrayLiteral("_KDE_NET_WM_BLUR_BEHIND_REGION");
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
 BlurManagerInterface *BlurEffect::s_blurManager = nullptr;
 QTimer *BlurEffect::s_blurManagerRemoveTimer = nullptr;
 
@@ -279,7 +279,7 @@ BlurEffect::BlurEffect()
 
 BlurEffect::~BlurEffect()
 {
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
     // When compositing is restarted, avoid removing the manager immediately.
     if (s_blurManager) {
         s_blurManagerRemoveTimer->start(1000);
@@ -503,7 +503,7 @@ void BlurEffect::slotWindowAdded(EffectWindow *w)
                 updateBlurRegion(w);
             }
         });
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
         windowContrastChangedConnections[w] = connect(surf, &SurfaceInterface::contrastChanged, this, [this, w]() {
             if (w) {
                 updateBlurRegion(w);
@@ -534,7 +534,7 @@ void BlurEffect::slotWindowDeleted(EffectWindow *w)
         disconnect(*it);
         windowBlurChangedConnections.erase(it);
     }
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
     if (auto it = windowContrastChangedConnections.find(w); it != windowContrastChangedConnections.end()) {
         disconnect(*it);
         windowContrastChangedConnections.erase(it);

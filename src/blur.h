@@ -234,12 +234,12 @@ private:
     QList<BlurValuesStruct> blurStrengthValues;
 
     QMap<EffectWindow *, QMetaObject::Connection> windowBlurChangedConnections;
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
     QMap<EffectWindow *, QMetaObject::Connection> windowContrastChangedConnections;
 #endif
     std::unordered_map<EffectWindow *, BlurEffectData> m_windows;
 
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+#if !defined(BETTERBLUR_X11) && KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
     static BlurManagerInterface *s_blurManager;
     static QTimer *s_blurManagerRemoveTimer;
 
