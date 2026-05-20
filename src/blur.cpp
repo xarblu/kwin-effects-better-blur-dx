@@ -1014,6 +1014,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 #else
     const Region dirtyRegion = viewport.mapFromDeviceCoordinatesContained(deviceRegion) & backgroundRect;
 #endif
+    m_blurCache->preparePaintData(&dirtyRegion, renderInfo.framebuffers[0].get(), &backgroundRect, &scaledBackgroundRect);
     m_blurCache->selectCacheEntryEarly(renderInfo, dirtyRegion);
     if (!renderInfo.cache.valid()) {
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
@@ -1035,7 +1036,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     vbo->setAttribLayout(std::span(GLVertexBuffer::GLVertex2DLayout), sizeof(GLVertex2D));
 
     const int vertexCount = effectiveShape.size() * 6;
-    if (auto result = vbo->map<GLVertex2D>(6 + BBDX::BlurCache::addedVertices() + vertexCount)) {
+    if (auto result = vbo->map<GLVertex2D>(6 + m_blurCache->addedVertices() + vertexCount)) {
         auto map = *result;
 
         size_t vboIndex = 0;
@@ -1084,7 +1085,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         }
 
         // BBDX:
-        m_blurCache->setupVBO(backgroundRect, scaledBackgroundRect, map, vboIndex);
+        m_blurCache->setupVBO(map, vboIndex);
 
         // The geometry that will be painted on screen, in device pixels.
         for (const RectF &rect : effectiveShape) {

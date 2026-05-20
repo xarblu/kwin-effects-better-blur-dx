@@ -7,6 +7,7 @@
 #include <epoxy/gl.h>
 #include <sys/types.h>
 
+#include <core/pixelgrid.h>
 #include <core/renderviewport.h>
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
@@ -285,6 +286,17 @@ BBDX::BlurCache::BlurCache() {
     }
 }
 
+void BBDX::BlurCache::preparePaintData(const KWin::Region *dirtyRegion,
+                                       const KWin::GLFramebuffer *blitFramebuffer,
+                                       const KWin::Rect *backgroundRect,
+                                       const KWin::Rect *scaledBackgroundRect) {
+    m_paintData.dirtyRegion = dirtyRegion;
+    m_paintData.blitFramebuffer = blitFramebuffer;
+    m_paintData.backgroundRect = backgroundRect;
+    m_paintData.scaledBackgroundRect = scaledBackgroundRect;
+    m_paintData.textureCompareVertexCount = dirtyRegion->rects().size() * 6;
+}
+
 void BBDX::BlurCache::selectCacheEntry(KWin::BlurRenderData &renderInfo,
                                        KWin::GLVertexBuffer *vbo,
                                        const KWin::Region &dirtyRegion) {
@@ -408,22 +420,37 @@ void BBDX::BlurCache::selectCacheEntryEarly(KWin::BlurRenderData &renderInfo,
     }
 }
 
-void BBDX::BlurCache::setupVBO(const KWin::Rect &backgroundRect, const KWin::Rect &scaledBackgroundRect, std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
+void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
+    auto dirtyRegion = m_paintData.dirtyRegion;
+    auto backgroundRect = m_paintData.backgroundRect;
+    auto scaledBackgroundRect = m_paintData.scaledBackgroundRect;
+
     // The geometry used for texture comparison, in logical pixels.
-    {
-        const qreal width = static_cast<qreal>(backgroundRect.width()) * m_textureCompareScaleFactor;
-        const qreal height = static_cast<qreal>(backgroundRect.height()) * m_textureCompareScaleFactor;
-        const QRectF localRect = QRectF(0, 0, width, height);
+    for (const KWin::Rect &rect : dirtyRegion->rects()) {
+        // scale at (0, 0)
+        KWin::Rect localRect = rect.translated(-rect.topLeft());
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
+        localRect = KWin::snapToPixelGrid(KWin::scaledRect(localRect, m_textureCompareScaleFactor));
+#else
+        localRect = KWin::snapToPixelGrid(localRect.scaled(m_textureCompareScaleFactor));
+#endif
+
+        // move back to (scaled) original position inside (scaled) backgroundRect
+        localRect.translate(rect.topLeft() * m_textureCompareScaleFactor);
+        localRect.translate(-(backgroundRect->topLeft() * m_textureCompareScaleFactor));
+
+        const float textureWidth = backgroundRect->width() * m_textureCompareScaleFactor;
+        const float textureHeight = backgroundRect->height() * m_textureCompareScaleFactor;
 
         const float x0 = localRect.left();
         const float y0 = localRect.top();
         const float x1 = localRect.right();
         const float y1 = localRect.bottom();
 
-        const float u0 = x0 / width;
-        const float v0 = 1.0f - y0 / height;
-        const float u1 = x1 / width;
-        const float v1 = 1.0f - y1 / height;
+        const float u0 = x0 / textureWidth;
+        const float v0 = 1.0f - y0 / textureHeight;
+        const float u1 = x1 / textureWidth;
+        const float v1 = 1.0f - y1 / textureHeight;
 
         // first triangle
         map[vboIndex++] = KWin::GLVertex2D{
@@ -457,17 +484,17 @@ void BBDX::BlurCache::setupVBO(const KWin::Rect &backgroundRect, const KWin::Rec
     // The geometry used for the cache, in logical pixels
     // but scaled to what would be drawn on the device.
     {
-        const QRectF localRect = QRectF(0, 0, scaledBackgroundRect.width(), scaledBackgroundRect.height());
+        const QRectF localRect = QRectF(0, 0, scaledBackgroundRect->width(), scaledBackgroundRect->height());
 
         const float x0 = localRect.left();
         const float y0 = localRect.top();
         const float x1 = localRect.right();
         const float y1 = localRect.bottom();
 
-        const float u0 = x0 / scaledBackgroundRect.width();
-        const float v0 = 1.0f - y0 / scaledBackgroundRect.height();
-        const float u1 = x1 / scaledBackgroundRect.width();
-        const float v1 = 1.0f - y1 / scaledBackgroundRect.height();
+        const float u0 = x0 / scaledBackgroundRect->width();
+        const float v0 = 1.0f - y0 / scaledBackgroundRect->height();
+        const float u1 = x1 / scaledBackgroundRect->width();
+        const float v1 = 1.0f - y1 / scaledBackgroundRect->height();
 
         // first triangle
         map[vboIndex++] = KWin::GLVertex2D{

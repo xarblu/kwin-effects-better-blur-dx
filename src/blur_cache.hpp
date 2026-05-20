@@ -166,6 +166,16 @@ private:
     // At 0.1 it's just 1% of pixels (and it still looks just fine)
     qreal m_textureCompareScaleFactor{0.1};
 
+    // Data used for this specific window paint
+    // !!! preparePaintData() must be called before accessing any of this !!!
+    struct {
+        const KWin::Region *dirtyRegion;
+        const KWin::Rect *backgroundRect;
+        const KWin::Rect *scaledBackgroundRect;
+        const KWin::GLFramebuffer *blitFramebuffer;
+        uint textureCompareVertexCount;
+    } m_paintData;
+
 public:
     /**
      * Loads and sets up shaders
@@ -176,6 +186,14 @@ public:
      * Check if pass is ready i.e. all shaders loaded
      */
     bool ready() const { return !!m_texturePass.shader; }
+
+    /**
+     * Prepare the cache for this paint
+     */
+    void preparePaintData(const KWin::Region *dirtyRegion,
+                          const KWin::GLFramebuffer *blitFramebuffer,
+                          const KWin::Rect *backgroundRect,
+                          const KWin::Rect *scaledBackgroundRect);
 
     /**
      * Select a cache entry from renderInfo if a valid one exists
@@ -193,19 +211,19 @@ public:
      * Injects the geometry used for the cache, in logical pixels
      * but scaled to what would be drawn on the device.
      *
-     * Always adds BlurCache::addedVertices() vertices
+     * Adds BlurCache::addedVertices() vertices
      */
-    void setupVBO(const KWin::Rect &backgroundRect, const KWin::Rect &scaledBackgroundRect, std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const;
-    static constexpr uint addedVertices() { return 12; }
+    void setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const;
+    uint addedVertices() const { return m_paintData.textureCompareVertexCount + 6; }
 
     /**
      * Start indices and vert count of stuff in the VBO
      */
-    static constexpr uint vboStartTextureCompare() { return 6; }
-    static constexpr uint vboCountTextureCompare() { return 6; }
-    static constexpr uint vboStartCache() { return vboStartTextureCompare() + vboCountTextureCompare(); }
-    static constexpr uint vboCountCache() { return 6; }
-    static constexpr uint vboStartScreen() { return vboStartCache() + vboCountCache(); }
+    uint vboStartTextureCompare() const { return 6; }
+    uint vboCountTextureCompare() const { return m_paintData.textureCompareVertexCount; }
+    uint vboStartCache() const { return vboStartTextureCompare() + vboCountTextureCompare(); }
+    uint vboCountCache() const { return 6; }
+    uint vboStartScreen() const { return vboStartCache() + vboCountCache(); }
 
     /**
      * Draw the cached texture
