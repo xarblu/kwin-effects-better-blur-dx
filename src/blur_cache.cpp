@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include <epoxy/gl.h>
+#include <qloggingcategory.h>
 #include <sys/types.h>
 
 #include <core/pixelgrid.h>
@@ -88,8 +89,10 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
         missingPaint -= rect;
     }
     bool partialPaint{!missingPaint.isEmpty()};
-
+    
     if (partialPaint && oldCacheEntry) {
+        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Partial paint - reusing old blur entry as base";
+
         KWin::GLFramebuffer::pushFramebuffer(oldCacheEntry->blitFramebuffer.get());
         entry->blitFramebuffer->blitFromFramebuffer();
         KWin::GLFramebuffer::popFramebuffer();
@@ -100,7 +103,8 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
 
     KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
     for (const auto &rect : dirtyRegion.rects()) {
-        entry->blitFramebuffer->blitFromFramebuffer(rect, rect.translated(-backgroundRect.topLeft()));
+        entry->blitFramebuffer->blitFromFramebuffer(rect.translated(-backgroundRect.topLeft()),
+                                                    rect.translated(-backgroundRect.topLeft()));
     }
     KWin::GLFramebuffer::popFramebuffer();
 
@@ -321,6 +325,10 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
                 continue;
             }
+
+            KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer.get());
+            glClear(GL_COLOR_BUFFER_BIT);
+            KWin::GLFramebuffer::popFramebuffer();
         }
 
         // check if textures differ on the pixel level
@@ -426,19 +434,16 @@ void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboInde
     auto backgroundRect = m_paintData.backgroundRect;
     auto scaledBackgroundRect = m_paintData.scaledBackgroundRect;
 
-    // The geometry used for texture comparison, in logical pixels.
+    // The geometry used for texture comparison, in logical pixels
+    // relative to backgroundRect
     for (const KWin::Rect &rect : dirtyRegion->rects()) {
-        // scale at (0, 0)
-        KWin::Rect localRect = rect.translated(-rect.topLeft());
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
-        localRect = KWin::snapToPixelGrid(KWin::scaledRect(localRect, m_textureCompareScaleFactor));
-#else
-        localRect = KWin::snapToPixelGrid(localRect.scaled(m_textureCompareScaleFactor));
-#endif
-
-        // move back to (scaled) original position inside (scaled) backgroundRect
-        localRect.translate(rect.topLeft() * m_textureCompareScaleFactor);
-        localRect.translate(-(backgroundRect->topLeft() * m_textureCompareScaleFactor));
+        const KWin::RectF localRectF{
+            (rect.x() - backgroundRect->x()) * m_textureCompareScaleFactor,
+            (rect.y() - backgroundRect->y()) * m_textureCompareScaleFactor,
+            rect.width() * m_textureCompareScaleFactor,
+            rect.height() * m_textureCompareScaleFactor,
+        };
+        const KWin::Rect localRect = localRectF.toAlignedRect();
 
         const float textureWidth = backgroundRect->width() * m_textureCompareScaleFactor;
         const float textureHeight = backgroundRect->height() * m_textureCompareScaleFactor;
