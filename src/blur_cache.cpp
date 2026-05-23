@@ -471,8 +471,8 @@ void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboInde
             std::floor(rect.height() * m_textureCompareScaleFactor),
         };
 
-        const float textureWidth = backgroundRect->width() * m_textureCompareScaleFactor;
-        const float textureHeight = backgroundRect->height() * m_textureCompareScaleFactor;
+        const float textureWidth = backgroundRect->width();
+        const float textureHeight = backgroundRect->height();
 
         const float x0 = localRect.left();
         const float y0 = localRect.top();
