@@ -189,7 +189,7 @@ private:
     // to speed up the OpenGL query which compares every fragment.
     // A scale of 0.5 means we just need to compare 25% of the actual pixels.
     // At 0.1 it's just 1% of pixels (and it still looks just fine)
-    qreal m_textureCompareScaleFactor{0.1};
+    qreal m_textureCompareScaleFactor{1.0};
 
     // Data used for this specific window paint
     // !!! preparePaintData() must be called before accessing any of this !!!

@@ -438,6 +438,7 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
 
     std::chrono::milliseconds limit{limitActive};
     if (cache.window() && m_effect->windowManager()->windowBlurIsFullyCovered(cache.window())) {
+        qCDebug(BLUR_CACHE) << "Throttling blur refresh rate of:" << cache.window()->windowClass();
         limit = limitCovered;
     }
 
