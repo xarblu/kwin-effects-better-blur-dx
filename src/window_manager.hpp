@@ -82,6 +82,7 @@ private:
 public Q_SLOT:
     void slotWindowAdded(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
+    void slotStackingOrderChanged();
 
 public:
     explicit WindowManager(BBDX::BlurEffect *effect);

@@ -48,6 +48,7 @@ BBDX::WindowManager::WindowManager(BBDX::BlurEffect *effect) {
 
     connect(KWin::effects, &KWin::EffectsHandler::windowAdded, this, &WindowManager::slotWindowAdded);
     connect(KWin::effects, &KWin::EffectsHandler::windowDeleted, this, &WindowManager::slotWindowDeleted);
+    connect(KWin::effects, &KWin::EffectsHandler::stackingOrderChanged, this, &WindowManager::slotStackingOrderChanged);
 }
 
 void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
@@ -73,6 +74,10 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
         m_docks.erase(it);
         refreshMaximizedStateAll();
     }
+}
+
+void BBDX::WindowManager::slotStackingOrderChanged() {
+    refreshWindowCoverageAll();
 }
 
 BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const {
