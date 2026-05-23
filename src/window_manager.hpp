@@ -98,6 +98,12 @@ public:
     void refreshMaximizedStateAll() const;
 
     /**
+     * Refresh window coverage info of a window / of all windows
+     */
+    void refreshWindowCoverage(BBDX::Window *bbdxWindow) const;
+    void refreshWindowCoverageAll() const;
+
+    /**
      * getters
      */
     bool blurDecorations() const { return m_blurDecorations; }
@@ -161,7 +167,7 @@ public:
      * Check if the provided window's blur region is fully covered by
      * the frame geometry of other windows
      */
-    bool windowBlurIsFullyCovered(KWin::EffectWindow *w) const;
+    bool windowIsBlurFullyCovered(KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

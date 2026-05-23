@@ -90,6 +90,7 @@ void BBDX::Window::slotWindowFinishUserMovedResized() {
 void BBDX::Window::slotWindowFrameGeometryChanged() {
     updateForceBlurRegion();
     refreshMaximizedState();
+    refreshWindowCoverage();
 
     // Not sure if this is the best place to unset
     // this but seems to work fine for now
@@ -135,6 +136,15 @@ void BBDX::Window::setMaximizedState(MaximizedState state) {
     qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "MaximizedState changed:" << *this;
 }
 
+void BBDX::Window::setIsBlurFullyCovered(bool toggle) {
+    if (m_isBlurFullyCovered == toggle) {
+        return;
+    }
+
+    m_isBlurFullyCovered = toggle;
+    qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "BlurFullyCovered changed:" << *this;
+}
+
 bool BBDX::Window::shouldBlurWhileTransformed() const {
     // While minimized there's no reason to blur
     if (m_isMinimized) {
@@ -153,6 +163,10 @@ bool BBDX::Window::shouldBlurWhileTransformed() const {
 
 void BBDX::Window::refreshMaximizedState() {
     m_windowManager->refreshMaximizedState(this);
+}
+
+void BBDX::Window::refreshWindowCoverage() {
+    m_windowManager->refreshWindowCoverage(this);
 }
 
 void BBDX::Window::updateForceBlurRegion() {
@@ -623,6 +637,7 @@ QDebug operator<<(QDebug &debug, const BBDX::Window &window) {
     debug << "isMenu:" << window.isMenu() << "\n";
     debug << "blurOrigin:" << window.blurOriginToString() << "\n";
     debug << "maximizedState:" << window.maximizedStateToString() << "\n";
+    debug << "isBlurFullyCovered:" << window.isBlurFullyCovered() << "\n";
     return debug;
 }
 } // namespace BBDX
