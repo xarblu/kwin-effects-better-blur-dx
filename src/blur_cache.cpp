@@ -98,7 +98,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
         KWin::GLFramebuffer::popFramebuffer();
     } else if (partialPaint) {
         qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Partial paint without old BlurCacheEntry";
-        return nullptr;
+        entry->partial = true;
     }
 
     KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
@@ -217,6 +217,16 @@ void BBDX::BlurCacheLRU::add(std::unique_ptr<BlurCacheEntry> entry) {
             }
         }
     }
+}
+
+BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::any() const {
+    for (const auto &entry : m_entries) {
+        if (!entry->partial) {
+            return entry.get();
+        }
+    }
+
+    return nullptr;
 }
 
 void BBDX::BlurCacheLRU::invalidate(QStringView reason, bool skipGlContext) {
@@ -432,6 +442,11 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
 
     cache.reset();
     while (auto cacheEntry = cache.next()) {
+        // partial entries shouldn't be reused without verification
+        if (cacheEntry->partial) {
+            continue;
+        }
+
         std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->verifiedAt);
         if (elapsed <= limit) {
             cache.select();

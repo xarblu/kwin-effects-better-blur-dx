@@ -54,6 +54,11 @@ struct BlurCacheEntry {
     // dirtyRegion used to create this cache entry
     KWin::Region dirtyRegion{};
 
+    // Marker for cache entries that are partial (didn't have full backgroundRect blitted).
+    // Partial entries are fine to use for the regular "slow" path
+    // but they can't be used for some performance hacks.
+    bool partial{false};
+
     /**
      * Create a new BlurCacheEntry by allocating cachedTexture and cachedFramebuffer
      * blitTexture is cloned from the provided blitFramebuffer.
@@ -126,9 +131,9 @@ public:
     BlurCacheEntry* valid() { return m_valid; }
 
     /**
-     * Get a pointer to any existing cache entry if available, else nullptr
+     * Get a pointer to any existing (non-partial) cache entry if available, else nullptr
      */
-    BlurCacheEntry* any() { return m_entries.empty() ? nullptr : m_entries[0].get(); }
+    BlurCacheEntry* any() const;
 
     /**
      * Explicitly clear all cache entries
