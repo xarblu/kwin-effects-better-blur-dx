@@ -228,6 +228,48 @@ void BBDX::WindowManager::refreshMaximizedStateAll() const {
     }
 }
 
+void BBDX::WindowManager::refreshWindowCoverage(BBDX::Window *bbdxWindow) const {
+    const auto w = bbdxWindow->effectwindow();
+
+    KWin::RegionF blurRegion{m_effect->blurRegion(w)};
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+    blurRegion.translate(w->pos().toPoint());
+#else
+    blurRegion.translate(w->pos());
+#endif
+
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+        // ignore these
+        if (kWindow == w
+            ||kWindow->isDesktop()
+            || !kWindow->isVisible()) {
+            continue;
+        }
+
+        if (kWindow->window()->stackingOrder() <= w->window()->stackingOrder()) {
+            continue;
+        }
+
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+        blurRegion -= kWindow->frameGeometry().toRect();
+#else
+        blurRegion -= kWindow->frameGeometry();
+#endif
+
+        if (blurRegion.isEmpty()) {
+            break;
+        }
+    }
+
+    bbdxWindow->setIsBlurFullyCovered(blurRegion.isEmpty());
+}
+
+void BBDX::WindowManager::refreshWindowCoverageAll() const {
+    for (const auto &[w, window] : m_windows) {
+        refreshWindowCoverage(window.get());
+    }
+}
+
 bool BBDX::WindowManager::matchesWindowClassFixed(const KWin::EffectWindow *w) const {
     if (m_windowClassesFixed.contains(w->window()->resourceClass()))
         return true;
@@ -342,36 +384,13 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
     return window->getEffectiveBlurOpacity(data);
 }
 
-bool BBDX::WindowManager::windowBlurIsFullyCovered(KWin::EffectWindow *w) const {
-    KWin::RegionF blurRegion{m_effect->blurRegion(w)};
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-    blurRegion.translate(w->pos().toPoint());
-#else
-    blurRegion.translate(w->pos());
-#endif
+bool BBDX::WindowManager::windowIsBlurFullyCovered(KWin::EffectWindow *w) const {
+    const auto window = findWindow(w);
 
-    for (const auto &[kWindow, bbdxWindow] : m_windows) {
-        // ignore these
-        if (kWindow == w
-            ||kWindow->isDesktop()
-            || !kWindow->isVisible()) {
-            continue;
-        }
+    // for unmanaged windows assume false so they
+    // don't get throttled accidentally
+    if (!window)
+        return false;
 
-        if (kWindow->window()->stackingOrder() <= w->window()->stackingOrder()) {
-            continue;
-        }
-
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-        blurRegion -= kWindow->frameGeometry().toRect();
-#else
-        blurRegion -= kWindow->frameGeometry();
-#endif
-
-        if (blurRegion.isEmpty()) {
-            return true;
-        }
-    }
-
-    return false;
+    return window->isBlurFullyCovered();
 }

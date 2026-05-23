@@ -85,6 +85,9 @@ private:
     // track whether window is currently being transformed
     bool m_isTransformed{false};
 
+    // track whether window's blur region is currently fully covered
+    bool m_isBlurFullyCovered{false};
+
     // track whether window should be blurred even
     // when PAINT_WINDOW_TRANSFORMED is set
     bool m_shouldBlurWhileTransformed{false};
@@ -109,6 +112,7 @@ private:
     bool shouldForceBlur() const;
 
     void refreshMaximizedState();
+    void refreshWindowCoverage();
     void updateForceBlurRegion();
     void triggerBlurRegionUpdate() const;
     bool opacityChangedFromOriginal();
@@ -138,6 +142,7 @@ public:
      */
     void setIsTransformed(bool toggle);
     void setMaximizedState(MaximizedState state);
+    void setIsBlurFullyCovered(bool toggle);
 
     /**
      * getters
@@ -146,6 +151,7 @@ public:
     std::optional<KWin::RegionF> forceBlurContent() const { return m_forceBlurContent; };
     std::optional<KWin::RegionF> forceBlurFrame() const { return m_forceBlurFrame; };
     bool shouldBlurWhileTransformed() const;
+    bool isBlurFullyCovered() const { return m_isBlurFullyCovered; }
 
     /**
      * reconfigure hook
