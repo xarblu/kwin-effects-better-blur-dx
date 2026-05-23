@@ -51,6 +51,8 @@ class ContrastManagerInterface;
 namespace BBDX {
 using namespace KWin;
 
+class BlurCacheLRU;
+
 struct BlurRenderData
 {
     /// Temporary render targets needed for the Dual Kawase algorithm, the first texture
@@ -255,10 +257,14 @@ private:
     std::unique_ptr<BBDX::WindowManager> m_windowManager{};
     friend void BBDX::WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const;
     friend void BBDX::WindowManager::invalidateBlurCache(KWin::EffectWindow *w, QStringView reason) const;
-    friend bool BBDX::WindowManager::windowHasTopLevelBlur(KWin::EffectWindow *w) const;
+    friend bool BBDX::WindowManager::windowBlurIsFullyCovered(KWin::EffectWindow *w) const;
     std::unique_ptr<BBDX::BlurCache> m_blurCache{};
     std::unique_ptr<BBDX::RefractionPass> m_refractionPass{};
     std::unique_ptr<BBDX::RoundedCornersPass> m_roundedCornersPass{};
+
+public:
+    WindowManager* windowManager() const { return m_windowManager.get(); }
+    BlurCache* blurCache() const { return m_blurCache.get(); }
 };
 
 inline bool BlurEffect::provides(Effect::Feature feature)

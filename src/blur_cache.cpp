@@ -256,7 +256,9 @@ void BBDX::BlurCacheLRU::setWindow(KWin::EffectWindow* w) {
     m_windowPID = m_window->pid();
 }
 
-BBDX::BlurCache::BlurCache() {
+BBDX::BlurCache::BlurCache(BBDX::BlurEffect *effect) {
+    m_effect = effect;
+
     m_textureComparePass.shader = KWin::ShaderManager::instance()->generateShaderFromFile(KWin::ShaderTrait::MapTexture,
                                                                            QStringLiteral(":/effects/better_blur_dx/shaders/vertex.vert"),
                                                                            QStringLiteral(":/effects/better_blur_dx/shaders/texture_compare.frag"));
@@ -418,10 +420,18 @@ cleanup:
 void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
     auto &cache = renderInfo.cache;
 
+    // visible windows get a ~60fps limit
+    constexpr std::chrono::milliseconds limitActive{1000 / 60};
+    // covered windows get throttled to ~10fps
+    constexpr std::chrono::milliseconds limitCovered{1000 / 10};
+
+    std::chrono::milliseconds limit{limitActive};
+    if (cache.window() && m_effect->windowManager()->windowBlurIsFullyCovered(cache.window())) {
+        limit = limitCovered;
+    }
+
     cache.reset();
     while (auto cacheEntry = cache.next()) {
-        // assume cache is still valid for a short period (equivalent to ~30fps)
-        constexpr std::chrono::milliseconds limit{1000 / 30};
         std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->verifiedAt);
         if (elapsed <= limit) {
             cache.select();

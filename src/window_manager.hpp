@@ -158,10 +158,10 @@ public:
     qreal getEffectiveBlurOpacity(const KWin::EffectWindow *w, KWin::WindowPaintData &data) const;
 
     /**
-     * Check if the provided window has "top level blur"
-     * i.e. is not fully covered by other window's blur regions
+     * Check if the provided window's blur region is fully covered by
+     * the frame geometry of other windows
      */
-    bool windowHasTopLevelBlur(KWin::EffectWindow *w) const;
+    bool windowBlurIsFullyCovered(KWin::EffectWindow *w) const;
 };
 
 } // namespace KWin

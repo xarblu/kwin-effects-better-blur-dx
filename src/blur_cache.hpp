@@ -25,6 +25,7 @@ namespace KWin {
 }
 
 namespace BBDX {
+class BlurEffect;
 struct BlurRenderData;
 
 /**
@@ -144,6 +145,11 @@ public:
      * Locked once set
      */
     void setWindow(KWin::EffectWindow* w);
+
+    /**
+     * Get pointer to the window if set
+     */
+    KWin::EffectWindow* window() const { return m_window; }
 };
 
 class BlurCache {
@@ -166,6 +172,9 @@ private:
         ANY_SAMPLES_PASSED,
         NONE,
     };
+
+    // pointer to the managing effect
+    BlurEffect *m_effect{nullptr};
 
     // set to the best supported query that
     // didn't return an error so far
@@ -191,7 +200,7 @@ public:
     /**
      * Loads and sets up shaders
      */
-    explicit BlurCache();
+    explicit BlurCache(BlurEffect *effect);
 
     /**
      * Check if pass is ready i.e. all shaders loaded

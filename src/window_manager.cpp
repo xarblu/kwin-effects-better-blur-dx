@@ -342,15 +342,15 @@ qreal BBDX::WindowManager::getEffectiveBlurOpacity(const KWin::EffectWindow *w, 
     return window->getEffectiveBlurOpacity(data);
 }
 
-bool BBDX::WindowManager::windowHasTopLevelBlur(KWin::EffectWindow *w) const {
-    KWin::RegionF effectiveRegion{m_effect->blurRegion(w)};
+bool BBDX::WindowManager::windowBlurIsFullyCovered(KWin::EffectWindow *w) const {
+    KWin::RegionF blurRegion{m_effect->blurRegion(w)};
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-    effectiveRegion.translate(w->pos().toPoint());
+    blurRegion.translate(w->pos().toPoint());
 #else
-    effectiveRegion.translate(w->pos());
+    blurRegion.translate(w->pos());
 #endif
 
-    for (auto &[kWindow, bbdxWindow] : m_windows) {
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
         // ignore these
         if (kWindow == w
             ||kWindow->isDesktop()
@@ -362,23 +362,12 @@ bool BBDX::WindowManager::windowHasTopLevelBlur(KWin::EffectWindow *w) const {
             continue;
         }
 
-        // const_cast note: this doesn't actually modify anything in kWindow
-        // but blurRegion wants a non-const EffectWindow
-        KWin::RegionF blurRegion{m_effect->blurRegion(const_cast<KWin::EffectWindow *>(kWindow))};
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-        blurRegion.translate(kWindow->pos().toPoint());
-#else
-        blurRegion.translate(kWindow->pos());
-#endif
+        blurRegion -= kWindow->frameGeometry();
 
-        for (const auto &rect : blurRegion.rects()) {
-            effectiveRegion -= rect;
-        }
-
-        if (effectiveRegion.isEmpty()) {
-            return false;
+        if (blurRegion.isEmpty()) {
+            return true;
         }
     }
 
-    return true;
+    return false;
 }

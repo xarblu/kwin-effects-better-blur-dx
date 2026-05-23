@@ -205,7 +205,7 @@ BlurEffect::BlurEffect()
     // BBDX: managed extension objects
     m_windowManager = std::make_unique<BBDX::WindowManager>(this);
 
-    m_blurCache = std::make_unique<BBDX::BlurCache>();
+    m_blurCache = std::make_unique<BBDX::BlurCache>(this);
     if (!m_blurCache->ready())
         return;
 
