@@ -8,15 +8,15 @@ in vec2 uv;
 out vec4 fragColor;
 
 void main() {
-    vec4 colorOld = texture(texUnitOld, uv);
-    vec4 colorNew = texture(texUnitNew, uv);
+    // Cast physical screen fragment coordinate to integer
+    ivec2 physCoord = ivec2(gl_FragCoord.xy);
 
-    // discard (almost) identical pixels (using squared vec distance)
-    vec4 colorDiff = colorOld - colorNew;
-    if (dot(colorDiff, colorDiff) < 0.001) {
+    // Read the exact raw bytes from both FBOs
+    vec4 oldColor = texelFetch(texUnitOld, physCoord, 0);
+    vec4 newColor = texelFetch(texUnitNew, physCoord, 0);
+
+    vec4 diff = abs(oldColor - newColor);
+    if (all(lessThan(diff, vec4(0.01)))) {
         discard;
     }
-
-    // not discarded -> different
-    fragColor = vec4(1.0);
 }

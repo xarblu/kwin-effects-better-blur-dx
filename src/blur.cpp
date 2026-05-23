@@ -1024,20 +1024,23 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 #else
     const Region dirtyRegion = viewport.mapFromDeviceCoordinatesContained(deviceRegion) & backgroundRect;
 #endif
-    m_blurCache->preparePaintData(&dirtyRegion, renderInfo.framebuffers[0].get(), &backgroundRect, &scaledBackgroundRect);
-    m_blurCache->selectCacheEntryEarly(renderInfo);
-    if (!renderInfo.cache.valid()) {
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
-    for (const QRect &dirtyRect : dirtyRegion) {
-        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
-    }
-#else
+#if BETTERBLUR_NOT_NEEDED
     for (const Rect &dirtyRect : dirtyRegion.rects()) {
         renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, dirtyRect, dirtyRect.translated(-backgroundRect.topLeft()));
     }
-#endif
-    }
+#else
+    m_blurCache->preparePaintData(&dirtyRegion, renderInfo.framebuffers[0].get(), &backgroundRect, &scaledBackgroundRect);
+    m_blurCache->selectCacheEntryEarly(renderInfo);
 
+    // BBDX: Always blit the entire backgroundRect to avoid subtle rounding errors on scaled RenderViews.
+    //       It took me way too many hours to figure out that this is what's causing sporadic
+    //       pixel mismatches during textureCompare...
+    //       Note that this does not give us more usable data (everything outside the dirtyRegion is garbage
+    //       not part of this paint), it just makes sure that the data we do get is properly aligned.
+    if (!renderInfo.cache.valid()) {
+        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, backgroundRect, backgroundRect.translated(-backgroundRect.topLeft()));
+    }
+#endif
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
     // the remaining vertices are used when rendering on the screen.

@@ -5,7 +5,6 @@
 #include "utils.h"
 
 #include <epoxy/gl.h>
-#include <qloggingcategory.h>
 #include <sys/types.h>
 
 #include <core/pixelgrid.h>
@@ -29,7 +28,6 @@
 #include <QtNumeric>
 
 #include <chrono>
-#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -42,6 +40,8 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
                                                                    KWin::Region dirtyRegion,
                                                                    KWin::Rect backgroundRect) {
     auto entry = std::make_unique<BBDX::BlurCacheEntry>();
+    entry->dirtyRegion = dirtyRegion;
+    entry->localDirtyRegion = dirtyRegion.translated(-backgroundRect.topLeft());
 
     // allocate new cached texture + framebuffer for the blurred texture
     glClearColor(0, 0, 0, 0);
@@ -86,31 +86,30 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     // check if we're only partially painting
     // if that's the case oldCacheEntry is required
     // to not get a partial texture
-    KWin::Region missingPaint{backgroundRect};
-    for (const auto &rect : dirtyRegion.rects()) {
+    KWin::Region missingPaint{backgroundRect.translated(-backgroundRect.topLeft())};
+    for (const auto &rect : entry->localDirtyRegion.rects()) {
         missingPaint -= rect;
     }
     bool partialPaint{!missingPaint.isEmpty()};
     
-    if (partialPaint && oldCacheEntry) {
-        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Partial paint with BlurCacheEntry caused by dirtyRegion:" << dirtyRegion;
-
+    if (partialPaint && !oldCacheEntry) [[unlikely]] {
+        entry->partial = true;
+    } else if (oldCacheEntry) [[likely]] {
         KWin::GLFramebuffer::pushFramebuffer(oldCacheEntry->blitFramebuffer.get());
         entry->blitFramebuffer->blitFromFramebuffer();
         KWin::GLFramebuffer::popFramebuffer();
-    } else if (partialPaint) {
-        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Partial paint without old BlurCacheEntry";
-        entry->partial = true;
     }
 
     KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
-    for (const auto &rect : dirtyRegion.rects()) {
-        entry->blitFramebuffer->blitFromFramebuffer(rect.translated(-backgroundRect.topLeft()),
-                                                    rect.translated(-backgroundRect.topLeft()));
+    for (const auto &rect : entry->localDirtyRegion.rects()) {
+        entry->blitFramebuffer->blitFromFramebuffer(rect, rect);
     }
     KWin::GLFramebuffer::popFramebuffer();
 
-    entry->dirtyRegion = dirtyRegion;
+    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "New BlurCacheEntry:\n"
+                                            << "Partial:" << entry->partial << "\n"
+                                            << "dirtyRegion:" << dirtyRegion;
+
     entry->verifiedAt = std::chrono::steady_clock::now();
 
     return entry;
@@ -302,31 +301,45 @@ void BBDX::BlurCache::preparePaintData(const KWin::Region *dirtyRegion,
     m_paintData.blitFramebuffer = blitFramebuffer;
     m_paintData.backgroundRect = backgroundRect;
     m_paintData.scaledBackgroundRect = scaledBackgroundRect;
-    m_paintData.textureCompareVertexCount = dirtyRegion->rects().size() * 6;
+    m_paintData.textureCompareRegion = KWin::Region{};
+
+    for (const auto &rect : dirtyRegion->rects()) {
+        m_paintData.textureCompareRegion |= rect.translated(-backgroundRect->topLeft());
+    }
+    m_paintData.textureCompareVertexCount = m_paintData.textureCompareRegion.rects().size() * 6;
 }
 
 void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                                        KWin::GLVertexBuffer *vbo) {
     auto &cache = renderInfo.cache;
+    cache.reset();
+
     KWin::GLTexture *blitTexture = renderInfo.framebuffers[0].get()->colorAttachment();
 
     std::unique_ptr<KWin::GLTexture> compareTexture{nullptr};
     std::unique_ptr<KWin::GLFramebuffer> compareFramebuffer{nullptr};
 
-    cache.reset();
+    // fast path in case we already determined we
+    // can't perform texture comparison
+    if (m_glQueryAvailable == GLQueryAvailable::NONE) [[unlikely]] {
+        return;
+    }
+
     while (auto cacheEntry = cache.next()) {
-        // fast path in case we already determined we
-        // can't perform texture comparison
-        if (m_glQueryAvailable == GLQueryAvailable::NONE) [[unlikely]] {
+        // Somehow we can end up here with an empty textureCompareRegion
+        // which would mean there was no dirtyRegion and thus no blitted data.
+        // Just accept and bail.
+        if (m_paintData.textureCompareRegion.isEmpty()) {
+            cache.select(true);
             continue;
         }
 
-        // allocate a smaller framebuffer for the comparison
+        // allocate a framebuffer for the comparison
         // blitTexture matches backgroundRect so we'll use that
         if (!compareTexture || !compareFramebuffer) {
             glClearColor(0, 0, 0, 0);
             compareTexture = KWin::GLTexture::allocate(blitTexture->internalFormat(),
-                    QRect(0, 0, blitTexture->width() * m_textureCompareScaleFactor, blitTexture->height() * m_textureCompareScaleFactor).size());
+                                                       QSize(blitTexture->width(), blitTexture->height()));
             if (!compareTexture) {
                 qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
                 continue;
@@ -350,7 +363,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width() * m_textureCompareScaleFactor, blitTexture->height() * m_textureCompareScaleFactor));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width(), blitTexture->height()));
 
         m_textureComparePass.shader->setUniform(m_textureComparePass.mvpMatrixLocation, projectionMatrix);
 
@@ -386,6 +399,17 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 }
 
                 qCWarning(BLUR_CACHE) << "OpenGL error: GL_ANY_SAMPLES_PASSED query not available."
+                                      << "Falling back to SAMPLES_PASSED.";
+                m_glQueryAvailable = GLQueryAvailable::SAMPLES_PASSED;
+                [[fallthrough]];
+
+            case GLQueryAvailable::SAMPLES_PASSED:
+                glBeginQuery(GL_SAMPLES_PASSED, query);
+                if (glGetError() == GL_NO_ERROR) [[likely]] {
+                    break;
+                }
+
+                qCWarning(BLUR_CACHE) << "OpenGL error: GL_SAMPLES_PASSED query not available."
                                       << "No more fallbacks.";
                 m_glQueryAvailable = GLQueryAvailable::NONE;
                 [[fallthrough]];
@@ -394,8 +418,42 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 goto cleanup;
         }
 
-        // perform query
-        vbo->draw(GL_TRIANGLES, vboStartTextureCompare(), vboCountTextureCompare());
+        {
+            // we need scissoring to properly catch partial repaints,
+            // else OpenGL can just draw everything even if the VBO says differently
+            glEnable(GL_SCISSOR_TEST);
+
+            const auto &rects = m_paintData.textureCompareRegion.rects();
+            const uint vertsPerRect = vboCountTextureCompare() / rects.size();
+            uint vboStart = vboStartTextureCompare();
+
+            // draw each scissor region (Y-flipped; KWin topLeft maps to OpenGL bottomLeft)
+            for (const auto &rect : rects) {
+                // for the scissor round outwards
+                const GLint left = rect.left();
+                const GLint right = rect.right();
+                const GLint top = compareFramebuffer->size().height() - rect.top();
+                const GLint bottom = compareFramebuffer->size().height() - rect.bottom();
+
+                const GLint width = right - left;
+                const GLint height = top - bottom;
+
+                // OpenGL requires these to be positive
+                // and it wouldn't make sense to draw empty Rects anyway
+                if (width <= 0 || height <= 0) {
+                    vboStart += vertsPerRect;
+                    continue;
+                }
+
+                glScissor(left, bottom, width, height);
+
+                vbo->draw(GL_TRIANGLES, vboStart, vertsPerRect);
+                vboStart += vertsPerRect;
+            }
+
+            glDisable(GL_SCISSOR_TEST);
+        }
+
         switch (m_glQueryAvailable) {
             case GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE:
                 glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
@@ -403,6 +461,10 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
             case GLQueryAvailable::ANY_SAMPLES_PASSED:
                 glEndQuery(GL_ANY_SAMPLES_PASSED);
+                break;
+
+            case GLQueryAvailable::SAMPLES_PASSED:
+                glEndQuery(GL_SAMPLES_PASSED);
                 break;
 
             [[unlikely]] default:
@@ -437,14 +499,29 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 }
             } while (!available);
 
-            GLuint anyPixelsDifferent{GL_FALSE};
-            glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
-            if (anyPixelsDifferent == GL_FALSE) {
-                // no need to break; this causes BlurCacheLRU::next()
-                // to return nullptr on the next iteration
-                //
-                // this call also updates the verifiedAt timestamp
-                cache.select(true);
+            if (m_glQueryAvailable != GLQueryAvailable::SAMPLES_PASSED) [[likely]] {
+                GLuint anyPixelsDifferent{GL_FALSE};
+                glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
+                if (anyPixelsDifferent == GL_FALSE) {
+                    // no need to break; this causes BlurCacheLRU::next()
+                    // to return nullptr on the next iteration
+                    //
+                    // this call also updates the verifiedAt timestamp
+                    cache.select(true);
+                }
+            } else {
+                GLuint pixelsDifferent{0};
+                glGetQueryObjectuiv(query, GL_QUERY_RESULT, &pixelsDifferent);
+                if (pixelsDifferent == 0) {
+                    // no need to break; this causes BlurCacheLRU::next()
+                    // to return nullptr on the next iteration
+                    //
+                    // this call also updates the verifiedAt timestamp
+                    cache.select(true);
+                } else {
+                    // for debugging purposes also log the actual count
+                    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different:" << pixelsDifferent;
+                }
             }
         }
 
@@ -486,28 +563,20 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
 }
 
 void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
-    auto dirtyRegion = m_paintData.dirtyRegion;
     auto backgroundRect = m_paintData.backgroundRect;
     auto scaledBackgroundRect = m_paintData.scaledBackgroundRect;
+    auto &textureCompareRegion = m_paintData.textureCompareRegion;
 
     // The geometry used for texture comparison, in logical pixels
     // relative to backgroundRect
-    for (const KWin::Rect &rect : dirtyRegion->rects()) {
-        // rounded in because we need to stay inside the blitted area
-        const KWin::RectF localRect{
-            std::ceil((rect.x() - backgroundRect->x()) * m_textureCompareScaleFactor),
-            std::ceil((rect.y() - backgroundRect->y()) * m_textureCompareScaleFactor),
-            std::floor(rect.width() * m_textureCompareScaleFactor),
-            std::floor(rect.height() * m_textureCompareScaleFactor),
-        };
-
+    for (const auto &rect : textureCompareRegion.rects()) {
         const float textureWidth = backgroundRect->width();
         const float textureHeight = backgroundRect->height();
 
-        const float x0 = localRect.left();
-        const float y0 = localRect.top();
-        const float x1 = localRect.right();
-        const float y1 = localRect.bottom();
+        const float x0 = rect.left();
+        const float y0 = rect.top();
+        const float x1 = rect.right();
+        const float y1 = rect.bottom();
 
         const float u0 = x0 / textureWidth;
         const float v0 = 1.0f - y0 / textureHeight;

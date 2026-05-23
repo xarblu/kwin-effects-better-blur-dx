@@ -54,6 +54,9 @@ struct BlurCacheEntry {
     // dirtyRegion used to create this cache entry
     KWin::Region dirtyRegion{};
 
+    // dirtyRegion mapped into backgroundRect
+    KWin::Region localDirtyRegion{};
+
     // Marker for cache entries that are partial (didn't have full backgroundRect blitted).
     // Partial entries are fine to use for the regular "slow" path
     // but they can't be used for some performance hacks.
@@ -175,21 +178,20 @@ private:
     enum class GLQueryAvailable {
         ANY_SAMPLES_PASSED_CONSERVATIVE,
         ANY_SAMPLES_PASSED,
+        SAMPLES_PASSED,
         NONE,
     };
 
     // pointer to the managing effect
     BlurEffect *m_effect{nullptr};
 
-    // set to the best supported query that
-    // didn't return an error so far
+    /**
+     * set to the best supported query that
+     * didn't return an error so far
+     *
+     * DEBUGGING: setting this to basic SAMPLES_PASSED enables pixel diff logging
+     */
     GLQueryAvailable m_glQueryAvailable{GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE};
-
-    // During texture comparison backgroundRect is scaled by this amount
-    // to speed up the OpenGL query which compares every fragment.
-    // A scale of 0.5 means we just need to compare 25% of the actual pixels.
-    // At 0.1 it's just 1% of pixels (and it still looks just fine)
-    qreal m_textureCompareScaleFactor{1.0};
 
     // Data used for this specific window paint
     // !!! preparePaintData() must be called before accessing any of this !!!
@@ -198,6 +200,10 @@ private:
         const KWin::Rect *backgroundRect;
         const KWin::Rect *scaledBackgroundRect;
         const KWin::GLFramebuffer *blitFramebuffer;
+
+        // dirtyRegion adjusted for use in setupVBO()
+        // and the vertexCount it will use
+        KWin::Region textureCompareRegion{};
         uint textureCompareVertexCount;
     } m_paintData;
 
