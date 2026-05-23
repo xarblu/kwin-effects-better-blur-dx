@@ -28,6 +28,7 @@
 #include <QtNumeric>
 
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -462,13 +463,13 @@ void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboInde
     // The geometry used for texture comparison, in logical pixels
     // relative to backgroundRect
     for (const KWin::Rect &rect : dirtyRegion->rects()) {
-        const KWin::RectF localRectF{
-            (rect.x() - backgroundRect->x()) * m_textureCompareScaleFactor,
-            (rect.y() - backgroundRect->y()) * m_textureCompareScaleFactor,
-            rect.width() * m_textureCompareScaleFactor,
-            rect.height() * m_textureCompareScaleFactor,
+        // rounded in because we need to stay inside the blitted area
+        const KWin::Rect localRect{
+            static_cast<int>(std::ceil((rect.x() - backgroundRect->x()) * m_textureCompareScaleFactor)),
+            static_cast<int>(std::ceil((rect.y() - backgroundRect->y()) * m_textureCompareScaleFactor)),
+            static_cast<int>(std::floor(rect.width() * m_textureCompareScaleFactor)),
+            static_cast<int>(std::floor(rect.height() * m_textureCompareScaleFactor)),
         };
-        const KWin::Rect localRect = localRectF.toAlignedRect();
 
         const float textureWidth = backgroundRect->width() * m_textureCompareScaleFactor;
         const float textureHeight = backgroundRect->height() * m_textureCompareScaleFactor;
