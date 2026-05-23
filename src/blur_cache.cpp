@@ -16,6 +16,7 @@
 #include <opengl/glframebuffer.h>
 #include <opengl/glshadermanager.h>
 #include <opengl/gltexture.h>
+#include <thread>
 
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 #  include "kwin_compat_6_5.hpp"
@@ -408,15 +409,43 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 goto cleanup;
         }
 
-        // await query and check
-        GLuint anyPixelsDifferent;
-        glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
-        if (anyPixelsDifferent == GL_FALSE) {
-            // no need to break; this causes BlurCacheLRU::next()
-            // to return nullptr on the next iteration
-            //
-            // this call also updates the verifiedAt timestamp
-            cache.select(true);
+        // await query and check, with a timeout because these
+        // queries can be slow.
+        // Reaching the timeout just selects the cache entry without verification
+        // (if not partial; those will just be skipped)
+        {
+            // we always want to reach at least 60fps, so that's our timeout
+            constexpr std::chrono::nanoseconds timeout{1000000000 / 60};
+
+            // poll every ms
+            constexpr std::chrono::nanoseconds pollRate{1000000000 / 1000};
+            auto start = std::chrono::steady_clock::now();
+
+            GLuint available{GL_FALSE};
+            do {
+                glGetQueryObjectuiv(query, GL_QUERY_RESULT_AVAILABLE, &available);
+
+                auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start);
+                if (!available && (elapsed > timeout)) {
+                    qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Aborting slow OpenGL query. Limit:" << timeout;
+                    if (!cacheEntry->partial) {
+                        cache.select();
+                    }
+                    goto cleanup;
+                } else if (!available) {
+                    std::this_thread::sleep_for(pollRate);
+                }
+            } while (!available);
+
+            GLuint anyPixelsDifferent{GL_FALSE};
+            glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
+            if (anyPixelsDifferent == GL_FALSE) {
+                // no need to break; this causes BlurCacheLRU::next()
+                // to return nullptr on the next iteration
+                //
+                // this call also updates the verifiedAt timestamp
+                cache.select(true);
+            }
         }
 
 cleanup:
