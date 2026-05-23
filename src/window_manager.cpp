@@ -362,7 +362,11 @@ bool BBDX::WindowManager::windowBlurIsFullyCovered(KWin::EffectWindow *w) const 
             continue;
         }
 
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+        blurRegion -= kWindow->frameGeometry().toRect();
+#else
         blurRegion -= kWindow->frameGeometry();
+#endif
 
         if (blurRegion.isEmpty()) {
             return true;
