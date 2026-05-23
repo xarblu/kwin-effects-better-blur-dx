@@ -1161,17 +1161,18 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                                        renderInfo.framebuffers[0].get(),
                                                        dirtyRegion,
                                                        backgroundRect);
-        // Couldn't create a new cache entry, likely
-        // due to not having a previous cache entry and
-        // only partially painting.
-        // Trigger a full repaint so this gets fixed.
         if (!cacheEntry) {
-            qCDebug(KWIN_BLUR) << "Triggering full repaint for" << w->windowClass();
-            w->addRepaintFull();
+            qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Creating BlurCacheEntry failed";
             return;
         }
 
-        // new cache entry which we'll fill now
+        // partial cache entries are bad,
+        // make sure we get a complete on soon
+        if (cacheEntry->partial) {
+            w->addRepaintFull();
+        }
+
+        // new cache entry which we'll actually blur now
         renderInfo.cache.add(std::move(cacheEntry));
     }
 
