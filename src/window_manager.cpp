@@ -78,6 +78,10 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
 
 void BBDX::WindowManager::slotStackingOrderChanged() {
     refreshWindowCoverageAll();
+
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+        const_cast<KWin::EffectWindow *>(kWindow)->addRepaintFull();
+    }
 }
 
 BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const {
