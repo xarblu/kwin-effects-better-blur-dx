@@ -364,6 +364,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
         // don't acctually draw anything
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glDepthMask(GL_FALSE);
 
         // pick the first available query in preferred order (based on supposed speed)
         // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
@@ -513,6 +514,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         }
 
 cleanup:
+        glDepthMask(GL_TRUE);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glDeleteQueries(1, &query);
         glActiveTexture(GL_TEXTURE0);
