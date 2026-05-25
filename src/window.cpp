@@ -50,6 +50,11 @@ void BBDX::Window::slotMinimizedChanged() {
         && m_isMinimized) {
         m_restoresMaximized = true;
     }
+
+    // minimizing a window does not imply
+    // a stacking order update until another window is activated
+    // but it has the same effect and needs to refresh all windows
+    m_windowManager->refreshWindowCoverageAll();
 }
 
 void BBDX::Window::slotWindowFullScreenChanged() {
