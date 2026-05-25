@@ -62,6 +62,8 @@ void BBDX::WindowManager::slotWindowAdded(KWin::EffectWindow *w) {
         m_docks.insert(w);
         refreshMaximizedStateAll();
     }
+
+    refreshWindowCoverageAll();
 }
 
 void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
@@ -74,6 +76,8 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
         m_docks.erase(it);
         refreshMaximizedStateAll();
     }
+
+    refreshWindowCoverageAll();
 }
 
 void BBDX::WindowManager::slotStackingOrderChanged() {
