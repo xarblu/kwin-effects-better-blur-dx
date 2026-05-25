@@ -1148,9 +1148,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     vbo->bindArrays();
 
     // BBDX:
-    if (renderInfo.cache.valid()) {
-        renderInfo.cache.valid()->updateBlitTexture(renderInfo.framebuffers[0].get(), dirtyRegion);
-    } else {
+    if (!renderInfo.cache.valid()) {
         m_blurCache->selectCacheEntry(renderInfo, vbo);
     }
     if (renderInfo.cache.valid()) {
