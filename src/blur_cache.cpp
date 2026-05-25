@@ -99,11 +99,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
         KWin::GLFramebuffer::popFramebuffer();
     }
 
-    KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
-    for (const auto &rect : entry->localDirtyRegion(dirtyRegion).rects()) {
-        entry->blitFramebuffer->blitFromFramebuffer(rect, rect);
-    }
-    KWin::GLFramebuffer::popFramebuffer();
+    entry->updateBlitTexture(dirtyBlitFramebuffer, dirtyRegion);
 
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "New BlurCacheEntry:\n"
                                             << "Partial:" << entry->partial << "\n"
