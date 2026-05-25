@@ -543,28 +543,19 @@ cleanup:
 
 void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
     auto &cache = renderInfo.cache;
+    cache.reset();
 
-    // visible windows get a ~60fps limit
-    constexpr std::chrono::milliseconds limitActive{1000 / 60};
-    // covered windows get throttled to ~10fps
-    constexpr std::chrono::milliseconds limitCovered{1000 / 10};
-
-    std::chrono::milliseconds limit{limitActive};
-    if (cache.window() && m_effect->windowManager()->windowIsBlurFullyCovered(cache.window())) {
-        limit = limitCovered;
+    if (!(cache.window() && m_effect->windowManager()->windowIsBlurFullyCovered(cache.window()))) {
+        return;
     }
 
-    cache.reset();
     while (auto cacheEntry = cache.next()) {
         // partial entries shouldn't be reused without verification
         if (cacheEntry->partial) {
             continue;
         }
 
-        std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->verifiedAt);
-        if (elapsed <= limit) {
-            cache.select();
-        }
+        cache.select();
     }
 }
 
