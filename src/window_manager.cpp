@@ -82,7 +82,6 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
 
 void BBDX::WindowManager::slotStackingOrderChanged() {
     refreshWindowCoverageAll();
-    repaintAllBlurredWindows();
 }
 
 BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const {
