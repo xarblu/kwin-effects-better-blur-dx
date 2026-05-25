@@ -1037,7 +1037,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     //       pixel mismatches during textureCompare...
     //       Note that this does not give us more usable data (everything outside the dirtyRegion is garbage
     //       not part of this paint), it just makes sure that the data we do get is properly aligned.
-    renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, backgroundRect, backgroundRect.translated(-backgroundRect.topLeft()));
+    if (!renderInfo.cache.valid()) {
+        renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, backgroundRect, backgroundRect.translated(-backgroundRect.topLeft()));
+    }
 #endif
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
