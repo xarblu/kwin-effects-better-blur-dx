@@ -51,11 +51,8 @@ struct BlurCacheEntry {
     // last time this cache entry was verified; used for rate limiting
     std::chrono::time_point<std::chrono::steady_clock> verifiedAt{};
 
-    // dirtyRegion used to create this cache entry
-    KWin::Region dirtyRegion{};
-
-    // dirtyRegion mapped into backgroundRect
-    KWin::Region localDirtyRegion{};
+    // backgroundRect used to create this cache entry
+    KWin::Rect backgroundRect{};
 
     // Marker for cache entries that are partial (didn't have full backgroundRect blitted).
     // Partial entries are fine to use for the regular "slow" path
@@ -71,6 +68,16 @@ struct BlurCacheEntry {
                                                   KWin::GLFramebuffer *dirtyBlitFramebuffer,
                                                   KWin::Region dirtyRegion,
                                                   KWin::Rect backgroundRect);
+
+    /**
+     * Update a BlurCacheEntry's blitTexture from the given dirtyBlitFramebuffer and dirtyRegion
+     */
+    void updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, KWin::Region dirtyRegion);
+
+    /**
+     * Helper for mapping dirtyRegion into backgroundRect
+     */
+    KWin::Region localDirtyRegion(const KWin::Region &dirtyRegion) const;
 };
 
 /**

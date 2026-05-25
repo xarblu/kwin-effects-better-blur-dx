@@ -40,8 +40,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
                                                                    KWin::Region dirtyRegion,
                                                                    KWin::Rect backgroundRect) {
     auto entry = std::make_unique<BBDX::BlurCacheEntry>();
-    entry->dirtyRegion = dirtyRegion;
-    entry->localDirtyRegion = dirtyRegion.translated(-backgroundRect.topLeft());
+    entry->backgroundRect = backgroundRect;
 
     // allocate new cached texture + framebuffer for the blurred texture
     glClearColor(0, 0, 0, 0);
@@ -87,7 +86,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     // if that's the case oldCacheEntry is required
     // to not get a partial texture
     KWin::Region missingPaint{backgroundRect.translated(-backgroundRect.topLeft())};
-    for (const auto &rect : entry->localDirtyRegion.rects()) {
+    for (const auto &rect : entry->localDirtyRegion(dirtyRegion).rects()) {
         missingPaint -= rect;
     }
     bool partialPaint{!missingPaint.isEmpty()};
@@ -101,7 +100,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     }
 
     KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
-    for (const auto &rect : entry->localDirtyRegion.rects()) {
+    for (const auto &rect : entry->localDirtyRegion(dirtyRegion).rects()) {
         entry->blitFramebuffer->blitFromFramebuffer(rect, rect);
     }
     KWin::GLFramebuffer::popFramebuffer();
@@ -113,6 +112,18 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     entry->verifiedAt = std::chrono::steady_clock::now();
 
     return entry;
+}
+
+void BBDX::BlurCacheEntry::updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, KWin::Region dirtyRegion) {
+    KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
+    for (const auto &rect : localDirtyRegion(dirtyRegion).rects()) {
+        blitFramebuffer->blitFromFramebuffer(rect, rect);
+    }
+    KWin::GLFramebuffer::popFramebuffer();
+}
+
+KWin::Region BBDX::BlurCacheEntry::localDirtyRegion(const KWin::Region &dirtyRegion) const {
+    return dirtyRegion.translated(-backgroundRect.topLeft());
 }
 
 void BBDX::BlurCacheLRU::reset() {
