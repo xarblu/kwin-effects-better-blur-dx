@@ -15,7 +15,6 @@
 #include <opengl/glframebuffer.h>
 #include <opengl/glshadermanager.h>
 #include <opengl/gltexture.h>
-#include <thread>
 
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 #  include "kwin_compat_6_5.hpp"
@@ -29,6 +28,7 @@
 
 #include <chrono>
 #include <memory>
+#include <thread>
 #include <vector>
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
@@ -323,9 +323,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
     KWin::GLTexture *blitTexture = renderInfo.framebuffers[0].get()->colorAttachment();
 
-    std::unique_ptr<KWin::GLTexture> compareTexture{nullptr};
-    std::unique_ptr<KWin::GLFramebuffer> compareFramebuffer{nullptr};
-
     // fast path in case we already determined we
     // can't perform texture comparison
     if (m_glQueryAvailable == GLQueryAvailable::NONE) [[unlikely]] {
@@ -341,33 +338,13 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
             continue;
         }
 
-        // allocate a framebuffer for the comparison
-        // blitTexture matches backgroundRect so we'll use that
-        if (!compareTexture || !compareFramebuffer) {
-            glClearColor(0, 0, 0, 0);
-            compareTexture = KWin::GLTexture::allocate(blitTexture->internalFormat(),
-                                                       QSize(blitTexture->width(), blitTexture->height()));
-            if (!compareTexture) {
-                qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
-                continue;
-            }
-            compareTexture->setFilter(GL_LINEAR);
-            compareTexture->setWrapMode(GL_CLAMP_TO_EDGE);
-
-            compareFramebuffer = std::make_unique<KWin::GLFramebuffer>(compareTexture.get());
-            if (!compareFramebuffer->valid()) {
-                qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
-                continue;
-            }
-
-            KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer.get());
-            glClear(GL_COLOR_BUFFER_BIT);
-            KWin::GLFramebuffer::popFramebuffer();
-        }
+        // Hijack FBO of the cached blit to avoid needless reallocation.
+        // glColorMask should keep it protected
+        const auto compareFramebuffer = cacheEntry->blitFramebuffer.get();
 
         // check if textures differ on the pixel level
         KWin::ShaderManager::instance()->pushShader(m_textureComparePass.shader.get());
-        KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer.get());
+        KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer);
 
         QMatrix4x4 projectionMatrix;
         projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width(), blitTexture->height()));
@@ -384,6 +361,9 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
         GLuint query;
         glGenQueries(1, &query);
+
+        // don't acctually draw anything
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
         // pick the first available query in preferred order (based on supposed speed)
         // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
@@ -533,6 +513,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         }
 
 cleanup:
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glDeleteQueries(1, &query);
         glActiveTexture(GL_TEXTURE0);
 
