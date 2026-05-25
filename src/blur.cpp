@@ -1160,7 +1160,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     } else {
         auto cacheEntry = BBDX::BlurCacheEntry::create(scaledBackgroundRect,
-                                                       renderInfo.cache.any(),
+                                                       renderInfo.cache.get(),
                                                        renderInfo.framebuffers[0].get(),
                                                        dirtyRegion,
                                                        backgroundRect);

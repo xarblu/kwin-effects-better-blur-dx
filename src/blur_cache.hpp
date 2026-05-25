@@ -86,22 +86,14 @@ struct BlurCacheEntry {
  */
 class BlurCacheLRU {
 private:
-    std::vector<std::unique_ptr<BlurCacheEntry>> m_entries{};
-    size_t m_max{0};
-    size_t m_next{0};
-    BlurCacheEntry* m_valid{nullptr};
+    std::unique_ptr<BlurCacheEntry> m_entry{};
+    bool m_valid{false};
 
     KWin::EffectWindow* m_window{nullptr};
     QString m_windowClass{"unknown unknown"};
     pid_t m_windowPID{-1};
 
 public:
-    explicit BlurCacheLRU(size_t max = 1)
-        : m_max{max}
-    {
-        m_entries.reserve(max);
-    }
-
     /**
      * Invalidate cache on destruction
      * (for stats and explicit OpenGL context)
@@ -111,46 +103,42 @@ public:
     }
 
     /**
-     * Move current index back to start and unset m_valid
+     * Return a pointer to the contained entry or nullptr
+     * if none exists
      */
-    void reset();
-
-    /**
-     * Return a pointer to the next entry or nullptr
-     * if none exists (empty or already past final) or one was already selected
-     */
-    const BlurCacheEntry* next();
+    BlurCacheEntry* get();
 
     /**
      * Select does the following:
-     *  - acknowledge the current cache entry was a hit (set pointer returned in valid())
-     *  - move index back to the start
-     *  - increase priority index
+     *  - acknowledge the current cache entry was a hit (makes valid() return true)
+     *  - bump cache hits
+     *  - if verified=true update the verifiedAt timestamp
      */
     void select(bool verified = false);
 
     /**
-     * Add an entry to the cache, potentially removing the oldest entry.
-     * The added entry is assumed to be valid and will always be selected.
+     * Reset select/valid state for next selection
+     */
+    void reset();
+
+    /**
+     * Add an entry to the cache, potentially removing the already existing entry.
+     * The added entry is assumed to be valid by the time drawCached() is called
+     * and will thus implicitly be selected.
      */
     void add(std::unique_ptr<BlurCacheEntry> entry);
 
     /**
-     * If a valid cache entry was selected get a pointer to it, else nullptr
+     * Check if the cache entry was deemed valid
      */
-    BlurCacheEntry* valid() { return m_valid; }
+    bool valid() { return m_valid; }
 
     /**
-     * Get a pointer to any existing (non-partial) cache entry if available, else nullptr
-     */
-    BlurCacheEntry* any() const;
-
-    /**
-     * Explicitly clear all cache entries
+     * Explicitly clear remove the cache entry
      * and print sats to debug log
      *
      * By default this will make the OpenGL context current
-     * before clearing the entries as this funtion may be called at any time.
+     * before clearing the entry as this funtion may be called at any time.
      * Set skipGlContext in cases where the context is already current.
      */
     void invalidate(QStringView reason, bool skipGlContext = false);

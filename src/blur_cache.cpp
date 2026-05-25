@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include <epoxy/gl.h>
+#include <qloggingcategory.h>
 #include <sys/types.h>
 
 #include <core/pixelgrid.h>
@@ -122,135 +123,55 @@ KWin::Region BBDX::BlurCacheEntry::localDirtyRegion(const KWin::Region &dirtyReg
     return dirtyRegion.translated(-backgroundRect.topLeft());
 }
 
-void BBDX::BlurCacheLRU::reset() {
-    m_next = 0;
-    m_valid = nullptr;
-}
-
-const BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::next() {
-    if (m_valid) {
-        return nullptr;
-    }
-
-    // implicitly handles empty m_entries
-    // and reaching the end
-    BBDX::BlurCacheEntry* ret{nullptr};
-    for (const auto &entry : m_entries) {
-        if (entry->priority == m_next) {
-            ret = entry.get();
-            m_next += 1;
-            break;
-        }
-    }
-
-    return ret;
+BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::get() {
+    return m_entry.get();
 }
 
 void BBDX::BlurCacheLRU::select(bool verified) {
-    if (m_entries.empty()) {
-        qCCritical(BLUR_CACHE) << BBDX::LOG_PREFIX
-                               << "BlurCacheLRU::select(): Called with no entries";
+    if (!m_entry) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX
+                               << "BlurCacheLRU::select(): Called with no existing BlurCacheEntry";
         return;
     }
 
-    // The only time m_next is 0 is during
-    // a call to add() (and technically after reset()).
-    // Through usual iteration with next() it will always be >=1
-    size_t idx{0};
-    if (m_next > 0) {
-        idx = m_next - 1;
-    }
-
-    BBDX::BlurCacheEntry* selected{nullptr};
-    for (const auto &entry : m_entries) {
-        if (entry->priority == idx) {
-            selected = entry.get();
-            break;
-        }
-    }
-
-    if (!selected) {
-        qCCritical(BLUR_CACHE) << BBDX::LOG_PREFIX
-                               << "BlurCacheLRU::select(): Could not find entry:" << idx;
-        return;
-    }
-
-    for (auto &entry : m_entries) {
-        if (entry->priority < selected->priority) {
-            entry->priority += 1;
-        }
-    }
-
-    m_next = 0;
-    m_valid = selected;
-    selected->priority = 0;
-    selected->hits += 1;
+    m_valid = true;
+    m_entry->hits += 1;
 
     if (verified) {
-        selected->verifiedAt = std::chrono::steady_clock::now();
+        m_entry->verifiedAt = std::chrono::steady_clock::now();
     }
+}
+
+void BBDX::BlurCacheLRU::reset() {
+    m_valid = false;
 }
 
 void BBDX::BlurCacheLRU::add(std::unique_ptr<BlurCacheEntry> entry) {
-    m_entries.insert(m_entries.begin(), std::move(entry));
+    if (m_entry) {
+        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
+                            << "Replacing BlurCacheEntry:" << m_windowClass << "\n"
+                            << "PID:" << m_windowPID << "\n"
+                            << "Hits:" << m_entry->hits;
+    } else {
+        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
+                            << "Adding BlurCacheEntry:" << m_windowClass << "\n"
+                            << "PID:" << m_windowPID << "\n";
+    }
 
-    m_entries[0]->priority = 0;
-    m_next = 0;
+    m_entry = std::move(entry);
+    m_entry->priority = 0;
     select();
-
-    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
-                        << "Adding BlurCacheEntry:" << m_windowClass << "\n"
-                        << "PID:" << m_windowPID << "\n"
-                        << "Entries:" << m_entries.size() << "of" << m_max;
-
-    for (size_t i = 1; i < m_entries.size(); i++) {
-        m_entries[i]->priority += 1;
-    }
-
-    // Cleanup excessive cache entries
-    //
-    // We should be able to assume the limit is exceeded by 1 at most
-    // because cleanup happens for each add()
-    if (m_entries.size() > m_max) {
-        for (auto it = m_entries.begin(); it != m_entries.end(); it++) {
-            if ((*it)->priority >= m_max) {
-                qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
-                                    << "Dropping BlurCacheEntry:" << m_windowClass << "\n"
-                                    << "PID:" << m_windowPID << "\n"
-                                    << "Reason: Exceeded limit (" << m_max << ")\n"
-                                    << "Hits:" << (*it)->hits;
-
-                m_entries.erase(it);
-                break;
-            }
-        }
-    }
-}
-
-BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::any() const {
-    for (const auto &entry : m_entries) {
-        if (!entry->partial) {
-            return entry.get();
-        }
-    }
-
-    return nullptr;
 }
 
 void BBDX::BlurCacheLRU::invalidate(QStringView reason, bool skipGlContext) {
-    if (m_entries.empty()) {
+    if (!m_entry) {
         return;
-    }
-
-    uint totalHits{0};
-    for (auto &entry : m_entries) {
-        totalHits += entry->hits;
     }
 
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
                         << "Invalidating cache:" << m_windowClass << "\n"
                         << "PID:" << m_windowPID << "\n"
-                        << "Hits:" << totalHits << "across" << m_entries.size() << "cache entries" << "\n"
+                        << "Hits:" << m_entry->hits << "\n"
                         << "Reason:" << reason;
 
     // invalidate can be called from various events outside
@@ -260,7 +181,7 @@ void BBDX::BlurCacheLRU::invalidate(QStringView reason, bool skipGlContext) {
         KWin::effects->makeOpenGLContextCurrent();
     }
 
-    m_entries.clear();
+    m_entry.reset();
     reset();
 }
 
@@ -335,13 +256,13 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         return;
     }
 
-    while (auto cacheEntry = cache.next()) {
+    if (auto cacheEntry = cache.get()) {
         // Somehow we can end up here with an empty textureCompareRegion
         // which would mean there was no dirtyRegion and thus no blitted data.
         // Just accept and bail.
         if (m_paintData.textureCompareRegion.isEmpty()) {
             cache.select(true);
-            continue;
+            return;
         }
 
         // Hijack FBO of the cached blit to avoid needless reallocation.
@@ -494,9 +415,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 GLuint anyPixelsDifferent{GL_FALSE};
                 glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &anyPixelsDifferent);
                 if (anyPixelsDifferent == GL_FALSE) {
-                    // no need to break; this causes BlurCacheLRU::next()
-                    // to return nullptr on the next iteration
-                    //
                     // this call also updates the verifiedAt timestamp
                     cache.select(true);
                 }
@@ -504,9 +422,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 GLuint pixelsDifferent{0};
                 glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &pixelsDifferent);
                 if (pixelsDifferent == 0) {
-                    // no need to break; this causes BlurCacheLRU::next()
-                    // to return nullptr on the next iteration
-                    //
                     // this call also updates the verifiedAt timestamp
                     cache.select(true);
                 } else {
@@ -534,10 +449,10 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
         return;
     }
 
-    while (auto cacheEntry = cache.next()) {
+    if (auto cacheEntry = cache.get()) {
         // partial entries shouldn't be reused without verification
         if (cacheEntry->partial) {
-            continue;
+            return;
         }
 
         cache.select();
@@ -646,8 +561,8 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
     projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
 
     KWin::GLTexture* read;
-    if (const auto &cacheEntry = renderInfo.cache.valid()) {
-        read = cacheEntry->cachedTexture.get();
+    if (renderInfo.cache.valid()) {
+        read = renderInfo.cache.get()->cachedTexture.get();
     } else {
         // bail if we didn't select or add a cache entry
         qCritical(BLUR_CACHE) << "drawCached() called without a valid cache entry";
@@ -674,7 +589,7 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
 }
 
 void BBDX::BlurCache::drawToCache(BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo) const {
-    auto cachedFramebuffer = renderInfo.cache.valid()->cachedFramebuffer.get();
+    auto cachedFramebuffer = renderInfo.cache.get()->cachedFramebuffer.get();
     KWin::GLFramebuffer::pushFramebuffer(cachedFramebuffer);
     vbo->draw(GL_TRIANGLES, vboStartCache(), vboCountCache());
     KWin::GLFramebuffer::popFramebuffer();
