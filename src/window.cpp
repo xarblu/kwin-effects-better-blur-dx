@@ -142,6 +142,13 @@ void BBDX::Window::setIsBlurFullyCovered(bool toggle) {
     }
 
     m_isBlurFullyCovered = toggle;
+
+    // blur was frozen, we need a full repaint to
+    // refresh everything
+    if (!toggle) {
+        effectwindow()->addRepaintFull();
+    }
+
     qCDebug(BBDX_WINDOW) << BBDX::LOG_PREFIX << "BlurFullyCovered changed:" << *this;
 }
 
