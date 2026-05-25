@@ -298,6 +298,12 @@ BBDX::BlurCache::BlurCache(BBDX::BlurEffect *effect) {
     } else {
         m_texturePass.mvpMatrixLocation = m_texturePass.shader->uniformLocation("modelViewProjectionMatrix");
     }
+
+    glGenQueries(1, &m_queryObject);
+}
+
+BBDX::BlurCache::~BlurCache() {
+    glDeleteQueries(1, &m_queryObject);
 }
 
 void BBDX::BlurCache::preparePaintData(const KWin::Region *dirtyRegion,
@@ -359,9 +365,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         glActiveTexture(GL_TEXTURE1);
         blitTexture->bind();
 
-        GLuint query;
-        glGenQueries(1, &query);
-
         // don't acctually draw anything
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glDepthMask(GL_FALSE);
@@ -370,7 +373,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
         switch (m_glQueryAvailable) {
             case GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE:
-                glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+                glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, m_queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
                     break;
                 }
@@ -381,7 +384,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 [[fallthrough]];
 
             case GLQueryAvailable::ANY_SAMPLES_PASSED:
-                glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
+                glBeginQuery(GL_ANY_SAMPLES_PASSED, m_queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
                     break;
                 }
@@ -392,7 +395,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 [[fallthrough]];
 
             case GLQueryAvailable::SAMPLES_PASSED:
-                glBeginQuery(GL_SAMPLES_PASSED, query);
+                glBeginQuery(GL_SAMPLES_PASSED, m_queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
                     break;
                 }
@@ -473,7 +476,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
             GLuint available{GL_FALSE};
             do {
-                glGetQueryObjectuiv(query, GL_QUERY_RESULT_AVAILABLE, &available);
+                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT_AVAILABLE, &available);
 
                 auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start);
                 if (!available && (elapsed > timeout)) {
@@ -489,7 +492,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 
             if (m_glQueryAvailable != GLQueryAvailable::SAMPLES_PASSED) [[likely]] {
                 GLuint anyPixelsDifferent{GL_FALSE};
-                glGetQueryObjectuiv(query, GL_QUERY_RESULT, &anyPixelsDifferent);
+                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &anyPixelsDifferent);
                 if (anyPixelsDifferent == GL_FALSE) {
                     // no need to break; this causes BlurCacheLRU::next()
                     // to return nullptr on the next iteration
@@ -499,7 +502,7 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 }
             } else {
                 GLuint pixelsDifferent{0};
-                glGetQueryObjectuiv(query, GL_QUERY_RESULT, &pixelsDifferent);
+                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &pixelsDifferent);
                 if (pixelsDifferent == 0) {
                     // no need to break; this causes BlurCacheLRU::next()
                     // to return nullptr on the next iteration
@@ -516,7 +519,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
 cleanup:
         glDepthMask(GL_TRUE);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDeleteQueries(1, &query);
         glActiveTexture(GL_TEXTURE0);
 
         KWin::GLFramebuffer::popFramebuffer();
