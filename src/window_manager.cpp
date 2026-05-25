@@ -78,10 +78,7 @@ void BBDX::WindowManager::slotWindowDeleted(KWin::EffectWindow *w) {
 
 void BBDX::WindowManager::slotStackingOrderChanged() {
     refreshWindowCoverageAll();
-
-    for (const auto &[kWindow, bbdxWindow] : m_windows) {
-        const_cast<KWin::EffectWindow *>(kWindow)->addRepaintFull();
-    }
+    repaintAllBlurredWindows();
 }
 
 BBDX::Window* BBDX::WindowManager::findWindow(const KWin::EffectWindow *w) const {
@@ -402,4 +399,14 @@ bool BBDX::WindowManager::windowIsBlurFullyCovered(KWin::EffectWindow *w) const 
         return false;
 
     return window->isBlurFullyCovered();
+}
+
+void BBDX::WindowManager::repaintAllBlurredWindows() const {
+    for (const auto &[kWindow, bbdxWindow] : m_windows) {
+        if (!bbdxWindow->isBlurred()) {
+            continue;
+        }
+
+        const_cast<KWin::EffectWindow *>(kWindow)->addRepaintFull();
+    }
 }

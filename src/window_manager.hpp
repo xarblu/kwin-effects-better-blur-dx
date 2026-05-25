@@ -169,6 +169,11 @@ public:
      * the frame geometry of other windows
      */
     bool windowIsBlurFullyCovered(KWin::EffectWindow *w) const;
+
+    /**
+     * Add a full repaint to all blurred windows
+     */
+    void repaintAllBlurredWindows() const;
 };
 
 } // namespace KWin
