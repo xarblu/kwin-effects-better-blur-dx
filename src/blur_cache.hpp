@@ -177,6 +177,9 @@ class ValidationQuery {
     const KWin::EffectWindow *m_window{};
     KWin::Region m_dirtyRegion{};
 
+    std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> m_oldTextureFBO{};
+    std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> m_newTextureFBO{};
+
 public:
     enum class Result {
         WAITING,
@@ -188,12 +191,20 @@ public:
      * Construct using an *already created* queryObject.
      * It is expected that the query was already sent to the GPU before.
      */
-    explicit ValidationQuery(GLuint queryObject, GLenum queryUsed, const KWin::RenderView *view, const KWin::EffectWindow *window, KWin::Region dirtyRegion)
+    explicit ValidationQuery(GLuint queryObject,
+                             GLenum queryUsed,
+                             const KWin::RenderView *view,
+                             const KWin::EffectWindow *window,
+                             KWin::Region dirtyRegion,
+                             std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> oldTextureFBO,
+                             std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> newTextureFBO)
         : m_queryObject{queryObject}
         , m_queryUsed{queryUsed}
         , m_view{view}
         , m_window{window}
         , m_dirtyRegion{dirtyRegion}
+        , m_oldTextureFBO{std::move(oldTextureFBO)}
+        , m_newTextureFBO{std::move(newTextureFBO)}
         {}
 
     /**
@@ -217,6 +228,8 @@ public:
         , m_view{other.m_view}
         , m_window{other.m_window}
         , m_dirtyRegion{std::move(other.m_dirtyRegion)}
+        , m_oldTextureFBO{std::move(other.m_oldTextureFBO)}
+        , m_newTextureFBO{std::move(other.m_newTextureFBO)}
     {
         // make sure other's destructor does not delete the query
         other.m_queryObject = 0;
@@ -235,6 +248,8 @@ public:
             m_view = other.m_view;
             m_window = other.m_window;
             m_dirtyRegion = std::move(other.m_dirtyRegion);
+            m_oldTextureFBO = std::move(other.m_oldTextureFBO);
+            m_newTextureFBO = std::move(other.m_newTextureFBO);
 
             // make sure other's destructor does not delete the query
             other.m_queryObject = 0;

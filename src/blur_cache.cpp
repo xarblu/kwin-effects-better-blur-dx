@@ -37,6 +37,36 @@
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
 
 
+/**
+ * Clone the given FBO into a freshly allocated FBO+Texture
+ */
+static inline std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> cloneFBO(KWin::GLFramebuffer *source) {
+    if (!source || !source->colorAttachment()) {
+        return {nullptr, nullptr};
+    }
+
+    // allocate new cached texture + framebuffer for the blurred texture
+    auto texture = KWin::GLTexture::allocate(source->colorAttachment()->internalFormat(), source->colorAttachment()->size());
+    if (!texture) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
+        return {nullptr, nullptr};
+    }
+    texture->setFilter(GL_LINEAR);
+    texture->setWrapMode(GL_CLAMP_TO_EDGE);
+
+    auto framebuffer = std::make_unique<KWin::GLFramebuffer>(texture.get());
+    if (!framebuffer->valid()) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
+        return {nullptr, nullptr};
+    }
+    KWin::GLFramebuffer::pushFramebuffer(source);
+    framebuffer->blitFromFramebuffer();
+    KWin::GLFramebuffer::popFramebuffer();
+
+    return {std::move(texture), std::move(framebuffer)};
+}
+
+
 std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &scaledBackgroundRect,
                                                                    BBDX::BlurCacheEntry *oldCacheEntry,
                                                                    KWin::GLFramebuffer *dirtyBlitFramebuffer,
@@ -304,8 +334,6 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
     auto &cache = renderInfo.cache;
     cache.reset();
 
-    KWin::GLTexture *blitTexture = renderInfo.framebuffers[0].get()->colorAttachment();
-
     // fast path in case we already determined we
     // can't perform texture comparison
     if (m_glQueryAvailable == GLQueryAvailable::NONE) [[unlikely]] {
@@ -321,26 +349,31 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
             return;
         }
 
+        auto oldTextureFBO = cloneFBO(cacheEntry->blitFramebuffer.get());
+        auto newTextureFBO = cloneFBO(renderInfo.framebuffers[0].get());
+        auto &[oldTexture, oldFramebuffer] = oldTextureFBO;
+        auto &[newTexture, newFramebuffer] = newTextureFBO;
+
         // Hijack FBO of the cached blit to avoid needless reallocation.
         // glColorMask should keep it protected
-        const auto compareFramebuffer = cacheEntry->blitFramebuffer.get();
+        const auto compareFramebuffer = oldFramebuffer.get();
 
         // check if textures differ on the pixel level
         KWin::ShaderManager::instance()->pushShader(m_textureComparePass.shader.get());
         KWin::GLFramebuffer::pushFramebuffer(compareFramebuffer);
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, blitTexture->width(), blitTexture->height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, newTexture->width(), newTexture->height()));
 
         m_textureComparePass.shader->setUniform(m_textureComparePass.mvpMatrixLocation, projectionMatrix);
 
         m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitOldLocation, 0);
         glActiveTexture(GL_TEXTURE0);
-        cacheEntry->blitTexture->bind();
+        oldTexture->bind();
 
         m_textureComparePass.shader->setUniform(m_textureComparePass.texUnitNewLocation, 1);
         glActiveTexture(GL_TEXTURE1);
-        blitTexture->bind();
+        newTexture->bind();
 
         bool queryQueued{false};
         GLuint queryObject{};
@@ -438,7 +471,9 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                                          queryUsed,
                                          m_paintData.view,
                                          m_paintData.window,
-                                         *m_paintData.dirtyRegion);
+                                         *m_paintData.dirtyRegion,
+                                         std::move(oldTextureFBO),
+                                         std::move(newTextureFBO));
         queryQueued = true;
 
         // collect the blit damage for future repaints
