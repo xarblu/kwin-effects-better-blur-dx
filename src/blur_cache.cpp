@@ -524,11 +524,6 @@ void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data) {
                         
                         renderInfo.cache.setDirty();
 
-                        // TODO: preferably we should just repaint
-                        // the actual dirty region but that seems to cause weird
-                        // artifacting around the edge of the repainted area
-                        //const_cast<KWin::EffectWindow *>(query.window())->addRepaintFull();
-
                         for (const auto &rect : query.dirtyRegion().rects()) {
                             data.paint |= rect;
                         }
