@@ -31,41 +31,9 @@
 
 #include <chrono>
 #include <memory>
-#include <thread>
 #include <vector>
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
-
-
-/**
- * Clone the given FBO into a freshly allocated FBO+Texture
- */
-static inline std::pair<std::unique_ptr<KWin::GLTexture>, std::unique_ptr<KWin::GLFramebuffer>> cloneFBO(KWin::GLFramebuffer *source) {
-    if (!source || !source->colorAttachment()) {
-        return {nullptr, nullptr};
-    }
-
-    // allocate new cached texture + framebuffer for the blurred texture
-    glClearColor(0, 0, 0, 0);
-    auto texture = KWin::GLTexture::allocate(source->colorAttachment()->internalFormat(), source->colorAttachment()->size());
-    if (!texture) {
-        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
-        return {nullptr, nullptr};
-    }
-    texture->setFilter(GL_LINEAR);
-    texture->setWrapMode(GL_CLAMP_TO_EDGE);
-
-    auto framebuffer = std::make_unique<KWin::GLFramebuffer>(texture.get());
-    if (!framebuffer->valid()) {
-        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
-        return {nullptr, nullptr};
-    }
-    KWin::GLFramebuffer::pushFramebuffer(source);
-    framebuffer->blitFromFramebuffer();
-    KWin::GLFramebuffer::popFramebuffer();
-
-    return {std::move(texture), std::move(framebuffer)};
-}
 
 
 std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &scaledBackgroundRect,
