@@ -6,6 +6,7 @@
 
 #include <epoxy/gl.h>
 #include <qloggingcategory.h>
+#include <scene/scene.h>
 #include <sys/types.h>
 
 #include <core/pixelgrid.h>
@@ -262,10 +263,14 @@ BBDX::BlurCache::~BlurCache() {
     glDeleteQueries(1, &m_queryObject);
 }
 
-void BBDX::BlurCache::preparePaintData(const KWin::Region *dirtyRegion,
+void BBDX::BlurCache::preparePaintData(const KWin::RenderView *view,
+                                       const KWin::EffectWindow *window,
+                                       const KWin::Region *dirtyRegion,
                                        const KWin::GLFramebuffer *blitFramebuffer,
                                        const KWin::Rect *backgroundRect,
                                        const KWin::Rect *scaledBackgroundRect) {
+    m_paintData.view = view;
+    m_paintData.window = window;
     m_paintData.dirtyRegion = dirtyRegion;
     m_paintData.blitFramebuffer = blitFramebuffer;
     m_paintData.backgroundRect = backgroundRect;
@@ -428,10 +433,20 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         // queue up successful query
         m_validationQueries.emplace_back(queryObject,
                                          queryUsed,
+                                         m_paintData.view,
                                          m_paintData.window,
                                          *m_paintData.dirtyRegion);
 
-        cache.select();
+        // collect the blit damage for future repaints
+        cacheEntry->updateBlitTexture(renderInfo.framebuffers[0].get(), *m_paintData.dirtyRegion);
+
+        // select if cache isn't dirty
+        // else we'll re-blur after which it's no longer dirty
+        if (cache.dirty()) {
+            cache.clearDirty();
+        } else {
+            cache.select();
+        }
 
 cleanup:
         glDepthMask(GL_TRUE);
@@ -458,6 +473,49 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
         }
 
         cache.select();
+    }
+}
+
+void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data) {
+    for (size_t i = 0; i < m_validationQueries.size(); ) {
+        const auto &query = m_validationQueries[i];
+
+        // we only want to handle the current RenderView;
+        // repaints are per view
+        if (query.view() != data.view) {
+            i++;
+            continue;
+        }
+
+        switch (query.result()) {
+            case ValidationQuery::Result::CHANGED:
+                // add repaint
+                for (const auto &rect : query.dirtyRegion().rects()) {
+                    data.paint |= rect;
+                }
+
+                // mark cache dirty
+                if (auto it = m_effect->m_windows.find(const_cast<KWin::EffectWindow *>(query.window())); it != m_effect->m_windows.end()) {
+                    auto &effectData = it->second;
+                    if (auto it = effectData.render.find(data.view); it != effectData.render.end()) {
+                        auto &renderInfo = it->second;
+                        renderInfo.cache.setDirty();
+                    }
+                }
+
+                m_validationQueries.erase(m_validationQueries.begin() + i);
+                break;
+
+            case ValidationQuery::Result::UNCHANGED:
+                // cache still valid, just clear the query
+                m_validationQueries.erase(m_validationQueries.begin() + i);
+                break;
+
+            default:
+                // waiting, nothing to do here
+                i++;
+                break;
+        }
     }
 }
 

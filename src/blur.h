@@ -259,6 +259,7 @@ private:
     friend void BBDX::WindowManager::invalidateBlurCache(KWin::EffectWindow *w, QStringView reason) const;
     friend void BBDX::WindowManager::refreshWindowCoverage(BBDX::Window *bbdxWindow) const;
     std::unique_ptr<BBDX::BlurCache> m_blurCache{};
+    friend void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data);
     std::unique_ptr<BBDX::RefractionPass> m_refractionPass{};
     std::unique_ptr<BBDX::RoundedCornersPass> m_roundedCornersPass{};
 

@@ -2,6 +2,7 @@
 
 #include "kwin_version.hpp"
 
+#include <effect/effect.h>
 #include <epoxy/gl.h>
 
 #include <effect/effectwindow.h>
@@ -9,6 +10,7 @@
 #include <opengl/glshader.h>
 #include <opengl/gltexture.h>
 #include <opengl/glvertexbuffer.h>
+#include <scene/scene.h>
 
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 5, 80)
 #  include "kwin_compat_6_5.hpp"
@@ -22,6 +24,7 @@
 
 namespace KWin {
     class GLVertex2D;
+    class ScreenPrePaintData;
 }
 
 namespace BBDX {
@@ -88,6 +91,7 @@ class BlurCacheLRU {
 private:
     std::unique_ptr<BlurCacheEntry> m_entry{};
     bool m_valid{false};
+    bool m_dirty{false};
 
     KWin::EffectWindow* m_window{nullptr};
     QString m_windowClass{"unknown unknown"};
@@ -131,7 +135,18 @@ public:
     /**
      * Check if the cache entry was deemed valid
      */
-    bool valid() { return m_valid; }
+    bool valid() const { return m_valid; }
+
+    /**
+     * Mark/clear the dirty (needs re-blur) flag
+     */
+    void setDirty() { m_dirty = true; }
+    void clearDirty() { m_dirty = false; }
+
+    /**
+     * Check if the cache entry is dirty and needs to re-blur
+     */
+    bool dirty() const { return m_dirty; }
 
     /**
      * Explicitly clear remove the cache entry
@@ -158,6 +173,7 @@ public:
 class ValidationQuery {
     GLuint m_queryObject{};
     GLenum m_queryUsed{};
+    const KWin::RenderView *m_view{};
     const KWin::EffectWindow *m_window{};
     KWin::Region m_dirtyRegion{};
 
@@ -172,9 +188,10 @@ public:
      * Construct using an *already created* queryObject.
      * It is expected that the query was already sent to the GPU before.
      */
-    explicit ValidationQuery(GLuint queryObject, GLenum queryUsed, const KWin::EffectWindow *window, KWin::Region dirtyRegion)
+    explicit ValidationQuery(GLuint queryObject, GLenum queryUsed, const KWin::RenderView *view, const KWin::EffectWindow *window, KWin::Region dirtyRegion)
         : m_queryObject{queryObject}
         , m_queryUsed{queryUsed}
+        , m_view{view}
         , m_window{window}
         , m_dirtyRegion{dirtyRegion}
         {}
@@ -188,6 +205,13 @@ public:
      * Get the query result
      */
     Result result() const;
+
+    /**
+     * Getters
+     */
+    const KWin::RenderView *view() const { return m_view; }
+    const KWin::EffectWindow *window() const { return m_window; }
+    KWin::Region dirtyRegion() const { return m_dirtyRegion; }
 };
 
 class BlurCache {
@@ -231,6 +255,7 @@ private:
     // Data used for this specific window paint
     // !!! preparePaintData() must be called before accessing any of this !!!
     struct {
+        const KWin::RenderView *view;
         const KWin::EffectWindow *window;
         const KWin::Region *dirtyRegion;
         const KWin::Rect *backgroundRect;
@@ -264,7 +289,9 @@ public:
     /**
      * Prepare the cache for this paint
      */
-    void preparePaintData(const KWin::Region *dirtyRegion,
+    void preparePaintData(const KWin::RenderView *view,
+                          const KWin::EffectWindow *window,
+                          const KWin::Region *dirtyRegion,
                           const KWin::GLFramebuffer *blitFramebuffer,
                           const KWin::Rect *backgroundRect,
                           const KWin::Rect *scaledBackgroundRect);
@@ -280,6 +307,12 @@ public:
      * by checking if a recent one exists
      */
     void selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo);
+
+    /**
+     * Check all finished queries for changes and issue
+     * repaints accordingly
+     */
+    void checkCacheValidity(KWin::ScreenPrePaintData &data);
 
     /**
      * Injects the geometry used for the cache, in logical pixels
