@@ -198,7 +198,9 @@ void BBDX::BlurCacheLRU::setWindow(KWin::EffectWindow* w) {
 }
 
 BBDX::ValidationQuery::~ValidationQuery() {
-    glDeleteQueries(1, &m_queryObject);
+    if (m_queryObject) {
+        glDeleteQueries(1, &m_queryObject);
+    }
 }
 
 BBDX::ValidationQuery::Result BBDX::ValidationQuery::result() const {

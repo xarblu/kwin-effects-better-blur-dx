@@ -171,7 +171,7 @@ public:
 };
 
 class ValidationQuery {
-    GLuint m_queryObject{};
+    GLuint m_queryObject{0};
     GLenum m_queryUsed{};
     const KWin::RenderView *m_view{};
     const KWin::EffectWindow *m_window{};
@@ -200,6 +200,47 @@ public:
      * Cleans up the query
      */
     ~ValidationQuery();
+
+    /**
+     * Disallow copying to avoid bugs caused by unwanted destructor calls
+     * that destroy the query object
+     */
+    ValidationQuery(const ValidationQuery&) = delete;
+    ValidationQuery& operator=(const ValidationQuery&) = delete;
+
+    /**
+     * Proper move
+     */
+    ValidationQuery(ValidationQuery&& other) noexcept
+        : m_queryObject{other.m_queryObject}
+        , m_queryUsed{other.m_queryUsed}
+        , m_view{other.m_view}
+        , m_window{other.m_window}
+        , m_dirtyRegion{std::move(other.m_dirtyRegion)}
+    {
+        // make sure other's destructor does not delete the query
+        other.m_queryObject = 0;
+    }
+
+    ValidationQuery& operator=(ValidationQuery&& other) noexcept {
+        if (this != &other) {
+            // Clean up our existing query object
+            if (m_queryObject != 0) {
+                glDeleteQueries(1, &m_queryObject);
+            }
+
+            // move
+            m_queryObject = other.m_queryObject;
+            m_queryUsed = other.m_queryUsed;
+            m_view = other.m_view;
+            m_window = other.m_window;
+            m_dirtyRegion = std::move(other.m_dirtyRegion);
+
+            // make sure other's destructor does not delete the query
+            other.m_queryObject = 0;
+        }
+        return *this;
+    }
 
     /**
      * Get the query result
