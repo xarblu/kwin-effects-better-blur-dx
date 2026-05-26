@@ -1182,6 +1182,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             // new cache entry which we'll actually blur now
             renderInfo.cache.add(std::move(cacheEntry));
         }
+
+        // we're making this valid now by re-blurring
+        renderInfo.cache.select();
     }
 
     // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
