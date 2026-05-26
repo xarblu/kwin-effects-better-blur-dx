@@ -1162,24 +1162,26 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         vbo->unbindArrays();
         return;
     } else {
-        auto cacheEntry = BBDX::BlurCacheEntry::create(scaledBackgroundRect,
-                                                       renderInfo.cache.get(),
-                                                       renderInfo.framebuffers[0].get(),
-                                                       dirtyRegion,
-                                                       backgroundRect);
-        if (!cacheEntry) {
-            qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Creating BlurCacheEntry failed";
-            return;
-        }
+        if (!renderInfo.cache.get()) {
+            auto cacheEntry = BBDX::BlurCacheEntry::create(scaledBackgroundRect,
+                                                           renderInfo.cache.get(),
+                                                           renderInfo.framebuffers[0].get(),
+                                                           dirtyRegion,
+                                                           backgroundRect);
+            if (!cacheEntry) {
+                qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Creating BlurCacheEntry failed";
+                return;
+            }
 
-        // partial cache entries are bad,
-        // make sure we get a complete on soon
-        if (cacheEntry->partial) {
-            w->addRepaintFull();
-        }
+            // partial cache entries are bad,
+            // make sure we get a complete one soon
+            if (cacheEntry->partial) {
+                w->addRepaintFull();
+            }
 
-        // new cache entry which we'll actually blur now
-        renderInfo.cache.add(std::move(cacheEntry));
+            // new cache entry which we'll actually blur now
+            renderInfo.cache.add(std::move(cacheEntry));
+        }
     }
 
     // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
