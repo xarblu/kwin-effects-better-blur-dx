@@ -224,6 +224,7 @@ BBDX::ValidationQuery::Result BBDX::ValidationQuery::result() const {
                 GLuint anyPixelsDifferent{GL_FALSE};
                 glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &anyPixelsDifferent);
                 if (anyPixelsDifferent == GL_TRUE) {
+                    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different";
                     return Result::CHANGED;
                 }
                 return Result::UNCHANGED;
