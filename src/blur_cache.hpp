@@ -158,7 +158,7 @@ public:
 class ValidationQuery {
     GLuint m_queryObject{};
     GLenum m_queryUsed{};
-    KWin::EffectWindow *m_window{};
+    const KWin::EffectWindow *m_window{};
     KWin::Region m_dirtyRegion{};
 
 public:
@@ -172,7 +172,7 @@ public:
      * Construct using an *already created* queryObject.
      * It is expected that the query was already sent to the GPU before.
      */
-    explicit ValidationQuery(GLuint queryObject, GLenum queryUsed, KWin::EffectWindow *window, KWin::Region dirtyRegion)
+    explicit ValidationQuery(GLuint queryObject, GLenum queryUsed, const KWin::EffectWindow *window, KWin::Region dirtyRegion)
         : m_queryObject{queryObject}
         , m_queryUsed{queryUsed}
         , m_window{window}
@@ -231,6 +231,7 @@ private:
     // Data used for this specific window paint
     // !!! preparePaintData() must be called before accessing any of this !!!
     struct {
+        const KWin::EffectWindow *window;
         const KWin::Region *dirtyRegion;
         const KWin::Rect *backgroundRect;
         const KWin::Rect *scaledBackgroundRect;

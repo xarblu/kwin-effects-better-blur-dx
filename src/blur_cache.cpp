@@ -321,16 +321,21 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
         glActiveTexture(GL_TEXTURE1);
         blitTexture->bind();
 
-        // don't acctually draw anything
+        GLuint queryObject{};
+        glGenQueries(1, &queryObject);
+
+        // don't actually draw anything
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glDepthMask(GL_FALSE);
 
         // pick the first available query in preferred order (based on supposed speed)
         // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
+        GLenum queryUsed{};
         switch (m_glQueryAvailable) {
             case GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE:
-                glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, m_queryObject);
+                glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
+                    queryUsed = GL_ANY_SAMPLES_PASSED_CONSERVATIVE;
                     break;
                 }
 
@@ -340,8 +345,9 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 [[fallthrough]];
 
             case GLQueryAvailable::ANY_SAMPLES_PASSED:
-                glBeginQuery(GL_ANY_SAMPLES_PASSED, m_queryObject);
+                glBeginQuery(GL_ANY_SAMPLES_PASSED, queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
+                    queryUsed = GL_ANY_SAMPLES_PASSED;
                     break;
                 }
 
@@ -351,8 +357,9 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 [[fallthrough]];
 
             case GLQueryAvailable::SAMPLES_PASSED:
-                glBeginQuery(GL_SAMPLES_PASSED, m_queryObject);
+                glBeginQuery(GL_SAMPLES_PASSED, queryObject);
                 if (glGetError() == GL_NO_ERROR) [[likely]] {
+                    queryUsed = GL_SAMPLES_PASSED;
                     break;
                 }
 
@@ -418,53 +425,13 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
                 goto cleanup;
         }
 
-        // await query and check, with a timeout because these
-        // queries can be slow.
-        // Reaching the timeout just selects the cache entry without verification
-        // (if not partial; those will just be skipped)
-        {
-            // we always want to reach at least 60fps, so that's our timeout
-            constexpr std::chrono::nanoseconds timeout{1000000000 / 60};
+        // queue up successful query
+        m_validationQueries.emplace_back(queryObject,
+                                         queryUsed,
+                                         m_paintData.window,
+                                         *m_paintData.dirtyRegion);
 
-            // poll every ms
-            constexpr std::chrono::nanoseconds pollRate{1000000000 / 1000};
-            auto start = std::chrono::steady_clock::now();
-
-            GLuint available{GL_FALSE};
-            do {
-                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT_AVAILABLE, &available);
-
-                auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start);
-                if (!available && (elapsed > timeout)) {
-                    qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Aborting slow OpenGL query. Limit:" << timeout;
-                    if (!cacheEntry->partial) {
-                        cache.select();
-                    }
-                    goto cleanup;
-                } else if (!available) {
-                    std::this_thread::sleep_for(pollRate);
-                }
-            } while (!available);
-
-            if (m_glQueryAvailable != GLQueryAvailable::SAMPLES_PASSED) [[likely]] {
-                GLuint anyPixelsDifferent{GL_FALSE};
-                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &anyPixelsDifferent);
-                if (anyPixelsDifferent == GL_FALSE) {
-                    // this call also updates the verifiedAt timestamp
-                    cache.select(true);
-                }
-            } else {
-                GLuint pixelsDifferent{0};
-                glGetQueryObjectuiv(m_queryObject, GL_QUERY_RESULT, &pixelsDifferent);
-                if (pixelsDifferent == 0) {
-                    // this call also updates the verifiedAt timestamp
-                    cache.select(true);
-                } else {
-                    // for debugging purposes also log the actual count
-                    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different:" << pixelsDifferent;
-                }
-            }
-        }
+        cache.select();
 
 cleanup:
         glDepthMask(GL_TRUE);
