@@ -503,7 +503,7 @@ void BBDX::BlurCache::selectCacheEntryEarly(BBDX::BlurRenderData &renderInfo) {
 }
 
 void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data) {
-    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Checking cache validity. Active Queries:" << m_validationQueries.size();
+    //qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Checking cache validity. Active Queries:" << m_validationQueries.size();
 
     for (size_t i = 0; i < m_validationQueries.size(); ) {
         const auto &query = m_validationQueries[i];
