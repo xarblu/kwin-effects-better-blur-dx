@@ -3,15 +3,30 @@ Things not in any tagged release yet:
 
 ### Features
 - **Plasma 6.7 support**
-- **Multiple cached textures** (currently up to 5) which should help with
-  windows that frequently do partial repaints.
-  (Although this is trading GPU processing with higher VRAM usage, so maybe it might
-  be beneficial to have a config for this at some point)
+- **(Almost) Full BlurCache rewrite** (I lost count but I think that's like the 5th rewrite :P)  
+  - The cache should now be more performant and reliable
+    compared to the previous iterations (especially around partial repaints) which would
+    previously lead to a lot of unneeded cache invalidation.
+  - Queries are now async, meaning the GPU should be able to pipeline them better
+    (because we don't force it to complete all work up to the query just to get the result).
+    The next time KWin paints the scene we check the queries for completion and update
+    the blur where needed.
+- Blur of fully covered windows now gets frozen.
+  The idea is that this should avoid unnecessary query spam caused by windows above
+  while not really looking worse.  
+  (This is a dirty hack and likely won't solve that stacked windows are just stupidly inefficient.
+  Example (oversimplified): You have 5 blurred windows stacked. The *top window* is playing a video at 60FPS.
+  How many blur repaints is that per second? 60 because only the top window needs repaints, right?
+  Well it's actually `5 * 60 = 300` because every video frame causes the entire stack to be repainted from bottom to top.
+  The more windows you stack the worse the situation gets.)
 
 ### Internal
 - Tweaked the texture compare query + shaders to be faster
 - Don't invalidate cache on opacity change (this was left over from
   when opacity was still part of the cached texture)
+- There is now a unified `kwin_compat.hpp` header which automatically
+  includes `kwin_version.hpp` and all appropriate `kwin_compat_<version>.hpp` headers
+  depending on the build environment.
 
 # 2.4.1
 
