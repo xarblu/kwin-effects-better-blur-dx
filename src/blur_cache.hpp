@@ -64,7 +64,7 @@ struct BlurCacheEntry {
 
     // times the cache entry was validated with a query
     // affects how much validUntil is incremented each validation
-    // (reset by setDirty)
+    // (reset by BlurCacheLRU::setDirty(), incremented by BlurCacheLRU::validate())
     uint validations{0};
 
     // backgroundRect used to create this cache entry
@@ -72,12 +72,12 @@ struct BlurCacheEntry {
 
     // the cache will be used without re-verification
     // until this point (unless explicitly dirtied)
-    // (reset by setDirty)
+    // (reset by BlurCacheLRU::setDirty())
     std::chrono::steady_clock::time_point validUntil{};
 
     // accumulated dirtyRegion across uses without re-verification
     // (in global coordinates)
-    // (reset by setDirty)
+    // (reset by BlurCacheLRU::setDirty())
     KWin::Region accumulatedDirtyRegion{};
 
     /**
@@ -178,6 +178,11 @@ public:
      * Set skipGlContext in cases where the context is already current.
      */
     void invalidate(BlurCacheInvalidation type, QStringView reason, bool skipGlContext = false);
+
+    /**
+     * Validate the cache entry
+     */
+    void validate() const;
 
     /**
      * Set window using this cache for logging purposes

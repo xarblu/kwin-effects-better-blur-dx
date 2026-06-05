@@ -31,6 +31,7 @@
 
 #include <memory>
 #include <vector>
+#include <chrono>
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
 
@@ -217,6 +218,14 @@ void BBDX::BlurCacheLRU::invalidate(BlurCacheInvalidation type, QStringView reas
 
     m_entry.reset();
     reset();
+}
+
+void BBDX::BlurCacheLRU::validate() const {
+    if (!m_entry) {
+        return;
+    }
+
+    m_entry->validations += 1;
 }
 
 void BBDX::BlurCacheLRU::setWindow(KWin::EffectWindow* w) {
@@ -531,35 +540,43 @@ void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data) {
             continue;
         }
 
+        BlurRenderData *renderInfo{nullptr};
+
+        if (auto it = m_effect->m_windows.find(const_cast<KWin::EffectWindow *>(query.window())); it != m_effect->m_windows.end()) {
+            auto &effectData = it->second;
+            if (auto it = effectData.render.find(view); it != effectData.render.end()) {
+                renderInfo = &(it->second);
+            }
+        }
+
         switch (query.result()) {
             case ValidationQuery::Result::CHANGED:
                 // cache invalid, mark dirty and add repaint
-                if (auto it = m_effect->m_windows.find(const_cast<KWin::EffectWindow *>(query.window())); it != m_effect->m_windows.end()) {
-                    auto &effectData = it->second;
-                    if (auto it = effectData.render.find(view); it != effectData.render.end()) {
-                        auto &renderInfo = it->second;
-                        
-                        // verified dirtyRegion
-                        for (const auto &rect : query.dirtyRegion().rects()) {
+                if (renderInfo) {
+                    // verified dirtyRegion
+                    for (const auto &rect : query.dirtyRegion().rects()) {
+                        data.paint |= rect;
+                    }
+
+                    // unverified accumulated dirtyRegion
+                    if (const auto &entry = renderInfo->cache.get()) {
+                        for (const auto &rect : entry->accumulatedDirtyRegion.rects()) {
                             data.paint |= rect;
                         }
-
-                        // unverified accumulated dirtyRegion
-                        if (const auto &entry = renderInfo.cache.get()) {
-                            for (const auto &rect : entry->accumulatedDirtyRegion.rects()) {
-                                data.paint |= rect;
-                            }
-                        }
-
-                        renderInfo.cache.setDirty();
                     }
+
+                    renderInfo->cache.setDirty();
                 }
 
                 m_validationQueries.erase(m_validationQueries.begin() + i);
                 break;
 
             case ValidationQuery::Result::UNCHANGED:
-                // cache still valid, just clear the query
+                // cache still valid, just clear the query and mark valid
+                if (renderInfo) {
+                    renderInfo->cache.validate();
+                }
+
                 m_validationQueries.erase(m_validationQueries.begin() + i);
                 break;
 
