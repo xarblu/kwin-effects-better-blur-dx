@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <vector>
+#include <chrono>
 
 namespace KWin {
     class GLVertex2D;
@@ -58,10 +59,26 @@ struct BlurCacheEntry {
     uint priority{0};
 
     // cache hits of this entry, incremented by BlurCacheLRU::select()
+    // (reset by setDirty)
     uint hits{0};
+
+    // times the cache entry was validated with a query
+    // affects how much validUntil is incremented each validation
+    // (reset by setDirty)
+    uint validations{0};
 
     // backgroundRect used to create this cache entry
     KWin::Rect backgroundRect{};
+
+    // the cache will be used without re-verification
+    // until this point (unless explicitly dirtied)
+    // (reset by setDirty)
+    std::chrono::steady_clock::time_point validUntil{};
+
+    // accumulated dirtyRegion across uses without re-verification
+    // (in global coordinates)
+    // (reset by setDirty)
+    KWin::Region accumulatedDirtyRegion{};
 
     /**
      * Create a new BlurCacheEntry by allocating cachedTexture and cachedFramebuffer
@@ -75,7 +92,12 @@ struct BlurCacheEntry {
     /**
      * Update a BlurCacheEntry's blitTexture from the given dirtyBlitFramebuffer and dirtyRegion
      */
-    void updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, KWin::Region dirtyRegion);
+    void updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, const KWin::Region &dirtyRegion);
+
+    /**
+     * Add dirtyRegion to accumulatedDirtyRegion
+     */
+    void accumulateDirtyRegion(const KWin::Region &dirtyRegion);
 
     /**
      * Helper for mapping dirtyRegion into backgroundRect

@@ -5,6 +5,7 @@
 #include "blur.h"
 #include "utils.h"
 
+#include <chrono>
 #include <epoxy/gl.h>
 #include <epoxy/gl_generated.h>
 #include <qloggingcategory.h>
@@ -32,6 +33,27 @@
 #include <vector>
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
+
+
+/**
+ * maps a validation count to a future time
+ */
+static inline std::chrono::steady_clock::time_point validationsToTTL(uint validations) {
+    // we start at 60fps
+    // each validation cuts framerate in half
+    // (minimum 10fps)
+    uint fps;
+
+    // 60u >> 3 = 7
+    if (validations < 3) {
+        fps = 60u >> validations;
+    } else {
+        fps = 10u;
+    }
+
+    constexpr std::chrono::microseconds second{1000000};
+    return std::chrono::steady_clock::now() + second / fps;
+}
 
 
 std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &scaledBackgroundRect,
@@ -89,12 +111,18 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     return entry;
 }
 
-void BBDX::BlurCacheEntry::updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, KWin::Region dirtyRegion) {
+void BBDX::BlurCacheEntry::updateBlitTexture(KWin::GLFramebuffer *dirtyBlitFramebuffer, const KWin::Region &dirtyRegion) {
     KWin::GLFramebuffer::pushFramebuffer(dirtyBlitFramebuffer);
     for (const auto &rect : localDirtyRegion(dirtyRegion).rects()) {
         blitFramebuffer->blitFromFramebuffer(rect, rect);
     }
     KWin::GLFramebuffer::popFramebuffer();
+}
+
+void BBDX::BlurCacheEntry::accumulateDirtyRegion(const KWin::Region &dirtyRegion) {
+    for (const auto &rect : dirtyRegion.rects()) {
+        accumulatedDirtyRegion |= rect;
+    }
 }
 
 KWin::Region BBDX::BlurCacheEntry::localDirtyRegion(const KWin::Region &dirtyRegion) const {
@@ -148,6 +176,9 @@ void BBDX::BlurCacheLRU::setDirty() {
     if (m_entry) {
         hits = m_entry->hits;
         m_entry->hits = 0;
+        m_entry->validations = 0;
+        m_entry->validUntil = std::chrono::steady_clock::time_point{};
+        m_entry->accumulatedDirtyRegion = KWin::Region{};
     }
 
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
@@ -317,7 +348,16 @@ void BBDX::BlurCache::selectCacheEntry(BBDX::BlurRenderData &renderInfo,
             return;
         }
 
-        // else always select
+        // fast path for rate limiting queries
+        if (cacheEntry->validUntil >= std::chrono::steady_clock::now()) {
+            cacheEntry->updateBlitTexture(renderInfo.framebuffers[0].get(), *m_paintData.dirtyRegion);
+            cacheEntry->accumulateDirtyRegion(*m_paintData.dirtyRegion);
+            cache.select();
+            return;
+        }
+
+        // else select and verify
+        cacheEntry->validUntil = validationsToTTL(cacheEntry->validations);
         cache.select();
 
         // QUERY START
@@ -499,11 +539,19 @@ void BBDX::BlurCache::checkCacheValidity(KWin::ScreenPrePaintData &data) {
                     if (auto it = effectData.render.find(view); it != effectData.render.end()) {
                         auto &renderInfo = it->second;
                         
-                        renderInfo.cache.setDirty();
-
+                        // verified dirtyRegion
                         for (const auto &rect : query.dirtyRegion().rects()) {
                             data.paint |= rect;
                         }
+
+                        // unverified accumulated dirtyRegion
+                        if (const auto &entry = renderInfo.cache.get()) {
+                            for (const auto &rect : entry->accumulatedDirtyRegion.rects()) {
+                                data.paint |= rect;
+                            }
+                        }
+
+                        renderInfo.cache.setDirty();
                     }
                 }
 
