@@ -461,7 +461,8 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurRenderData &renderInfo,
 
     // Somehow we can end up here with an empty textureCompareRegion
     // which would mean there was no dirtyRegion and thus no blitted data.
-    // Just accept and bail.
+    //
+    // TODO: currently this just causes re-blur 
     if (m_paintData.textureCompareRegion.isEmpty()) {
         return;
     }
