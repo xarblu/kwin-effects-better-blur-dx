@@ -109,8 +109,7 @@ void BBDX::BlurCacheLRU::add(std::unique_ptr<BlurCacheEntry> entry) {
     if (m_entry) {
         qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
                             << "Replacing BlurCacheEntry:" << m_windowClass << "\n"
-                            << "PID:" << m_windowPID << "\n"
-                            << "Hits:" << m_entry->hits;
+                            << "PID:" << m_windowPID << "\n";
     } else {
         qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
                             << "Adding BlurCacheEntry:" << m_windowClass << "\n"
@@ -118,7 +117,6 @@ void BBDX::BlurCacheLRU::add(std::unique_ptr<BlurCacheEntry> entry) {
     }
 
     m_entry = std::move(entry);
-    m_entry->priority = 0;
 }
 
 void BBDX::BlurCacheLRU::invalidate(BlurCacheInvalidation type, QStringView reason, bool skipGlContext) {
@@ -178,7 +176,7 @@ BBDX::BlurCache::BlurCache(BBDX::BlurEffect *effect) {
 void BBDX::BlurCache::preparePaintData(const KWin::RenderView *view,
                                        const KWin::EffectWindow *window,
                                        const KWin::Region *dirtyRegion,
-                                       const KWin::GLFramebuffer *blitFramebuffer,
+                                       KWin::GLFramebuffer *blitFramebuffer,
                                        const KWin::Rect *backgroundRect,
                                        const KWin::Rect *scaledBackgroundRect,
                                        BlurCacheLRU &cache) {
@@ -301,28 +299,29 @@ void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboInde
 
 void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
                                    KWin::GLVertexBuffer *vbo) {
-    if (!m_glQueryObject) {
-        m_glQueryObjects = std::make_unique<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectDeleter>();
+    if (!m_glQueryObjects) {
+        auto rawGlQueryObjects = new std::array<GLuint, QUERY_OBJECT_COUNT>{};
+        m_glQueryObjects = std::unique_ptr<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectsDeleter>{rawGlQueryObjects};
         glGenQueries(m_glQueryObjects->size(), m_glQueryObjects->data());
     }
 
     // if we don't have an entry create one and bail to fill it
     auto cacheEntry = cache.get();
     if (!cacheEntry) {
-        auto newCacheEntry = BBDX::BlurCacheEntry::create(m_paintData.scaledBackgroundRect,
+        auto newCacheEntry = BBDX::BlurCacheEntry::create(*m_paintData.scaledBackgroundRect,
                                                           m_paintData.blitFramebuffer,
-                                                          m_paintData.dirtyRegion,
-                                                          m_paintData.backgroundRect);
+                                                          *m_paintData.dirtyRegion,
+                                                          *m_paintData.backgroundRect);
         // XXX: ensure this is safe
         // and BlurEffect::blur() bails
         // if this fails or we get nullptr derefs when trying to
         // access blit/target framebuffers
         if (!newCacheEntry) {
-            qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Creating BlurCacheEntry failed";
+            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Creating BlurCacheEntry failed";
             return;
         }
 
-        cache.add(newCacheEntry);
+        cache.add(std::move(newCacheEntry));
 
         return;
     }
@@ -370,8 +369,8 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
     newTexture->bind();
 
     // grab query object from available query objects
-    GLuint *queryObject = &m_glQueryObjects[m_nextGlQueryObject++];
-    if (m_nextGlQueryObject >= m_glQueryObjects.size()) {
+    GLuint queryObject = m_glQueryObjects->at(m_nextGlQueryObject++);
+    if (m_nextGlQueryObject >= m_glQueryObjects->size()) {
         m_nextGlQueryObject = 0;
     }
 
@@ -380,7 +379,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
     GLenum queryUsed{};
     switch (m_glQueryAvailable) {
         case GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE:
-            glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, *m_glQueryObject);
+            glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, queryObject);
             if (glGetError() == GL_NO_ERROR) [[likely]] {
                 queryUsed = GL_ANY_SAMPLES_PASSED_CONSERVATIVE;
                 break;
@@ -392,7 +391,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
             [[fallthrough]];
 
         case GLQueryAvailable::ANY_SAMPLES_PASSED:
-            glBeginQuery(GL_ANY_SAMPLES_PASSED, *m_glQueryObject);
+            glBeginQuery(GL_ANY_SAMPLES_PASSED, queryObject);
             if (glGetError() == GL_NO_ERROR) [[likely]] {
                 queryUsed = GL_ANY_SAMPLES_PASSED;
                 break;
@@ -404,7 +403,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
             [[fallthrough]];
 
         case GLQueryAvailable::SAMPLES_PASSED:
-            glBeginQuery(GL_SAMPLES_PASSED, *m_glQueryObject);
+            glBeginQuery(GL_SAMPLES_PASSED, queryObject);
             if (glGetError() == GL_NO_ERROR) [[likely]] {
                 queryUsed = GL_SAMPLES_PASSED;
                 break;
@@ -423,7 +422,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
 
     glEndQuery(queryUsed);
 
-    glBeginConditionalRender(*m_glQueryObject, GL_QUERY_BY_REGION_WAIT);
+    glBeginConditionalRender(queryObject, GL_QUERY_BY_REGION_WAIT);
     m_paintData.glBeginConditionalRenderCalled = true;
 
     // our query implicitly updates the blur source, this
@@ -451,7 +450,7 @@ void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const K
     projectionMatrix.translate(scaledBackgroundRect.x(), scaledBackgroundRect.y());
 
     KWin::GLTexture* read;
-    if (auto &cacheEntry = renderInfo.cache.get()) {
+    if (const auto &cacheEntry = renderInfo.cache.get()) {
         read = cacheEntry->cachedTexture.get();
     } else {
         // bail if we didn't select or add a cache entry

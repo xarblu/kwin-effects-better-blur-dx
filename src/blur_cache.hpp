@@ -176,8 +176,8 @@ private:
     /**
      * Shared query objects across paints
      */
-    std::unique_ptr<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectsDeleter> m_glQueryObject{nullptr};
-    size_t nextGlQueryObject{0};
+    std::unique_ptr<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectsDeleter> m_glQueryObjects{nullptr};
+    size_t m_nextGlQueryObject{0};
 
     /**
      * set to the best supported query that
@@ -195,7 +195,7 @@ private:
         const KWin::Region *dirtyRegion;
         const KWin::Rect *backgroundRect;
         const KWin::Rect *scaledBackgroundRect;
-        const KWin::GLFramebuffer *blitFramebuffer;
+        KWin::GLFramebuffer *blitFramebuffer;
 
         // dirtyRegion adjusted for use in setupVBO()
         // and the vertexCount it will use
@@ -224,7 +224,7 @@ public:
     void preparePaintData(const KWin::RenderView *view,
                           const KWin::EffectWindow *window,
                           const KWin::Region *dirtyRegion,
-                          const KWin::GLFramebuffer *blitFramebuffer,
+                          KWin::GLFramebuffer *blitFramebuffer,
                           const KWin::Rect *backgroundRect,
                           const KWin::Rect *scaledBackgroundRect,
                           BlurCacheLRU &cache);
