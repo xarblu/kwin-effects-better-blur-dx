@@ -434,11 +434,13 @@ cleanup:
     // QUERY END
 }
 
-void BBDX::BlurCache::drawCached(const KWin::Rect &scaledBackgroundRect, const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const {
+void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const {
     // end glBeginConditionalRender from prepareCache()
     if (m_paintData.glBeginConditionalRenderCalled) {
         glEndConditionalRender();
     }
+
+    const auto &scaledBackgroundRect = *m_paintData.scaledBackgroundRect;
 
     KWin::ShaderManager::instance()->pushShader(m_texturePass.shader.get());
     

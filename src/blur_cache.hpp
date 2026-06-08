@@ -246,7 +246,7 @@ public:
      *
      * Should be called at the very end of the blur passes
      */
-    void drawCached(const KWin::Rect &scaledBackgroundRect, const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const;
+    void drawCached(const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const;
 
     /**
      * vbo->draw() wrapper to draw into BlurCacheData of the provided cache
