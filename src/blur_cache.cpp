@@ -29,6 +29,7 @@
 #include <QtNumeric>
 
 #include <memory>
+#include <array>
 
 Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMsg)
 
@@ -301,8 +302,8 @@ void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboInde
 void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
                                    KWin::GLVertexBuffer *vbo) {
     if (!m_glQueryObject) {
-        m_glQueryObject = std::unique_ptr<GLuint, GLQueryObjectDeleter>{new GLuint{}};
-        glGenQueries(1, m_glQueryObject.get());
+        m_glQueryObjects = std::make_unique<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectDeleter>();
+        glGenQueries(m_glQueryObjects->size(), m_glQueryObjects->data());
     }
 
     // if we don't have an entry create one and bail to fill it
@@ -368,7 +369,11 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
     glActiveTexture(GL_TEXTURE1);
     newTexture->bind();
 
-    glGenQueries(1, m_glQueryObject.get());
+    // grab query object from available query objects
+    GLuint *queryObject = &m_glQueryObjects[m_nextGlQueryObject++];
+    if (m_nextGlQueryObject >= m_glQueryObjects.size()) {
+        m_nextGlQueryObject = 0;
+    }
 
     // pick the first available query in preferred order (based on supposed speed)
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml

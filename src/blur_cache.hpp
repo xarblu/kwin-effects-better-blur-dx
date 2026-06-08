@@ -17,6 +17,7 @@
 #endif
 
 #include <memory>
+#include <array>
 
 namespace KWin {
     class GLVertex2D;
@@ -136,11 +137,13 @@ public:
     KWin::EffectWindow* window() const { return m_window; }
 };
 
-class GLQueryObjectDeleter {
+static constexpr size_t QUERY_OBJECT_COUNT{5};
+
+class GLQueryObjectsDeleter {
 public:
-    void operator()(GLuint *queryObject) {
-        if (queryObject) {
-            glDeleteQueries(1, queryObject);
+    void operator()(std::array<GLuint, QUERY_OBJECT_COUNT> *queryObjects) {
+        if (queryObjects) {
+            glDeleteQueries(queryObjects->size(), queryObjects->data());
         }
     }
 };
@@ -171,9 +174,10 @@ private:
     BlurEffect *m_effect{nullptr};
 
     /**
-     * Shared query object across paints
+     * Shared query objects across paints
      */
-    std::unique_ptr<GLuint, GLQueryObjectDeleter> m_glQueryObject{nullptr};
+    std::unique_ptr<std::array<GLuint, QUERY_OBJECT_COUNT>, GLQueryObjectsDeleter> m_glQueryObject{nullptr};
+    size_t nextGlQueryObject{0};
 
     /**
      * set to the best supported query that
