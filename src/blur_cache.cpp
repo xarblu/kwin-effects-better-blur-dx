@@ -424,7 +424,9 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
     // GL_QUERY_RESULT is blocking and forces a CPU/GPU sync,
     // so only enable this in the debug build
 
-    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Comparing region:" << m_paintData.textureCompareRegion;
+    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Comparing region ("
+                        << m_paintData.window->windowClass() << "):"
+                        << m_paintData.textureCompareRegion;
 
     switch (queryUsed) {
         case GL_SAMPLES_PASSED: {
@@ -432,7 +434,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
             glGetQueryObjectuiv(queryObject, GL_QUERY_RESULT, &pixelsDifferent);
             if (pixelsDifferent > 0) {
                 qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different ("
-                                    << m_paintData.window->windowClass() << ")"
+                                    << m_paintData.window->windowClass() << "):"
                                     << pixelsDifferent;
             }
             break;
