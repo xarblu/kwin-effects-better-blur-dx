@@ -169,7 +169,12 @@ private:
      *
      * DEBUGGING: setting this to basic SAMPLES_PASSED enables pixel diff logging
      */
+#if defined(BBDX_DEBUG)
+    // slower but shows us the amount of different pixels
+    GLQueryAvailable m_glQueryAvailable{GLQueryAvailable::SAMPLES_PASSED};
+#else
     GLQueryAvailable m_glQueryAvailable{GLQueryAvailable::ANY_SAMPLES_PASSED_CONSERVATIVE};
+#endif
 
     // Data used for this specific window paint
     // !!! preparePaintData() must be called before accessing any of this !!!
