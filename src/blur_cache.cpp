@@ -420,6 +420,28 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
 
     glEndQuery(queryUsed);
 
+#if defined(BBDX_DEBUG)
+    // GL_QUERY_RESULT is blocking and forces a CPU/GPU sync,
+    // so only enable this in the debug build
+    switch (queryUsed) {
+        case GL_SAMPLES_PASSED: {
+            GLuint pixelsDifferent{0};
+            glGetQueryObjectuiv(queryObject, GL_QUERY_RESULT, &pixelsDifferent);
+            if (pixelsDifferent > 0) {
+                qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different:" << pixelsDifferent;
+            }
+        }
+
+        [[likely]] default: {
+            GLuint anyPixelsDifferent{GL_FALSE};
+            glGetQueryObjectuiv(queryObject, GL_QUERY_RESULT, &anyPixelsDifferent);
+            if (anyPixelsDifferent == GL_TRUE) {
+                qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different";
+            }
+        }
+    }
+#endif
+
     glBeginConditionalRender(queryObject, GL_QUERY_BY_REGION_WAIT);
     m_paintData.glBeginConditionalRenderCalled = true;
 

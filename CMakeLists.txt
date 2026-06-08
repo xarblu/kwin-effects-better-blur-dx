@@ -26,6 +26,7 @@ endif()
 
 # User Build Options
 option(BETTERBLUR_X11 "Build Better Blur DX for KWin X11 instead of KWin Wayland" OFF)
+option(BBDX_DEBUG "Enable extra code paths useful for debugging (Warning: major performance impact)" OFF)
 
 # Dependencies
 find_package(ECM REQUIRED NO_MODULE)

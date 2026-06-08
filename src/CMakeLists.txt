@@ -44,4 +44,8 @@ else()
     install(TARGETS better_blur_dx DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)
 endif()
 
+if (BBDX_DEBUG)
+    target_compile_definitions(better_blur_dx PRIVATE BBDX_DEBUG)
+endif()
+
 target_compile_options(better_blur_dx PRIVATE -Wall -Wextra -Wunused -Wpedantic)
