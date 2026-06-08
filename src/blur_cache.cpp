@@ -430,6 +430,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
             if (pixelsDifferent > 0) {
                 qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different:" << pixelsDifferent;
             }
+            break;
         }
 
         [[likely]] default: {
@@ -438,6 +439,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
             if (anyPixelsDifferent == GL_TRUE) {
                 qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "Pixels different";
             }
+            break;
         }
     }
 #endif
