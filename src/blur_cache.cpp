@@ -220,6 +220,11 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderView *view,
     m_paintData.scaledBackgroundRect = scaledBackgroundRect;
     m_paintData.glBeginConditionalRenderCalled = false;
 
+    // BBDX: nothing inside backgroundRect was repainted this frame but we have a
+    //       cache entry - there are no fresh pixels to compare against or blur,
+    //       so BlurEffect::blur() only draws the cached texture (useCachedOnly()).
+    m_paintData.useCachedOnly = cache.get() && dirtyRegion->isEmpty();
+
     // the cache entry needs to stay in sync
     // so BlurCacheEntry::localDirtyRegion() returns
     // correct info
@@ -301,6 +306,15 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache) {
 
     // only proceed if marked in flushAccumulatedDirtyRegions()
     if (!cacheEntry->isFlushing) {
+        return;
+    }
+
+    // BBDX: a flush frame can still have an empty dirtyRegion when KWin paints
+    //       the window with damage that doesn't intersect backgroundRect (e.g.
+    //       shadow-only damage on focus change). There is no blitted data to
+    //       compare against - skip the compare and conditional render setup,
+    //       BlurEffect::blur() only draws the cached texture in this case.
+    if (useCachedOnly()) {
         return;
     }
 
