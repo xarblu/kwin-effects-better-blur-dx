@@ -1021,12 +1021,23 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 #else
     m_blurCache->preparePaintData(m_currentView, w, &dirtyRegion, renderInfo.framebuffers[0].get(), &backgroundRect, &scaledBackgroundRect, renderInfo.cache);
 
+    // BBDX: If the dirtyRegion doesn't intersect backgroundRect nothing behind the
+    //       window was repainted this frame - the renderTarget only holds stale data
+    //       there. Without a cache entry to fall back on there is nothing valid to
+    //       draw or build a cache entry from, so bail. The on-screen draw would be
+    //       clipped to the deviceRegion anyway.
+    if (dirtyRegion.isEmpty() && !renderInfo.cache.get()) {
+        return;
+    }
+
+    if (!m_blurCache->useCachedOnly()) {
     // BBDX: Always blit the entire backgroundRect to avoid subtle rounding errors on scaled RenderViews.
     //       It took me way too many hours to figure out that this is what's causing sporadic
     //       pixel mismatches during textureCompare...
     //       Note that this does not give us more usable data (everything outside the dirtyRegion is garbage
     //       not part of this paint), it just makes sure that the data we do get is properly aligned.
     renderInfo.framebuffers[0]->blitFromRenderTarget(renderTarget, viewport, backgroundRect, backgroundRect.translated(-backgroundRect.topLeft()));
+    } // indent intentional for KWin diff
 #endif
 
     // Upload the geometry: the first 6 vertices are used when downsampling and upsampling offscreen,
@@ -1143,6 +1154,16 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         return;
     }
 
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+    const QMatrix4x4 &colorMatrix = blurInfo.colorMatrix ? *blurInfo.colorMatrix : m_colorMatrix;
+#else
+    const QMatrix4x4 &colorMatrix = m_colorMatrix;
+#endif
+    const float modulation = opacity * opacity;
+
+    // BBDX: without fresh data there is nothing to rebuild the cache from -
+    //       skip all blur passes and only draw the cached texture below
+    if (!m_blurCache->useCachedOnly()) {
     // The downsample pass of the dual Kawase algorithm: the background will be scaled down 50% every iteration.
     {
         ShaderManager::instance()->pushShader(m_downsamplePass.shader.get());
@@ -1203,13 +1224,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
         ShaderManager::instance()->popShader();
     }
-
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-    const QMatrix4x4 &colorMatrix = blurInfo.colorMatrix ? *blurInfo.colorMatrix : m_colorMatrix;
-#else
-    const QMatrix4x4 &colorMatrix = m_colorMatrix;
-#endif
-    const float modulation = opacity * opacity;
 
 #if BETTERBLUR_NOT_NEEDED
     if (const BorderRadius cornerRadius = w->window()->borderRadius(); !cornerRadius.isNull()) {
@@ -1345,6 +1359,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     if (const BorderRadius cornerRadius = m_windowManager->getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
         m_roundedCornersPass->apply(cornerRadius, viewport, scaledBackgroundRect, renderInfo, w, data, vbo, m_blurCache.get());
     }
+    } // indent intentional for KWin diff
 
     // BBDX:
     m_blurCache->drawCached(viewport, renderInfo, vbo, vertexCount, modulation);
