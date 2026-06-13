@@ -208,6 +208,8 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderView *view,
     }
     m_paintData.textureCompareVertexCount = m_paintData.textureCompareRegion.rects().size() * 6;
 
+    m_paintData.useCachedOnly = cache.get() && m_paintData.textureCompareRegion.isEmpty();
+
     // the cache entry needs to stay in sync
     // so BlurCacheEntry::localDirtyRegion() returns
     // correct info
@@ -340,10 +342,11 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
         return;
     }
 
-    // Somehow we can end up here with an empty textureCompareRegion
-    // which would mean there was no dirtyRegion and thus no blitted data.
-    //
-    // TODO: currently this just causes re-blur 
+    // We can end up here with an empty textureCompareRegion when KWin
+    // paints the window with damage that doesn't intersect backgroundRect
+    // (e.g. shadow-only damage on focus change) - there is no blitted data.
+    // BlurEffect::blur() skips the blur passes via useCachedOnly() and
+    // only draws the cached texture.
     if (m_paintData.textureCompareRegion.isEmpty()) {
         return;
     }
