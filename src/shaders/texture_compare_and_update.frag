@@ -14,8 +14,8 @@ layout(std140, binding = 2) buffer AtomicCounterBuffer {
 };
 
 void main() {
-    // compute shader didn't find a difference
-    if (globalChangeCount == 0u) {
+    // compute shader didn't find a meaningful difference
+    if (globalChangeCount < 5u) {
         discard; 
     }
     

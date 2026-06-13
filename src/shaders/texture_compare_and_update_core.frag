@@ -10,8 +10,8 @@ layout(std430, binding = 2) buffer AtomicCounterBuffer {
 out vec4 FragColor;
 
 void main() {
-    // compute shader didn't find a difference
-    if (globalChangeCount == 0u) {
+    // compute shader didn't find a meaningful difference
+    if (globalChangeCount < 5u) {
         discard; 
     }
     
