@@ -299,8 +299,8 @@ bool BBDX::Window::neverForceBlur() const {
     if (effectwindow()->isDesktop())
         return true;
 
-    if (!m_blurMenus && isMenu())
-        return true;
+    if (isMenu())
+        return !m_blurMenus;
 
     if (!m_blurDocks && effectwindow()->isDock())
         return true;
