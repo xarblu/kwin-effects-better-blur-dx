@@ -11,7 +11,7 @@ out vec4 FragColor;
 
 void main() {
     // compute shader didn't find a difference
-    if (globalChangeCount == 0) {
+    if (globalChangeCount == 0u) {
         discard; 
     }
     
