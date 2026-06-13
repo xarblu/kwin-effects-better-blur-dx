@@ -41,8 +41,7 @@ void main() {
         ivec2 textureSize = imageSize(freshBlit);
         
         // sanity check that we're inside the texture
-        // with a slight border mask to avoid weird fullscreen alignment issues
-        if (uv.x >= 1 && uv.y >= 1 && uv.x < (textureSize.x - 1) && (uv.y < textureSize.y - 1)) {
+        if (uv.x >= 0 && uv.y >= 0 && uv.x < textureSize.x && uv.y < textureSize.y) {
             vec4 freshColor = imageLoad(freshBlit, uv);
             vec4 cachedColor = imageLoad(cachedBlit, uv);
 
