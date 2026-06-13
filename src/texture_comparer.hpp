@@ -2,6 +2,7 @@
 
 #include "kwin_compat.hpp"
 
+#include <effect/effectwindow.h>
 #include <opengl/glshadermanager.h>
 #include <opengl/glshader.h>
 #include <opengl/gltexture.h>
@@ -77,10 +78,13 @@ public:
      * Compare and update cachedBlit with freshBlit
      * within the localDirtyRegion (in GL coords)
      *
+     * The EffectWindow is optional and only used
+     * for extra logging in the debug build (BBDX_DEBUG)
+     *
      * The result of the comparison can be found using the
      * query object returned by queryObject()
      */
-    void compareAndUpdate(KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const KWin::Region &localDirtyRegionGL);
+    void compareAndUpdate(KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const KWin::Region &localDirtyRegionGL, const KWin::EffectWindow *window = nullptr);
 };
 
 }

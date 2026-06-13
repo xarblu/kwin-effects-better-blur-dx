@@ -353,7 +353,10 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache,
     const auto newTexture = m_paintData.blitFramebuffer->colorAttachment();
     const auto cachedTexture = cacheEntry->blitTexture.get();
 
-    m_textureComparer->compareAndUpdate(newTexture, cachedTexture, cacheEntry->localDirtyRegionGL(*m_paintData.dirtyRegion));
+    m_textureComparer->compareAndUpdate(newTexture,
+                                        cachedTexture,
+                                        cacheEntry->localDirtyRegionGL(*m_paintData.dirtyRegion),
+                                        m_paintData.window);
 
     // await the query from TextureComparer::compareAndUpdate()
     glBeginConditionalRender(m_textureComparer->queryObject(), GL_QUERY_BY_REGION_WAIT);

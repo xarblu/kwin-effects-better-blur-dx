@@ -2,6 +2,7 @@
 
 #include "kwin_compat.hpp"
 
+#include <effect/effectwindow.h>
 #include <opengl/glshadermanager.h>
 #include <opengl/glshader.h>
 #include <opengl/gltexture.h>
@@ -172,7 +173,7 @@ BBDX::TextureComparer::~TextureComparer() {
     }
 }
 
-void BBDX::TextureComparer::compareAndUpdate(KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const KWin::Region &localDirtyRegionGL) {
+void BBDX::TextureComparer::compareAndUpdate(KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const KWin::Region &localDirtyRegionGL, const KWin::EffectWindow *window) {
     const auto textureFormat = freshBlit->internalFormat();
 
     // lazily create compute shader instances in case we need
@@ -226,7 +227,11 @@ void BBDX::TextureComparer::compareAndUpdate(KWin::GLTexture *freshBlit, KWin::G
     // in debug builds log the changed pixels
     GLuint pixelsChanged{0};
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &pixelsChanged);
-    qCDebug(BBDX_TEXTURE_COMPARER) << "Pixels changed:" << pixelsChanged;
+    if (window) {
+        qCDebug(BBDX_TEXTURE_COMPARER) << "Pixels changed (" << window->windowClass() << "):" << pixelsChanged;
+    } else {
+        qCDebug(BBDX_TEXTURE_COMPARER) << "Pixels changed:" << pixelsChanged;
+    }
 #endif
 
     // done with the textures, counterBuffer is still needed by query
