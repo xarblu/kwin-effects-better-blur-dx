@@ -367,7 +367,7 @@ void BBDX::BlurCache::drawToCache(BBDX::BlurCacheLRU &cache, KWin::GLVertexBuffe
 void BBDX::BlurCache::flushAccumulatedDirtyRegions(KWin::ScreenPrePaintData &data) const {
     for (auto &[window, effectData] : m_effect->m_windows) {
         for (auto &[view, renderData] : effectData.render) {
-            if (view == data.view) {
+            if (view != data.view) {
                 continue;
             }
 
