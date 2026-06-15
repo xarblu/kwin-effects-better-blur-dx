@@ -89,6 +89,12 @@ struct BlurCacheEntry {
      */
     KWin::Region localDirtyRegion(const KWin::Region &dirtyRegion) const;
     KWin::Region localDirtyRegionGL(const KWin::Region &dirtyRegion) const;
+
+    /**
+     * Mark this entry for flushing and reset accumulatedDirtyRegion
+     */
+    void flush();
+    void flushed() { isFlushing = false; }
 };
 
 /**

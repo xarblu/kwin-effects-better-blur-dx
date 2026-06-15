@@ -113,6 +113,12 @@ KWin::Region BBDX::BlurCacheEntry::localDirtyRegionGL(const KWin::Region &dirtyR
     return glRegion;
 }
 
+void BBDX::BlurCacheEntry::flush() {
+    accumulatedDirtyRegion = KWin::Region{};
+    lastFlush = std::chrono::steady_clock::now();
+    isFlushing = true;
+}
+
 BBDX::BlurCacheEntry* BBDX::BlurCacheLRU::get() {
     return m_entry.get();
 }
@@ -330,7 +336,7 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
     KWin::GLTexture* read;
     if (const auto &cacheEntry = renderInfo.cache.get()) {
         read = cacheEntry->cachedTexture.get();
-        cacheEntry->isFlushing = false;
+        cacheEntry->flushed();
     } else {
         // bail if we didn't select or add a cache entry
         qCritical(BLUR_CACHE) << "drawCached() called without a valid cache entry";
@@ -386,13 +392,11 @@ void BBDX::BlurCache::flushAccumulatedDirtyRegions(KWin::ScreenPrePaintData &dat
                 data.paint |= rect;
             }
 
-            // we'll always set isFlushing here
+            // we'll always flush here
             // it should essentially be a no-op if there was no
             // accumulatedDirtyRegion but ensures prepareCache()
             // still checks new dirtyRegion ASAP when the timer elapsed
-            cacheEntry->accumulatedDirtyRegion = KWin::Region{};
-            cacheEntry->lastFlush = std::chrono::steady_clock::now();
-            cacheEntry->isFlushing = true;
+            cacheEntry->flush();
         }
     }
 }
