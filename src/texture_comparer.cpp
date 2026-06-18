@@ -22,17 +22,19 @@ Q_LOGGING_CATEGORY(BBDX_TEXTURE_COMPARER, "kwin_effect_better_blur_dx.texture_co
 /**
  * These are the formats in KWin's src/core/drm_formats.cpp
  * so I guess these are all possible values?
+ *
+ * returns a pair of the normalized enum and glsls format string
  * 
  * Fallback to rgba8 in case we encounter a weird format
  */
-static inline const char* glslFormatString(GLenum internalFormat) {
+static inline std::pair<GLenum, const char*> glslFormat(GLenum internalFormat) {
     switch (internalFormat) {
-        case GL_R8:         return "r8";
-        case GL_R16:        return "r16";
-        case GL_RGBA8:      return "rgba8";
-        case GL_RGB10_A2:   return "rgb10_a2";
-        case GL_RGBA16:     return "rgba16";
-        case GL_RGBA16F:    return "rgba16f";
+        case GL_R8:         return {internalFormat, "r8"};
+        case GL_R16:        return {internalFormat, "r16"};
+        case GL_RGBA8:      return {internalFormat, "rgba8"};
+        case GL_RGB10_A2:   return {internalFormat, "rgb10_a2"};
+        case GL_RGBA16:     return {internalFormat, "rgba16"};
+        case GL_RGBA16F:    return {internalFormat, "rgba16f"};
         
         // unknown or format with no glsl equivalent
         case GL_RGB5_A1:
@@ -41,7 +43,7 @@ static inline const char* glslFormatString(GLenum internalFormat) {
             qCWarning(BBDX_TEXTURE_COMPARER) << "Unhandled texture format:"
                                              << internalFormat
                                              << "- falling back to rgba8";
-            return "rgba8";
+            return {GL_RGBA8, "rgba8"};
     }
 }
 
@@ -79,7 +81,9 @@ std::pair<GLuint, GLuint> BBDX::TextureComparer::WindowData::getSlot() {
 }
 
 std::unique_ptr<BBDX::TextureComparer::ComputeShader> BBDX::TextureComparer::buildComputeShader(GLenum textureFormat) {
-    qCDebug(BBDX_TEXTURE_COMPARER) << "Creating texture compare instance for" << glslFormatString(textureFormat);
+    const auto [normalizedFormat, glslString] = glslFormat(textureFormat);
+
+    qCDebug(BBDX_TEXTURE_COMPARER) << "Creating texture compare instance for" << glslString;
 
     // we need to handle the compute shader manually
     QFile shaderFile{QStringLiteral(":/effects/better_blur_dx/shaders/texture_compare_and_update.comp")};
@@ -89,8 +93,7 @@ std::unique_ptr<BBDX::TextureComparer::ComputeShader> BBDX::TextureComparer::bui
     }
     QByteArray shaderSource = shaderFile.readAll();
 
-    const char *formatToken = glslFormatString(textureFormat);
-    QByteArray formatMacro = QByteArray("#define TEXTURE_FORMAT ") + formatToken + "\n";
+    QByteArray formatMacro = QByteArray("#define TEXTURE_FORMAT ") + glslString + "\n";
 
     // we assume the very first line has the #version
     // inject our TEXTURE_FORMAT macro after that
@@ -195,30 +198,30 @@ void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &wi
     const GLuint counterBuffer{windowDataSlot.first};
     const GLuint query{windowDataSlot.second};
 
-    const auto textureFormat = freshBlit->internalFormat();
+    const auto [normalizedFormat, glslString] = glslFormat(freshBlit->internalFormat());
 
     // lazily create compute shader instances in case we need
     // them for non GL_RGBA8
-    if (!m_computeShaders.contains(textureFormat)) {
+    if (!m_computeShaders.contains(normalizedFormat)) {
         // TODO:
         // it's probably bad if this fails... I'll probably deal with
         // it later.. maybe...
-        auto newComputeShader = buildComputeShader(textureFormat);
+        auto newComputeShader = buildComputeShader(normalizedFormat);
         if (!newComputeShader) {
             qCWarning(BBDX_TEXTURE_COMPARER) << "Failed to load texture compare compute shader";
             return;
         }
-        m_computeShaders.emplace(textureFormat, std::move(newComputeShader));
+        m_computeShaders.emplace(normalizedFormat, std::move(newComputeShader));
     }
 
-    ComputeShader *computeShader{m_computeShaders.at(textureFormat).get()};
+    ComputeShader *computeShader{m_computeShaders.at(normalizedFormat).get()};
 
     // ensure blitted texture is complete
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     // bind the textures
-    glBindImageTexture(0, freshBlit->texture(), 0, GL_FALSE, 0, GL_READ_ONLY, textureFormat);
-    glBindImageTexture(1, cachedBlit->texture(), 0, GL_FALSE, 0, GL_READ_WRITE, textureFormat);
+    glBindImageTexture(0, freshBlit->texture(), 0, GL_FALSE, 0, GL_READ_ONLY, normalizedFormat);
+    glBindImageTexture(1, cachedBlit->texture(), 0, GL_FALSE, 0, GL_READ_WRITE, normalizedFormat);
 
     // reset and bind counter
     const GLuint zero = 0;
