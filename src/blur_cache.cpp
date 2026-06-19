@@ -70,6 +70,16 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     entry->blitTexture->setFilter(GL_LINEAR);
     entry->blitTexture->setWrapMode(GL_CLAMP_TO_EDGE);
 
+    // just in case KWin does something funky and gives us a
+    // (incomplete) glTexImage2D instead of a (complete) glTexStorage2D
+    // we need to make it "complete" by marking level 0 as the only available level
+    // else glBindImageTexture can't use it in image load/store contexts
+    // https://wikis.khronos.org/opengl/Texture#Texture_completeness
+    entry->blitTexture->bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    entry->blitTexture->unbind();
+
     entry->blitFramebuffer = std::make_unique<KWin::GLFramebuffer>(entry->blitTexture.get());
     if (!entry->blitFramebuffer->valid()) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
