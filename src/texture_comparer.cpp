@@ -109,6 +109,13 @@ std::unique_ptr<BBDX::TextureComparer::WindowData> BBDX::TextureComparer::Window
     // have a defined state
     for (const auto &query : windowData->m_queries) {
         glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
+
+        // draw a single dummy point
+        // to ensure the query gets flushed
+        glEnable(GL_RASTERIZER_DISCARD);
+        glDrawArrays(GL_POINTS, 0, 1);
+        glDisable(GL_RASTERIZER_DISCARD);
+
         glEndQuery(GL_ANY_SAMPLES_PASSED);
     }
 
