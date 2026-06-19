@@ -246,7 +246,47 @@ std::unique_ptr<BBDX::TextureComparer> BBDX::TextureComparer::create() {
     return textureComparer;
 }
 
-void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &windowDataSlot, KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const BBDX::BlurCachePaintData &paintData) {
+static inline bool drainGlErrors(const char *context) {
+    bool sawError = false;
+    GLenum err;
+    int guarded = 0;
+    while ((err = glGetError()) != GL_NO_ERROR && guarded++ < 8) {
+        if (!sawError) {
+            qCWarning(BBDX_TEXTURE_COMPARER) << "GL error during" << context << ":";
+        }
+        sawError = true;
+        const char *name = "UNKNOWN";
+        switch (err) {
+            case GL_INVALID_ENUM:                 name = "GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                name = "GL_INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:            name = "GL_INVALID_OPERATION"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:name = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+            case GL_OUT_OF_MEMORY:                name = "GL_OUT_OF_MEMORY"; break;
+            case 0x0507:                          name = "GL_CONTEXT_LOST"; break;
+        }
+        qCWarning(BBDX_TEXTURE_COMPARER) << "  " << name << "(0x" << Qt::hex << err << Qt::dec << ")";
+    }
+    return sawError;
+}
+
+// GL_READ_WRITE requires immutable storage (glTexStorage*).
+// Fall back to GL_READ_ONLY if not immutable so the bind doesn't
+// silently fail and leave the image unit unbound.
+static inline bool bindImageTextureSafe(int unit, KWin::GLTexture *tex, GLenum accessMode, GLenum internalFormat) {
+    if (accessMode != GL_READ_ONLY) {
+        tex->bind();
+        GLint immutable = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_IMMUTABLE_FORMAT, &immutable);
+        if (immutable == 0) {
+            accessMode = GL_READ_ONLY;
+        }
+    }
+    while (glGetError() != GL_NO_ERROR) { }
+    glBindImageTexture(unit, tex->texture(), 0, GL_FALSE, 0, accessMode, internalFormat);
+    return !drainGlErrors("glBindImageTexture");
+}
+
+bool BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &windowDataSlot, KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const BBDX::BlurCachePaintData &paintData) {
     const GLuint counterBuffer{windowDataSlot.first};
     const GLuint query{windowDataSlot.second};
 
@@ -261,23 +301,27 @@ void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &wi
         auto newComputeShader = buildComputeShader(normalizedFormat);
         if (!newComputeShader) {
             qCWarning(BBDX_TEXTURE_COMPARER) << "Failed to load texture compare compute shader";
-            return;
+            return false;
         }
         m_computeShaders.emplace(normalizedFormat, std::move(newComputeShader));
     }
 
     ComputeShader *computeShader{m_computeShaders.at(normalizedFormat).get()};
 
+    // drain stale errors so our own checks below are accurate
+    while (glGetError() != GL_NO_ERROR) { }
+
     // ensure blitted texture is complete
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
     // bind the textures
-    glBindImageTexture(0, freshBlit->texture(), 0, GL_FALSE, 0, GL_READ_ONLY, normalizedFormat);
-    glBindImageTexture(1, cachedBlit->texture(), 0, GL_FALSE, 0, GL_READ_WRITE, normalizedFormat);
+    if (!bindImageTextureSafe(0, freshBlit, GL_READ_ONLY, normalizedFormat) ||
+        !bindImageTextureSafe(1, cachedBlit, GL_READ_WRITE, normalizedFormat)) {
+        return false;
+    }
 
     // reset and bind counter
     const GLuint zero = 0;
-    glInvalidateBufferData(counterBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, counterBuffer);
     glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, 0, sizeof(GLuint), GL_RED_INTEGER, GL_UNSIGNED_INT, &zero);
     // slot 2 - matching compute shader
@@ -320,7 +364,7 @@ void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &wi
 #endif
 
     // ensure SSBO is flushed for query
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 
     // done with the textures and dirtyRegion, counterBuffer is still needed by query
     glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
@@ -338,9 +382,11 @@ void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &wi
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
+    while (glGetError() != GL_NO_ERROR) { }
     glBeginQuery(GL_ANY_SAMPLES_PASSED, query);
     glDrawArrays(GL_POINTS, 0, 1);
     glEndQuery(GL_ANY_SAMPLES_PASSED);
+    const bool queryFailed = drainGlErrors("glBeginQuery/glDrawArrays/glEndQuery");
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
@@ -351,4 +397,6 @@ void BBDX::TextureComparer::compareAndUpdate(const std::pair<GLuint, GLuint> &wi
     // unbind counterBuffer in reverse order
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, 0);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    return !queryFailed;
 }

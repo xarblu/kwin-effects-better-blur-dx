@@ -135,8 +135,11 @@ public:
      *
      * The result of the comparison can be found using the
      * query object returned by queryObject()
+     *
+     * Returns false on GL error; caller must NOT issue
+     * glBeginConditionalRender on the slot's query in that case.
      */
-    void compareAndUpdate(const std::pair<GLuint, GLuint> &windowDataSlot, KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const BlurCachePaintData &paintData);
+    bool compareAndUpdate(const std::pair<GLuint, GLuint> &windowDataSlot, KWin::GLTexture *freshBlit, KWin::GLTexture *cachedBlit, const BlurCachePaintData &paintData);
 };
 
 }
