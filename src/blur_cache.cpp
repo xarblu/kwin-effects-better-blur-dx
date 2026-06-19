@@ -329,6 +329,19 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache) {
         return;
     }
 
+    
+    /*
+     * TODO: texture compare seems to be broken on some GPUs
+     * (AMD RDNA2 was reported the most) so skip it for now
+     * and just force a blur refresh
+     */
+    KWin::GLFramebuffer::pushFramebuffer(m_paintData.blitFramebuffer);
+    for (const auto &rect : cacheEntry->localDirtyRegion(*m_paintData.dirtyRegion).rects()) {
+        cacheEntry->blitFramebuffer->blitFromFramebuffer(rect, rect, GL_NEAREST);
+    }
+    KWin::GLFramebuffer::popFramebuffer();
+
+    /*
     auto textureCompareWindowData = cache.textureCompareWindowData();
     if (!textureCompareWindowData) [[unlikely]] {
         // GL resource alloc failed
@@ -360,6 +373,7 @@ void BBDX::BlurCache::prepareCache(BBDX::BlurCacheLRU &cache) {
     // await the query from TextureComparer::compareAndUpdate()
     glBeginConditionalRender(textureCompareWindowDataSlot->second, GL_QUERY_BY_REGION_WAIT);
     m_paintData.glBeginConditionalRenderCalled = true;
+    */
 }
 
 void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const {
