@@ -1211,6 +1211,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             read->colorAttachment()->bind();
 
             GLFramebuffer::pushFramebuffer(draw.get());
+            BBDX::setGLScissor(dirtyRegion, backgroundRect);
             vbo->draw(GL_TRIANGLES, 0, 6);
         }
 
@@ -1238,6 +1239,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             BBDX::setTextureSwizzle(read->colorAttachment());
             read->colorAttachment()->bind();
 
+            BBDX::setGLScissor(dirtyRegion, backgroundRect);
             vbo->draw(GL_TRIANGLES, 0, 6);
         }
 
@@ -1387,6 +1389,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     // BBDX:
+    BBDX::clearGLScissor();
     m_blurCache->drawCached(viewport, renderInfo, vbo, vertexCount, modulation);
 
     vbo->unbindArrays();

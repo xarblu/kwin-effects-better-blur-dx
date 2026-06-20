@@ -424,6 +424,7 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
 void BBDX::BlurCache::drawToCache(BBDX::BlurCacheLRU &cache, KWin::GLVertexBuffer *vbo) const {
     auto cachedFramebuffer = cache.get()->cachedFramebuffer.get();
     KWin::GLFramebuffer::pushFramebuffer(cachedFramebuffer);
+    BBDX::setGLScissor(*m_paintData.dirtyRegion, *m_paintData.backgroundRect);
     vbo->draw(GL_TRIANGLES, vboStartCache(), vboCountCache());
     KWin::GLFramebuffer::popFramebuffer();
 }
