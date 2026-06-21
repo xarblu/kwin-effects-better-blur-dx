@@ -34,17 +34,17 @@ struct BlurRenderData;
 /**
  * A single valid entry
  */
-struct BlurCacheEntry {
+class BlurCacheEntry {
     // texture and framebuffer for the cache
     // with the size of scaledBackgroundRect from BlurEffect::blur()
-    std::unique_ptr<KWin::GLTexture> cachedTexture{nullptr};
-    std::unique_ptr<KWin::GLFramebuffer> cachedFramebuffer{nullptr};
+    std::unique_ptr<KWin::GLTexture> m_cachedTexture{nullptr};
+    std::unique_ptr<KWin::GLFramebuffer> m_cachedFramebuffer{nullptr};
 
     /**
      * backgroundRect behind this cache entry
      * updated by BlurCache::preparePaintData()
      */
-    KWin::Rect backgroundRect{};
+    KWin::Rect m_backgroundRect{};
 
     /**
      * dirtyRegion accumulated since lastFlush
@@ -52,8 +52,8 @@ struct BlurCacheEntry {
      * TODO: throw away on geometry change?
      * updated by BlurCache::preparePaintData()
      */
-    KWin::Region accumulatedDirtyRegion{};
-    std::chrono::steady_clock::time_point lastFlush{};
+    KWin::Region m_accumulatedDirtyRegion{};
+    std::chrono::steady_clock::time_point m_lastFlush{};
 
     /**
      * true if accumulatedDirtyRegion was consumed in prePaintScreen
@@ -61,8 +61,14 @@ struct BlurCacheEntry {
      *
      * A new cache entry should always flush immediately
      */
-    bool isFlushing{true};
+    bool m_isFlushing{true};
 
+    /**
+     * Use create()
+     */
+    BlurCacheEntry() = default;
+
+public:
     /**
      * Create a new BlurCacheEntry by allocating cachedTexture and cachedFramebuffer
      * with the size of scaledBackgroundRect and format of dirtyBlitFramebuffer
@@ -88,6 +94,20 @@ struct BlurCacheEntry {
     void flush();
     void abortFlush(const char* msg = nullptr);
     void flushed();
+
+    /**
+     * Setters
+     */
+    void setBackgroundRect(const KWin::Rect &rect) { m_backgroundRect = rect; }
+
+    /**
+     * Getters
+     */
+    KWin::GLTexture* cachedTexture() const { return m_cachedTexture.get(); }
+    KWin::GLFramebuffer* cachedFramebuffer() const { return m_cachedFramebuffer.get(); }
+    const KWin::Region& accumulatedDirtyRegion() const { return m_accumulatedDirtyRegion; }
+    const std::chrono::steady_clock::time_point& lastFlush() const { return m_lastFlush; }
+    bool isFlushing() const { return m_isFlushing; }
 };
 
 /**

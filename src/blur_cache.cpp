@@ -54,24 +54,24 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
                                                                    const KWin::GLFramebuffer *dirtyBlitFramebuffer) {
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "New BlurCacheEntry with size:" << scaledBackgroundRect;
 
-    auto entry = std::make_unique<BBDX::BlurCacheEntry>();
+    std::unique_ptr<BlurCacheEntry> entry{new BlurCacheEntry()};
 
     // allocate new cached texture + framebuffer for the blurred texture
     glClearColor(0, 0, 0, 0);
-    entry->cachedTexture = KWin::GLTexture::allocate(dirtyBlitFramebuffer->colorAttachment()->internalFormat(), scaledBackgroundRect.size());
-    if (!entry->cachedTexture) {
+    entry->m_cachedTexture = KWin::GLTexture::allocate(dirtyBlitFramebuffer->colorAttachment()->internalFormat(), scaledBackgroundRect.size());
+    if (!entry->m_cachedTexture) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
         return nullptr;
     }
-    entry->cachedTexture->setFilter(GL_LINEAR);
-    entry->cachedTexture->setWrapMode(GL_CLAMP_TO_EDGE);
+    entry->m_cachedTexture->setFilter(GL_LINEAR);
+    entry->m_cachedTexture->setWrapMode(GL_CLAMP_TO_EDGE);
 
-    entry->cachedFramebuffer = std::make_unique<KWin::GLFramebuffer>(entry->cachedTexture.get());
-    if (!entry->cachedFramebuffer->valid()) {
+    entry->m_cachedFramebuffer = std::make_unique<KWin::GLFramebuffer>(entry->m_cachedTexture.get());
+    if (!entry->m_cachedFramebuffer->valid()) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to create an offscreen framebuffer";
         return nullptr;
     }
-    KWin::GLFramebuffer::pushFramebuffer(entry->cachedFramebuffer.get());
+    KWin::GLFramebuffer::pushFramebuffer(entry->m_cachedFramebuffer.get());
     glClear(GL_COLOR_BUFFER_BIT);
     KWin::GLFramebuffer::popFramebuffer();
 
@@ -80,25 +80,25 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
 
 void BBDX::BlurCacheEntry::accumulateDirtyRegion(const KWin::Region &dirtyRegion) {
     for (const auto &rect : dirtyRegion.rects()) {
-        accumulatedDirtyRegion |= rect;
+        m_accumulatedDirtyRegion |= rect;
     }
 
     // we only care about dirtyRegion that has blur
-    accumulatedDirtyRegion &= backgroundRect;
+    m_accumulatedDirtyRegion &= m_backgroundRect;
 }
 
 KWin::Region BBDX::BlurCacheEntry::localDirtyRegion(const KWin::Region &dirtyRegion) const {
-    return dirtyRegion.translated(-backgroundRect.topLeft());
+    return dirtyRegion.translated(-m_backgroundRect.topLeft());
 }
 
 void BBDX::BlurCacheEntry::flush() {
-    isFlushing = true;
+    m_isFlushing = true;
 }
 
 
 void BBDX::BlurCacheEntry::abortFlush(const char* msg) {
-    if (isFlushing) {
-        isFlushing = false;
+    if (m_isFlushing) {
+        m_isFlushing = false;
         if (msg) {
             qCDebug(BLUR_CACHE) << "Aborted flush:" << msg;
         }
@@ -106,10 +106,10 @@ void BBDX::BlurCacheEntry::abortFlush(const char* msg) {
 }
 
 void BBDX::BlurCacheEntry::flushed() {
-    if (isFlushing) {
-        accumulatedDirtyRegion = KWin::Region{};
-        lastFlush = std::chrono::steady_clock::now();
-        isFlushing = false;
+    if (m_isFlushing) {
+        m_accumulatedDirtyRegion = KWin::Region{};
+        m_lastFlush = std::chrono::steady_clock::now();
+        m_isFlushing = false;
     }
 }
 
@@ -238,18 +238,18 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
     // the cache entry needs to stay in sync
     // so BlurCacheEntry::localDirtyRegion() returns
     // correct info
-    cacheEntry->backgroundRect = *backgroundRect;
+    cacheEntry->setBackgroundRect(*backgroundRect);
     cacheEntry->accumulateDirtyRegion(*dirtyRegion);
 
     // still not sure if dirtyRegion can even end up empty
     // but if it is a flush would always end up taking the cache anyway
     // (no changes to compare). this at least skips some compute
-    if (dirtyRegion->isEmpty() && cacheEntry->isFlushing) {
+    if (dirtyRegion->isEmpty() && cacheEntry->isFlushing()) {
         cacheEntry->abortFlush("Empty dirtyRegion");
     }
 
     // when flushing we need the updated blit
-    if (cacheEntry->isFlushing) {
+    if (cacheEntry->isFlushing()) {
         updateBlitFramebuffer(*m_paintData.renderTarget,
                               *m_paintData.viewport,
                               m_paintData.blitFramebuffer,
@@ -316,7 +316,7 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
 
     KWin::GLTexture* read;
     if (const auto &cacheEntry = renderInfo.cache.get()) {
-        read = cacheEntry->cachedTexture.get();
+        read = cacheEntry->cachedTexture();
         cacheEntry->flushed();
     } else {
         // bail if we didn't select or add a cache entry
@@ -344,7 +344,7 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
 }
 
 void BBDX::BlurCache::drawToCache(BBDX::BlurCacheLRU &cache, KWin::GLVertexBuffer *vbo) const {
-    auto cachedFramebuffer = cache.get()->cachedFramebuffer.get();
+    auto cachedFramebuffer = cache.get()->cachedFramebuffer();
     KWin::GLFramebuffer::pushFramebuffer(cachedFramebuffer);
     BBDX::setGLScissor(*m_paintData.dirtyRegion, *m_paintData.backgroundRect);
     vbo->draw(GL_TRIANGLES, vboStartCache(), vboCountCache());
@@ -371,12 +371,12 @@ void BBDX::BlurCache::flushAccumulatedDirtyRegions(KWin::ScreenPrePaintData &dat
             }
 
             // flush at ~30fps
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->lastFlush);
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->lastFlush());
             if (elapsed.count() < 33) {
                 continue;
             }
 
-            for (const auto &rect : cacheEntry->accumulatedDirtyRegion.rects()) {
+            for (const auto &rect : cacheEntry->accumulatedDirtyRegion().rects()) {
                 data.paint |= rect;
             }
 
