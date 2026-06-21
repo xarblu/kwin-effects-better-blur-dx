@@ -22,23 +22,28 @@
 #include <QRect>
 #include <QImage>
 
+#include <memory>
 
 Q_LOGGING_CATEGORY(ROUNDED_CORNERS_PASS, "kwin_effect_better_blur_dx.rounded_corners_pass", QtInfoMsg)
 
-BBDX::RoundedCornersPass::RoundedCornersPass() {
-    m_shader = KWin::ShaderManager::instance()->generateShaderFromFile(
+std::unique_ptr<BBDX::RoundedCornersPass> BBDX::RoundedCornersPass::create() {
+    std::unique_ptr<RoundedCornersPass> pass{new RoundedCornersPass};
+
+    pass->m_shader = KWin::ShaderManager::instance()->generateShaderFromFile(
             KWin::ShaderTrait::MapTexture,
             QStringLiteral(":/effects/better_blur_dx/shaders/rounded_corners.vert"),
             QStringLiteral(":/effects/better_blur_dx/shaders/rounded_corners.frag"));
 
-    if (!m_shader) {
+    if (!pass->m_shader) {
         qCWarning(ROUNDED_CORNERS_PASS) << BBDX::LOG_PREFIX << "Failed to load rounded corners pass shader";
-        return;
+        return nullptr;
     } else {
-        m_mvpMatrixLocation = m_shader->uniformLocation("modelViewProjectionMatrix");
-        m_boxLocation = m_shader->uniformLocation("box");
-        m_cornerRadiusLocation = m_shader->uniformLocation("cornerRadius");
+        pass->m_mvpMatrixLocation = pass->m_shader->uniformLocation("modelViewProjectionMatrix");
+        pass->m_boxLocation = pass->m_shader->uniformLocation("box");
+        pass->m_cornerRadiusLocation = pass->m_shader->uniformLocation("cornerRadius");
     }
+
+    return pass;
 }
 
 void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
@@ -49,10 +54,6 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
                                      const KWin::WindowPaintData &data,
                                      KWin::GLVertexBuffer *vbo,
                                      const BBDX::BlurCache *blurCache) const {
-        if (!ready()) [[unlikely]] {
-            return;
-        }
-
         KWin::ShaderManager::instance()->pushShader(m_shader.get());
 
         QMatrix4x4 projectionMatrix;

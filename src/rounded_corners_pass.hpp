@@ -9,6 +9,8 @@
 
 #include <opengl/glvertexbuffer.h>
 
+#include <memory>
+
 namespace KWin {
     class BorderRadius;
     class EffectWindow;
@@ -31,16 +33,14 @@ private:
     int m_boxLocation;
     int m_cornerRadiusLocation;
 
+    RoundedCornersPass() = default;
+
 public:
     /**
      * Loads required shaders and sets up shader uniformLocations
+     * nullptr on error
      */
-    explicit RoundedCornersPass();
-
-    /**
-     * Check if pass is ready i.e. all shaders loaded
-     */
-    bool ready() const { return !!m_shader; }
+    static std::unique_ptr<RoundedCornersPass> create();
 
     /**
      * Apply rounded corners with a mask from renderInfo.framebuffer[0]

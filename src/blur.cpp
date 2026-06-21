@@ -209,8 +209,9 @@ BlurEffect::BlurEffect()
     if (!m_refractionPass->ready())
         return;
 
-    m_roundedCornersPass = std::make_unique<BBDX::RoundedCornersPass>();
-    if (!m_roundedCornersPass->ready())
+    m_roundedCornersPass = BBDX::RoundedCornersPass::create();
+    if (!m_roundedCornersPass)
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Failed to create RoundedCornersPass";
         return;
 
     initBlurStrengthValues();
