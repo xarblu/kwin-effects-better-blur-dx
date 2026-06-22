@@ -100,6 +100,12 @@ void BBDX::Window::slotWindowOpacityChanged(KWin::EffectWindow *w, qreal oldOpac
     } else if (!w->window()->isActive() && !m_originalOpacityInactive.has_value()) {
         m_originalOpacityInactive = newOpacity;
     }
+
+    // e.g. the Plasma application launcher
+    // ends geometry changes early and then just transforms
+    // via opacity changes which can cause caches to
+    // "stick" too early
+    m_windowManager->flushWindowCaches(this);
 }
 
 void BBDX::Window::setIsTransformed(bool toggle) {
