@@ -59,7 +59,7 @@ static inline void updateBlitFramebufferFromWallpaper(BBDX::WallpaperData *wallp
                                                       const KWin::Rect &backgroundRect) {
     KWin::GLFramebuffer::pushFramebuffer(wallpaper->framebuffer.get());
     for (const auto &rect : dirtyRegion.rects()) {
-        blitFramebuffer->blitFromFramebuffer(rect.translated(-wallpaper->geometry.scaled(wallpaper->scale).topLeft().toPoint()),
+        blitFramebuffer->blitFromFramebuffer(rect.translated(-wallpaper->geometry.topLeft().toPoint()),
                                              rect.translated(-backgroundRect.topLeft()));
     }
     KWin::GLFramebuffer::popFramebuffer();
@@ -395,15 +395,14 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
         return nullptr;
     }
 
-    wallpaper.scale = desktop->window()->targetScale();
-    wallpaper.geometry = desktop->frameGeometry();
+    wallpaper.geometry = view->logicalOutput()->geometryF();
 
     GLenum textureFormat = GL_RGBA8;
     if (renderTarget->texture()) {
         textureFormat = renderTarget->texture()->internalFormat();
     }
 
-    const QSize textureSize{(wallpaper.geometry.size() * wallpaper.scale).toSize()};
+    const QSize textureSize{(view->logicalOutput()->geometryF().size()).toSize()};
 
     // realloc framebuffer+texture when needed
     if (!wallpaper.texture || wallpaper.texture->internalFormat() != textureFormat || wallpaper.texture->size() != textureSize) {
@@ -424,7 +423,7 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
     }
 
     const RenderTarget wallpaperRenderTarget{wallpaper.framebuffer.get()};
-    const RenderViewport wallpaperRenderViewport{wallpaper.geometry, wallpaper.scale, wallpaperRenderTarget, QPoint{}};
+    const RenderViewport wallpaperRenderViewport{wallpaper.geometry, 1.0, wallpaperRenderTarget, QPoint{}};
     WindowPaintData data{};
 
     GLFramebuffer::pushFramebuffer(wallpaper.framebuffer.get());
