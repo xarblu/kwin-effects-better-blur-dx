@@ -34,19 +34,35 @@ Q_LOGGING_CATEGORY(BLUR_CACHE, "kwin_effect_better_blur_dx.blur_cache", QtInfoMs
 
 /**
  * Update the cached blit texture in blitFramebuffer
- * with contents of the given dirtyRegion
+ * with contents of the given dirtyRegion from RenderTarget
  */
-static inline void updateBlitFramebuffer(const KWin::RenderTarget &renderTarget,
-                                         const KWin::RenderViewport &viewport,
-                                         KWin::GLFramebuffer *blitFramebuffer,
-                                         const KWin::Region &dirtyRegion,
-                                         const KWin::Rect &backgroundRect) {
+static inline void updateBlitFramebufferFromRenderTarget(const KWin::RenderTarget &renderTarget,
+                                                         const KWin::RenderViewport &viewport,
+                                                         KWin::GLFramebuffer *blitFramebuffer,
+                                                         const KWin::Region &dirtyRegion,
+                                                         const KWin::Rect &backgroundRect) {
     for (const auto &rect : dirtyRegion.rects()) {
         blitFramebuffer->blitFromRenderTarget(renderTarget,
                                               viewport,
                                               rect,
                                               rect.translated(-backgroundRect.topLeft()));
     }
+}
+
+/**
+ * Update the cached blit texture in blitFramebuffer
+ * with contents of the given dirtyRegion from wallpaper
+ */
+static inline void updateBlitFramebufferFromWallpaper(BBDX::WallpaperData *wallpaper,
+                                                      KWin::GLFramebuffer *blitFramebuffer,
+                                                      const KWin::Region &dirtyRegion,
+                                                      const KWin::Rect &backgroundRect) {
+    KWin::GLFramebuffer::pushFramebuffer(wallpaper->framebuffer.get());
+    for (const auto &rect : dirtyRegion.rects()) {
+        blitFramebuffer->blitFromFramebuffer(rect.translated(-wallpaper->geometry.topLeft()),
+                                             rect.translated(-backgroundRect.topLeft()));
+    }
+    KWin::GLFramebuffer::popFramebuffer();
 }
 
 std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &scaledBackgroundRect,
@@ -173,17 +189,6 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
         .blitFramebuffer = blitFramebuffer,
     };
 
-    // TODO: wire up options for wallpaper stencil mode
-    if (true) {
-        auto wallpaper = getWallpaper();
-        if (!wallpaper) {
-            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to get WallpaperData";
-            return;
-        }
-
-        m_paintData.blitFramebuffer = wallpaper->framebuffer.get();
-    }
-
     // create new cache entry if needed
     if (!cache || cache->invalidated()) {
         cache = BBDX::BlurCacheEntry::create(*m_paintData.scaledBackgroundRect,
@@ -215,11 +220,25 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 
     // when flushing we need the updated blit
     if (cache->isFlushing()) {
-        updateBlitFramebuffer(*m_paintData.renderTarget,
-                              *m_paintData.viewport,
-                              m_paintData.blitFramebuffer,
-                              *m_paintData.dirtyRegion,
-                              *m_paintData.backgroundRect);
+        // TODO: wire up options for wallpaper stencil mode
+        if (true) {
+            auto wallpaper = getWallpaper();
+            if (!wallpaper) {
+                qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to get WallpaperData";
+                return;
+            }
+
+            updateBlitFramebufferFromWallpaper(wallpaper,
+                                               m_paintData.blitFramebuffer,
+                                               *m_paintData.dirtyRegion,
+                                               *m_paintData.backgroundRect);
+        } else {
+            updateBlitFramebufferFromRenderTarget(*m_paintData.renderTarget,
+                                                  *m_paintData.viewport,
+                                                  m_paintData.blitFramebuffer,
+                                                  *m_paintData.dirtyRegion,
+                                                  *m_paintData.backgroundRect);
+        }
     }
 }
 
@@ -377,12 +396,14 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
         return nullptr;
     }
 
+    const KWin::Rect geometry{desktop->frameGeometry().toAlignedRect()};
+
     GLenum textureFormat = GL_RGBA8;
     if (renderTarget->texture()) {
         textureFormat = renderTarget->texture()->internalFormat();
     }
 
-    auto texture = KWin::GLTexture::allocate(textureFormat, desktop->frameGeometry().size().toSize());
+    auto texture = KWin::GLTexture::allocate(textureFormat, geometry.size());
     if (!texture) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "GLTexture allocation failed";
         return nullptr;
@@ -398,13 +419,13 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
     }
 
     const RenderTarget wallpaperRenderTarget{framebuffer.get()};
-    const RenderViewport wallpaperRenderViewport{desktop->frameGeometry(), 1.0, wallpaperRenderTarget, QPoint{}};
+    const RenderViewport wallpaperRenderViewport{geometry, 1.0, wallpaperRenderTarget, QPoint{}};
     WindowPaintData data{};
 
     GLFramebuffer::pushFramebuffer(framebuffer.get());
     effects->drawWindow(wallpaperRenderTarget, wallpaperRenderViewport, desktop, KWin::Scene::PAINT_WINDOW_TRANSFORMED, KWin::Region::infinite(), data);
     GLFramebuffer::popFramebuffer();
 
-    m_wallpapers.emplace(view, WallpaperData{std::move(framebuffer), std::move(texture)});
+    m_wallpapers.emplace(view, WallpaperData{std::move(geometry), std::move(framebuffer), std::move(texture)});
     return &m_wallpapers.at(view);
 }

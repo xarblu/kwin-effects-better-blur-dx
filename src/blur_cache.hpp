@@ -146,6 +146,7 @@ struct BlurCachePaintData {
 };
 
 struct WallpaperData {
+    KWin::Rect geometry;
     std::unique_ptr<KWin::GLFramebuffer> framebuffer;
     std::unique_ptr<KWin::GLTexture> texture;
 };
