@@ -3,6 +3,7 @@
 #include "kwin_compat.hpp"
 
 #include "blur.h"
+#include "settings.hpp"
 #include "utils.h"
 
 #include <epoxy/gl.h>
@@ -220,8 +221,7 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 
     // when flushing we need the updated blit
     if (cache->isFlushing()) {
-        // TODO: wire up options for wallpaper stencil mode
-        if (true) {
+        if (m_effect->blitMode() == BlitMode::WALLPAPER) {
             auto wallpaper = getWallpaper();
             if (!wallpaper) {
                 qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to get WallpaperData";

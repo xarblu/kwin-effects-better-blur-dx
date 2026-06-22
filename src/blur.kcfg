@@ -70,5 +70,13 @@ class3</default>
         <entry name="RefractionTextureRepeatMode" type="Int">
             <default>0</default>
         </entry>
+        <!-- Performance -->
+        <entry name="BlitMode" type="Enum">
+            <choices name="BBDX::BlitMode">
+                <choice name="RENDER_TARGET"/>
+                <choice name="WALLPAPER"/>
+            </choices>
+            <default>BlitMode::RENDER_TARGET</default>
+        </entry>
     </group>
 </kcfg>

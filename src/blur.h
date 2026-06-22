@@ -14,6 +14,7 @@
 #include "refraction_pass.hpp"
 #include "rounded_corners_pass.hpp"
 #include "window_manager.hpp"
+#include "settings.hpp"
 
 #include <memory>
 #include <opengl/glframebuffer.h>
@@ -240,6 +241,7 @@ private:
 
     // BBDX Mixins
     bool m_forceContrastParams{false};
+    BlitMode m_blitMode{BlitMode::RENDER_TARGET};
 
     std::unique_ptr<BBDX::WindowManager> m_windowManager{};
     friend void BBDX::WindowManager::triggerBlurRegionUpdate(KWin::EffectWindow *w) const;
@@ -253,6 +255,7 @@ private:
 public:
     WindowManager* windowManager() const { return m_windowManager.get(); }
     BlurCache* blurCache() const { return m_blurCache.get(); }
+    BlitMode blitMode() const { return m_blitMode; }
 };
 
 inline bool BlurEffect::provides(Effect::Feature feature)

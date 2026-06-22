@@ -14,6 +14,7 @@
 #include "kwin_compat.hpp"
 #include "refraction_pass.hpp"
 #include "rounded_corners_pass.hpp"
+#include "settings.hpp"
 #include "utils.h"
 #include "window_manager.hpp"
 
@@ -359,6 +360,7 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_refractionPass->reconfigure();
     m_windowManager->reconfigure();
     m_forceContrastParams = BlurConfig::forceContrastParams();
+    m_blitMode = static_cast<BlitMode>(BlurConfig::blitMode());
 
     int blurStrength = BlurConfig::blurStrength() - 1;
     m_iterationCount = blurStrengthValues[blurStrength].iteration;

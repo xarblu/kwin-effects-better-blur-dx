@@ -813,6 +813,34 @@
      </widget>
      <widget class="QWidget">
       <attribute name="title">
+       <string>Performance</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayoutPerformance">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelBlitMode">
+         <property name="text">
+          <string>Blur Source Mode:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="kcfg_BlitMode">
+         <item>
+          <property name="text">
+           <string>Render Target</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Wallpaper</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget">
+      <attribute name="title">
        <string>About</string>
       </attribute>
       <layout class="QVBoxLayout">
