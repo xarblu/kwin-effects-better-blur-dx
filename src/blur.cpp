@@ -1289,9 +1289,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         ShaderManager::instance()->pushShader(m_onscreenPass.shader.get());
         } // indent intentional for KWin diff
 
-        // BBDX: MVP matrix maps to scaledBackgroundRect for BlurCache
+        // BBDX: MVP matrix maps to backgroundRect for BlurCache
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, scaledBackgroundRect.width(), scaledBackgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         GLFramebuffer::popFramebuffer();
         const auto &read = renderInfo.framebuffers[1];
@@ -1303,7 +1303,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                              colorMatrix,
                                              halfpixel,
                                              float(m_offset),
-                                             scaledBackgroundRect)) {
+                                             backgroundRect)) {
         m_onscreenPass.shader->setUniform(m_onscreenPass.mvpMatrixLocation, projectionMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, colorMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.halfpixelLocation, halfpixel);
@@ -1353,9 +1353,9 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         if (GLTexture *noiseTexture = ensureNoiseTexture()) {
             ShaderManager::instance()->pushShader(m_noisePass.shader.get());
 
-            // BBDX: MVP matrix maps to scaledBackgroundRect for BlurCache
+            // BBDX: MVP matrix maps to backgroundRect for BlurCache
             QMatrix4x4 projectionMatrix;
-            projectionMatrix.ortho(QRectF(0.0, 0.0, scaledBackgroundRect.width(), scaledBackgroundRect.height()));
+            projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
             m_noisePass.shader->setUniform(m_noisePass.mvpMatrixLocation, projectionMatrix);
             m_noisePass.shader->setUniform(m_noisePass.noiseTextureSizeLocation, QVector2D(noiseTexture->width(), noiseTexture->height()));
@@ -1372,7 +1372,7 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
     }
 
     if (const BorderRadius cornerRadius = m_windowManager->getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
-        m_roundedCornersPass->apply(cornerRadius, viewport, scaledBackgroundRect, renderInfo, w, data, vbo, m_blurCache.get());
+        m_roundedCornersPass->apply(cornerRadius, viewport, backgroundRect, renderInfo, w, data, vbo, m_blurCache.get());
     }
 
     // BBDX:

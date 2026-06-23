@@ -49,7 +49,7 @@ std::unique_ptr<BBDX::RoundedCornersPass> BBDX::RoundedCornersPass::create() {
 
 void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
                                      const KWin::RenderViewport &viewport,
-                                     const QRect &scaledBackgroundRect,
+                                     const QRect &backgroundRect,
                                      BBDX::BlurRenderData &renderInfo,
                                      const KWin::EffectWindow *w,
                                      const KWin::WindowPaintData &data,
@@ -58,35 +58,34 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
         KWin::ShaderManager::instance()->pushShader(m_shader.get());
 
         QMatrix4x4 projectionMatrix;
-        projectionMatrix.ortho(QRectF(0.0, 0.0, scaledBackgroundRect.width(), scaledBackgroundRect.height()));
+        projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         // should contain the raw un-blurred pixels
         const auto &read = renderInfo.framebuffers[0];
 
+        /**
+         * For caching purposes we keep things in logical coordinates
+         *
+         * TODO: merge rounded corners into BlurCache::drawCached() where we
+         *       actually draw on screen
+         */
+
         const KWin::RectF transformedRect = KWin::RectF{
-            w->frameGeometry().x() + data.xTranslation(),
-            w->frameGeometry().y() + data.yTranslation(),
-            w->frameGeometry().width() * data.xScale(),
-            w->frameGeometry().height() * data.yScale(),
+            w->frameGeometry().x() + data.xTranslation() / data.xScale(),
+            w->frameGeometry().y() + data.yTranslation() / data.yScale(),
+            w->frameGeometry().width(),
+            w->frameGeometry().height(),
         };
-# if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-        const KWin::RectF nativeBox = KWin::snapToPixelGridF(KWin::scaledRect(transformedRect, viewport.scale()))
-                                .translated(-scaledBackgroundRect.topLeft());
-#else
-        const KWin::RectF nativeBox = transformedRect
-                                    .scaled(viewport.scale())
-                                    .rounded()
-                                    .translated(-scaledBackgroundRect.topLeft());
-#endif
-        const KWin::BorderRadius nativeCornerRadius = cornerRadius.scaled(viewport.scale()).rounded();
+
+        const KWin::RectF box{transformedRect.translated(-backgroundRect.topLeft())};
 
         m_shader->setUniform(m_mvpMatrixLocation, projectionMatrix);
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
-        m_shader->setUniform(m_boxLocation, QVector4D(nativeBox.x() + nativeBox.width() * 0.5, nativeBox.y() + nativeBox.height() * 0.5, nativeBox.width() * 0.5, nativeBox.height() * 0.5));
+        m_shader->setUniform(m_boxLocation, QVector4D(box.x() + box.width() * 0.5, box.y() + box.height() * 0.5, box.width() * 0.5, box.height() * 0.5));
 #else
-        m_shader->setUniform(m_boxLocation, QVector4D(nativeBox.horizontalCenter(), nativeBox.verticalCenter(), nativeBox.width() * 0.5, nativeBox.height() * 0.5));
+        m_shader->setUniform(m_boxLocation, QVector4D(box.horizontalCenter(), box.verticalCenter(), box.width() * 0.5, box.height() * 0.5));
 #endif
-        m_shader->setUniform(m_cornerRadiusLocation, nativeCornerRadius.toVector());
+        m_shader->setUniform(m_cornerRadiusLocation, cornerRadius.toVector());
 
         BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();

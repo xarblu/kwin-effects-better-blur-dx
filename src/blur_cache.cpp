@@ -66,7 +66,7 @@ static inline void updateBlitFramebufferFromWallpaper(BBDX::WallpaperData *wallp
     KWin::GLFramebuffer::popFramebuffer();
 }
 
-std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &scaledBackgroundRect,
+std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::Rect &backgroundRect,
                                                                    GLenum internalFormat,
                                                                    const KWin::EffectWindow *window) {
     std::unique_ptr<BlurCacheEntry> entry{new BlurCacheEntry()};
@@ -79,11 +79,11 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX
                         << "Creating BlurCacheEntry:" << entry->m_windowClass << "\n"
                         << "PID:" << entry->m_windowPID << "\n"
-                        << "Size:" << scaledBackgroundRect;
+                        << "Size:" << backgroundRect;
 
     // allocate new cached texture + framebuffer for the blurred texture
     glClearColor(0, 0, 0, 0);
-    entry->m_cachedTexture = KWin::GLTexture::allocate(internalFormat, scaledBackgroundRect.size());
+    entry->m_cachedTexture = KWin::GLTexture::allocate(internalFormat, backgroundRect.size());
     if (!entry->m_cachedTexture) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";
         return nullptr;
@@ -193,7 +193,7 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 
     // create new cache entry if needed
     if (!cache || cache->invalidated()) {
-        cache = BBDX::BlurCacheEntry::create(*m_paintData.scaledBackgroundRect,
+        cache = BBDX::BlurCacheEntry::create(*m_paintData.backgroundRect,
                                              m_paintData.blitFramebuffer->colorAttachment()->internalFormat(),
                                              m_paintData.window);
         // XXX: ensure this is safe
@@ -244,22 +244,22 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 }
 
 void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
-    const auto scaledBackgroundRect = m_paintData.scaledBackgroundRect;
+    const auto backgroundRect = m_paintData.backgroundRect;
 
     // The geometry used for the cache, in logical pixels
     // but scaled to what would be drawn on the device.
     {
-        const QRectF localRect = QRectF(0, 0, scaledBackgroundRect->width(), scaledBackgroundRect->height());
+        const QRectF localRect = QRectF(0, 0, backgroundRect->width(), backgroundRect->height());
 
         const float x0 = localRect.left();
         const float y0 = localRect.top();
         const float x1 = localRect.right();
         const float y1 = localRect.bottom();
 
-        const float u0 = x0 / scaledBackgroundRect->width();
-        const float v0 = 1.0f - y0 / scaledBackgroundRect->height();
-        const float u1 = x1 / scaledBackgroundRect->width();
-        const float v1 = 1.0f - y1 / scaledBackgroundRect->height();
+        const float u0 = x0 / backgroundRect->width();
+        const float v0 = 1.0f - y0 / backgroundRect->height();
+        const float u1 = x1 / backgroundRect->width();
+        const float v1 = 1.0f - y1 / backgroundRect->height();
 
         // first triangle
         map[vboIndex++] = KWin::GLVertex2D{

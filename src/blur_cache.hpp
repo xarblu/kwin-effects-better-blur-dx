@@ -36,7 +36,7 @@ struct BlurRenderData;
  */
 class BlurCacheEntry {
     // texture and framebuffer for the cache
-    // with the size of scaledBackgroundRect from BlurEffect::blur()
+    // with the size of backgroundRect from BlurEffect::blur()
     std::unique_ptr<KWin::GLTexture> m_cachedTexture{nullptr};
     std::unique_ptr<KWin::GLFramebuffer> m_cachedFramebuffer{nullptr};
 
@@ -87,9 +87,12 @@ class BlurCacheEntry {
 public:
     /**
      * Create a new BlurCacheEntry by allocating cachedTexture and cachedFramebuffer
-     * with the size of scaledBackgroundRect and format of dirtyBlitFramebuffer
+     * with the size of backgroundRect and format of dirtyBlitFramebuffer
+     *
+     * The limiting factor in terms of quality definitely is the blit itself anyways
+     * (logical un-scaled pixels) so un-scaled backgroundRect should be sufficient
      */
-    static std::unique_ptr<BlurCacheEntry> create(const KWin::Rect &scaledBackgroundRect,
+    static std::unique_ptr<BlurCacheEntry> create(const KWin::Rect &backgroundRect,
                                                   GLenum internalFormat,
                                                   const KWin::EffectWindow *window);
 
