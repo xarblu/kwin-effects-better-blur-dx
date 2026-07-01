@@ -141,7 +141,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
 - KF6
 - KWin development packages
 - Vulkan
-- RPM Tools (For Containers)
+- RPM Tools (For containers)
 
 <details>
   <summary>Arch Linux</summary>
@@ -156,10 +156,8 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```
   sudo pacman -S base-devel git extra-cmake-modules vulkan-headers qt6-tools kwin-x11
   ```
-</details>
 
-<summary>Arch Linux (Container)</summary>
-  <br>
+  **For container:**
 
   Wayland:
   ```
