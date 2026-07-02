@@ -359,6 +359,9 @@ void BBDX::BlurCache::flushAccumulatedDirtyRegions(KWin::ScreenPrePaintData &dat
                     //
                     // TODO: we should still flush on some events
                     // like wallpaper changing
+                    // 
+                    // PlasmaShell exposes org.kde.PlasmaShell.wallpaperChanged(uint screenNum)
+                    // via DBUS which might work as a trigger
                     break;
 
                 default:
