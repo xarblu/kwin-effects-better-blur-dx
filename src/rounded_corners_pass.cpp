@@ -73,7 +73,11 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
             w->frameGeometry().height(),
         };
 
-        const KWin::RectF box{transformedRect.translated(-backgroundRect.topLeft())};
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+        const KWin::RectF box{KWin::snapToPixelGridF(transformedRect).translated(-backgroundRect.topLeft())};
+#else
+        const KWin::RectF box{transformedRect.rounded().translated(-backgroundRect.topLeft())};
+#endif
 
         m_shader->setUniform(m_mvpMatrixLocation, projectionMatrix);
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
