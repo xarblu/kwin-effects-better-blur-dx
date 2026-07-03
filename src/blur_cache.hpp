@@ -213,11 +213,6 @@ private:
     std::unique_ptr<QDBusServiceWatcher> m_dbusServiceWatcher{};
 
     /**
-     * Session bus connection to org.kde.plasmashell /PlasmaShell
-     */
-    std::unique_ptr<QDBusInterface> m_plasmashellInterface{};
-
-    /**
      * use create()
      */
     BlurCache() = default;

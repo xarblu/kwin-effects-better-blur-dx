@@ -192,24 +192,16 @@ void BBDX::BlurCacheEntry::invalidate(const char* msg) {
 void BBDX::BlurCache::slotDbusRegisteredPlasmashell() {
     qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "PlasmaShell registered on D-Bus - setting up connection";
 
-    m_plasmashellInterface = std::make_unique<QDBusInterface>(
+    if (!QDBusConnection::sessionBus().connect(
         "org.kde.plasmashell",
         "/PlasmaShell",
         "org.kde.PlasmaShell",
-        QDBusConnection::sessionBus()
-    );
-
-    if (!m_plasmashellInterface->isValid()) {
-        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX
-                              << "org.kde.PlasmaShell D-Bus connection failed:"
-                              << m_plasmashellInterface->lastError().message();
-        return;
+        "wallpaperChanged",
+        this,
+        SLOT(slotWallpaperChanged(uint))
+    )) {
+        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "D-Bus connection to org.kde.PlasmaShell.wallpaperChanged failed";
     }
-
-    connect(m_plasmashellInterface.get(),
-            SIGNAL(wallpaperChanged(uint)),
-            this,
-            SLOT(slotWallpaperChanged(uint)));
 }
 
 void BBDX::BlurCache::slotWallpaperChanged(uint screenNum) {
