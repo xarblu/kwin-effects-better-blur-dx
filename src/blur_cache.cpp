@@ -161,6 +161,17 @@ void BBDX::BlurCacheEntry::flushed(const KWin::Region &dirtyRegion) {
     }
 }
 
+void BBDX::BlurCacheEntry::flushFor(std::chrono::milliseconds duration, const char *msg) {
+    flush(msg);
+    m_flushingUntil = std::chrono::steady_clock::now() + duration;
+}
+
+void BBDX::BlurCacheEntry::maybeExtendFlush() {
+    if (std::chrono::steady_clock::now() < m_flushingUntil) {
+        flush();
+    }
+}
+
 void BBDX::BlurCacheEntry::invalidate(const char* msg) {
     if (!m_invalidated) {
         m_invalidated = true;
@@ -236,6 +247,8 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
     // the cache entry needs to stay in sync
     cache->setBackgroundRect(*backgroundRect);
     cache->accumulateDirtyRegion(*dirtyRegion);
+
+    cache->maybeExtendFlush();
 
     // in case the initial cache entry
     // was only partially filled we always need a flush

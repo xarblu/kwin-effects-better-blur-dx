@@ -70,6 +70,12 @@ class BlurCacheEntry {
     bool m_isFlushing{true};
 
     /**
+     * The cache is always flushed until this is exceeded
+     * mostly to ensure animations finish properly
+     */
+    std::chrono::steady_clock::time_point m_flushingUntil{};
+
+    /**
      * Marks this cache entry invalid (purging it the next paint cycle)
      *
      * This should be used when handling Qt eventloop stuff as the GL context
@@ -126,6 +132,17 @@ public:
     void flush(const char *msg = nullptr);
     void abortFlush(const char *msg = nullptr);
     void flushed(const KWin::Region &dirtyRegion);
+
+    /**
+     * Like flush() but keeps the flush alive for
+     * the given duration (mostly to ensure animations complete)
+     */
+    void flushFor(std::chrono::milliseconds duration, const char *msg = nullptr);
+
+    /**
+     * Extend flush while flushFor() duration is not elapsed
+     */
+    void maybeExtendFlush();
 
     /**
      * Invalidate cache entry
