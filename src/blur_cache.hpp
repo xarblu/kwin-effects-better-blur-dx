@@ -206,6 +206,7 @@ private:
      * Wallpaper buffers for wallpaper mode
      */
     std::unordered_map<KWin::RenderView *, WallpaperData> m_wallpapers{};
+    std::unordered_map<KWin::RenderView *, QMetaObject::Connection> m_wallpaperConnections{};
 
     /**
      * D-Bus service watcher to setup PlasmaShell interface
@@ -228,6 +229,11 @@ public Q_SLOTS:
      * PlasmaShell DBUS interface
      */
     void slotWallpaperChanged(uint screenNum);
+
+    /**
+     * Called whenever a wallpaper window marks itself damaged
+     */
+    void slotWallpaperDamaged(KWin::Window *window);
 
 public:
     /**

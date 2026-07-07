@@ -205,12 +205,20 @@ void BBDX::BlurCache::slotDbusRegisteredPlasmashell() {
 }
 
 void BBDX::BlurCache::slotWallpaperChanged(uint screenNum) {
+    return;
     Q_UNUSED(screenNum);
 
     // now flush and implicitly fetch new wallpaper
     // 5 seconds should hopefully be enough time
     // for the wallpaper transition
     m_effect->windowManager()->flushAllWindowCachesFor(std::chrono::milliseconds{5000});
+}
+
+void BBDX::BlurCache::slotWallpaperDamaged(KWin::Window *window) {
+    Q_UNUSED(window);
+
+    // now flush and implicitly fetch new wallpaper
+    m_effect->windowManager()->flushAllWindowCaches();
 }
 
 std::unique_ptr<BBDX::BlurCache> BBDX::BlurCache::create(BBDX::BlurEffect *effect) {
@@ -503,6 +511,10 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Could not find a desktop on RenderView";
         return nullptr;
     }
+
+    m_wallpaperConnections.insert_or_assign(
+        view, connect(desktop->window(), &KWin::Window::damaged, this, &BBDX::BlurCache::slotWallpaperDamaged)
+    );
 
     wallpaper.geometry = view->logicalOutput()->geometryF();
 
