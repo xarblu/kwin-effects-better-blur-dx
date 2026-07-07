@@ -478,10 +478,12 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
     // cached wallpaper
     WallpaperData &wallpaper = m_wallpapers[view];
 
+    bool textureValid = wallpaper.texture
+                        && wallpaper.texture->internalFormat() == textureFormat
+                        && wallpaper.texture->size() == textureSize;
+
     // wallpaper (still) valid
-    if (wallpaper.texture
-        && wallpaper.texture->internalFormat() == textureFormat
-        && wallpaper.texture->size() == textureSize
+    if (textureValid
         && wallpaper.geometry == geometry
         && wallpaper.window == desktop->window()
         && !wallpaper.damaged) {
@@ -490,22 +492,24 @@ BBDX::WallpaperData* BBDX::BlurCache::getWallpaper() {
 
     wallpaper.geometry = geometry;
 
-    // realloc framebuffer+texture when needed
-    qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "(Re-)Allocating wallpaper buffer";
+    if (!textureValid) {
+        // realloc framebuffer+texture when needed
+        qCDebug(BLUR_CACHE) << BBDX::LOG_PREFIX << "(Re-)Allocating wallpaper buffer";
 
-    wallpaper.texture = KWin::GLTexture::allocate(textureFormat, textureSize);
-    if (!wallpaper.texture) {
-        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "GLTexture allocation failed";
-        return nullptr;
-    }
+        wallpaper.texture = KWin::GLTexture::allocate(textureFormat, textureSize);
+        if (!wallpaper.texture) {
+            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "GLTexture allocation failed";
+            return nullptr;
+        }
 
-    wallpaper.texture->setFilter(GL_LINEAR);
-    wallpaper.texture->setWrapMode(GL_CLAMP_TO_EDGE);
+        wallpaper.texture->setFilter(GL_LINEAR);
+        wallpaper.texture->setWrapMode(GL_CLAMP_TO_EDGE);
 
-    wallpaper.framebuffer = std::make_unique<GLFramebuffer>(wallpaper.texture.get());
-    if (!wallpaper.framebuffer->valid()) {
-        qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "GLFramebuffer allocation failed";
-        return nullptr;
+        wallpaper.framebuffer = std::make_unique<GLFramebuffer>(wallpaper.texture.get());
+        if (!wallpaper.framebuffer->valid()) {
+            qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "GLFramebuffer allocation failed";
+            return nullptr;
+        }
     }
 
     const RenderTarget wallpaperRenderTarget{wallpaper.framebuffer.get(), renderTarget->colorDescription()};
