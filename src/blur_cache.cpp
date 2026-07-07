@@ -234,9 +234,8 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
         cache->flush();
     }
 
-    // still not sure if dirtyRegion can even end up empty
-    // but if it is a flush would always end up taking the cache anyway
-    // (no changes to compare). this at least skips some compute
+    // dirtyRegion can end up empty in some rare cases
+    // in that case there is nothing to do
     if (dirtyRegion->isEmpty()) {
         cache->abortFlush("Empty dirtyRegion");
     }
