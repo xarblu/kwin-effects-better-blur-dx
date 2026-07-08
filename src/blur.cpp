@@ -53,6 +53,7 @@
 #include <wayland_server.h>
 #endif
 
+#include <QDBusConnection>
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QScreen>
@@ -259,6 +260,12 @@ BlurEffect::BlurEffect()
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
 #endif
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
+    QDBusConnection::systemBus().connect(
+        QStringLiteral("org.freedesktop.login1"),
+        QStringLiteral("/org/freedesktop/login1"),
+        QStringLiteral("org.freedesktop.login1.Manager"),
+        QStringLiteral("PrepareForSleep"),
+        this, SLOT(slotPrepareForSleep(bool)));
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
@@ -543,6 +550,22 @@ void BlurEffect::slotViewRemoved(KWin::RenderView *view)
             effects->makeOpenGLContextCurrent();
             data.render.erase(it);
         }
+    }
+}
+
+void BlurEffect::slotPrepareForSleep(bool start)
+{
+    if (start) {
+        return;
+    }
+
+    // GPU memory is powered down across suspend/hibernate - cached blur
+    // textures and texture compare query results may hold garbage afterwards,
+    // permanently wedging the conditional render / dirty region tracking.
+    // Drop all render data so everything is rebuilt on the next paint.
+    effects->makeOpenGLContextCurrent();
+    for (auto &[window, data] : m_windows) {
+        data.render.clear();
     }
 }
 

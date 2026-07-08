@@ -22,6 +22,7 @@ if(BETTERBLUR_X11)
         KDecoration3::KDecoration
         KF6::ConfigGui
         KWinX11::kwin
+        Qt6::DBus
         ${XCB_LIBRARIES}
     )
     target_compile_definitions(better_blur_dx PRIVATE
@@ -36,6 +37,7 @@ else()
         KDecoration3::KDecoration
         KF6::ConfigGui
         KWin::kwin
+        Qt6::DBus
         ${XCB_LIBRARIES}
     )
     target_compile_definitions(better_blur_dx PRIVATE
