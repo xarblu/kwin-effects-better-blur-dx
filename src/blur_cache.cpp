@@ -274,6 +274,16 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
                                        const KWin::Rect *backgroundRect,
                                        const KWin::Rect *scaledBackgroundRect,
                                        std::unique_ptr<BlurCacheEntry> &cache) {
+    
+    QList<KWin::Rect> cacheShape{};
+    for (const auto &rect : dirtyRegion->rects()) {
+        auto clippedLocalRect = rect.intersected(*backgroundRect)
+                                    .translated(-backgroundRect->topLeft());
+        if (!clippedLocalRect.isEmpty()) {
+            cacheShape.append(std::move(clippedLocalRect));
+        }
+    }
+
     m_paintData = {
         .renderTarget = renderTarget,
         .viewport = viewport,
@@ -283,6 +293,7 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
         .backgroundRect = backgroundRect,
         .scaledBackgroundRect = scaledBackgroundRect,
         .blitFramebuffer = blitFramebuffer,
+        .cacheShape = std::move(cacheShape),
     };
 
     // create new cache entry if needed
@@ -351,21 +362,19 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 }
 
 uint BBDX::BlurCache::addedVertices() const {
-    return m_paintData.dirtyRegion->rects().size() * 6;
+    return m_paintData.cacheShape.size() * 6;
 }
 
 void BBDX::BlurCache::setupVBO(std::span<KWin::GLVertex2D> &map, size_t &vboIndex) const {
     const auto backgroundRect = m_paintData.backgroundRect;
-    const auto dirtyRegion = m_paintData.dirtyRegion;
+    const auto &cacheShape = m_paintData.cacheShape;
 
     // The geometry used for the cache, in logical pixels
-    for (const auto &rect : dirtyRegion->rects()) {
-        const auto localRect = rect.translated(-backgroundRect->topLeft());
-
-        const float x0 = localRect.left();
-        const float y0 = localRect.top();
-        const float x1 = localRect.right();
-        const float y1 = localRect.bottom();
+    for (const auto &rect : cacheShape) {
+        const float x0 = rect.left();
+        const float y0 = rect.top();
+        const float x1 = rect.right();
+        const float y1 = rect.bottom();
 
         const float u0 = x0 / backgroundRect->width();
         const float v0 = 1.0f - y0 / backgroundRect->height();

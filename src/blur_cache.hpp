@@ -193,6 +193,9 @@ struct BlurCachePaintData {
     const KWin::Rect *backgroundRect;
     const KWin::Rect *scaledBackgroundRect;
     KWin::GLFramebuffer *blitFramebuffer;
+
+    // the shape used in drawToCache
+    QList<KWin::Rect> cacheShape;
 };
 
 struct WallpaperData {
