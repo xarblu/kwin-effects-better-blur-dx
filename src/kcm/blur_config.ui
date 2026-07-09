@@ -838,9 +838,6 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="labelCacheRateLimit">
-         <property name="text">
-          <string>Cache Rate Limit (ms):</string>
         <widget class="QLabel" name="labelBlurCacheIgnore">
          <property name="text">
           <string>Ignore Cache:</string>
@@ -848,6 +845,16 @@
         </widget>
        </item>
        <item row="1" column="1">
+        <widget class="QCheckBox" name="kcfg_BlurCacheIgnore"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelCacheRateLimit">
+         <property name="text">
+          <string>Cache Rate Limit (ms):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
         <layout class="QVBoxLayout" name="verticalLayout_71">
          <item>
           <widget class="QDoubleSpinBox" name="kcfg_CacheRateLimit">
@@ -863,7 +870,6 @@
           </widget>
          </item>
         </layout>
-        <widget class="QCheckBox" name="kcfg_BlurCacheIgnore"/>
        </item>
       </layout>
      </widget>

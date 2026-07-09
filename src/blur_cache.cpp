@@ -244,6 +244,7 @@ void BBDX::BlurCache::reconfigure() {
 #endif
 
     m_ignoreCache = BlurConfig::blurCacheIgnore();
+    m_cacheRateLimit = BlurConfig::cacheRateLimit();
 
     switch (m_blitMode) {
         case BlitMode::WALLPAPER:
@@ -253,7 +254,7 @@ void BBDX::BlurCache::reconfigure() {
 
         case BlitMode::RENDER_TARGET:
             break;
-        
+
         default:
             qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX
                                   << "Invalid BlitMode value:" << m_blitMode << "\n"
@@ -470,14 +471,12 @@ void BBDX::BlurCache::flushAccumulatedDirtyRegions(KWin::ScreenPrePaintData &dat
 
                 default:
                     // configurable flush in normal mode
-                    int interval = m_effect->cacheRateLimit();
-
-                    if (interval <= 0) {
+                    if (m_cacheRateLimit <= 0) {
                         // Unlimited
                         cacheEntry->flush();
                     } else {
                         // Rate limited
-                        std::chrono::milliseconds flushInterval{interval};
+                        std::chrono::milliseconds flushInterval{m_cacheRateLimit};
                         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - cacheEntry->lastFlush());
 
                         if (elapsed > flushInterval) {

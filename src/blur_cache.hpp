@@ -234,6 +234,7 @@ private:
      */
     BlitMode m_blitMode{BlitMode::RENDER_TARGET};
     bool m_ignoreCache{false};
+    int m_cacheRateLimit{0};
 
     /**
      * use create()
@@ -263,6 +264,7 @@ public:
      */
     BlitMode blitMode() const { return m_blitMode; }
     bool ignoreCache() const { return m_ignoreCache; }
+    int cacheRateLimit() const { return m_cacheRateLimit; }
 
     /**
      * Prepare the cache for this paint
