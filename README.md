@@ -57,7 +57,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```sh
   yay -S kwin-effects-better-blur-dx-x11
   ```
-  
+
   **`-git` packages tracking the `main` branch:**
 
   Wayland:
@@ -149,7 +149,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```
   sudo pacman -S base-devel git extra-cmake-modules qt6-tools kwin
   ```
-  
+
   X11:
   ```
   sudo pacman -S base-devel git extra-cmake-modules qt6-tools kwin-x11
@@ -164,7 +164,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```
   sudo apt install -y git cmake g++ extra-cmake-modules qt6-tools-dev kwin-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations3-dev libxcb-composite0-dev libxcb-randr0-dev libxcb-shm0-dev libxcb-res0-dev libxcb-sync-dev
   ```
-  
+
   X11:
   ```
   sudo apt install -y git cmake g++ extra-cmake-modules qt6-tools-dev kwin-x11-dev libkf6configwidgets-dev gettext libkf6crash-dev libkf6globalaccel-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev libkf6kcmutils-dev libkdecorations3-dev libxcb-composite0-dev libxcb-randr0-dev libxcb-shm0-dev libxcb-res0-dev libxcb-sync-dev
@@ -179,7 +179,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```
   sudo dnf -y install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake kwin-devel extra-cmake-modules kwin-devel kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel libdrm-devel
   ```
-  
+
   X11:
   ```
   sudo dnf -y install git cmake extra-cmake-modules gcc-g++ kf6-kwindowsystem-devel plasma-workspace-devel libplasma-devel qt6-qtbase-private-devel qt6-qtbase-devel cmake extra-cmake-modules kf6-knotifications-devel kf6-kio-devel kf6-kcrash-devel kf6-ki18n-devel kf6-kguiaddons-devel libepoxy-devel kf6-kglobalaccel-devel kf6-kcmutils-devel kf6-kconfigwidgets-devel kf6-kdeclarative-devel kdecoration-devel kf6-kglobalaccel kf6-kdeclarative libplasma kf6-kio qt6-qtbase kf6-kguiaddons kf6-ki18n wayland-devel libdrm-devel kwin-x11-devel
@@ -194,7 +194,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
   ```
   sudo zypper in -y git cmake-full gcc-c++ kf6-extra-cmake-modules kcoreaddons-devel kguiaddons-devel kconfigwidgets-devel kwindowsystem-devel ki18n-devel kiconthemes-devel kpackage-devel frameworkintegration-devel kcmutils-devel kirigami2-devel "cmake(KF6Config)" "cmake(KF6CoreAddons)" "cmake(KF6FrameworkIntegration)" "cmake(KF6GuiAddons)" "cmake(KF6I18n)" "cmake(KF6KCMUtils)" "cmake(KF6KirigamiPlatform)" "cmake(KF6WindowSystem)" "cmake(Qt6Core)" "cmake(Qt6DBus)" "cmake(Qt6Quick)" "cmake(Qt6Svg)" "cmake(Qt6Widgets)" "cmake(Qt6Xml)" "cmake(Qt6UiTools)" "cmake(KF6Crash)" "cmake(KF6GlobalAccel)" "cmake(KF6KIO)" "cmake(KF6Service)" "cmake(KF6Notifications)" libepoxy-devel kwin6-devel
   ```
-  
+
   X11:
   ```
   sudo zypper in -y git cmake-full gcc-c++ kf6-extra-cmake-modules kcoreaddons-devel kguiaddons-devel kconfigwidgets-devel kwindowsystem-devel ki18n-devel kiconthemes-devel kpackage-devel frameworkintegration-devel kcmutils-devel kirigami2-devel "cmake(KF6Config)" "cmake(KF6CoreAddons)" "cmake(KF6FrameworkIntegration)" "cmake(KF6GuiAddons)" "cmake(KF6I18n)" "cmake(KF6KCMUtils)" "cmake(KF6KirigamiPlatform)" "cmake(KF6WindowSystem)" "cmake(Qt6Core)" "cmake(Qt6DBus)" "cmake(Qt6Quick)" "cmake(Qt6Svg)" "cmake(Qt6Widgets)" "cmake(Qt6Xml)" "cmake(Qt6UiTools)" "cmake(KF6Crash)" "cmake(KF6GlobalAccel)" "cmake(KF6KIO)" "cmake(KF6Service)" "cmake(KF6Notifications)" libepoxy-devel kwin6-x11-devel
@@ -202,38 +202,37 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
 </details>
 
 ### Building
+
+When building under normal conditions, simply clone the repo and run the included build script.
+
 ```sh
 git clone https://github.com/xarblu/kwin-effects-better-blur-dx
 cd kwin-effects-better-blur-dx
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-make -j$(nproc)
-sudo make install
+chmod +x build.sh
+./build.sh
 ```
 
-By default this will build the effect for the regular (Wayland) KWin.
-To build a version for KWin X11 add `-DBBDX_X11=ON` to the `cmake` invocation.
+By default, this will build and install the effect for the regular (Wayland) KWin.
+To build a version for KWin X11, run the script with the `--x11` flag.
 
 <details>
   <summary>Building on Fedora Kinoite</summary>
   <br>
 
+  When building for Fedora Kinoite, run the build script with the `--kinoite` flag inside your container to generate the RPM package.
+
   ```sh
   # enter container
   git clone https://github.com/xarblu/kwin-effects-better-blur-dx
   cd kwin-effects-better-blur-dx
-  mkdir build
-  cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-  make -j$(nproc)
-  cpack -V -G RPM
+  chmod +x build.sh
+  ./build.sh --kinoite
   exit # exit container
   sudo rpm-ostree install kwin-effects-better-blur-dx/build/kwin-better-blur-dx.rpm
   ```
 </details>
 
-**Remove the *build* directory when rebuilding the effect.**
+**Rerun the build script when rebuilding the effect.**
 
 # Usage
 This effect conflicts with the default KWin blur effect (and other effects replacing it).
