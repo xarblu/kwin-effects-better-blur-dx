@@ -184,34 +184,29 @@ void BBDX::Window::updateForceBlurRegion() {
         return;
     }
 
-    std::optional<KWin::RegionF> content{};
-    std::optional<KWin::RegionF> frame{};
+    KWin::RegionF content{};
+    KWin::RegionF frame{};
 
-    // On X11, EffectWindow::contentsRect() includes GTK's client-side shadows, while on Wayland, it doesn't.
-    // The content region is translated by EffectWindow::contentsRect() in BlurEffect::blurRegion, causing the
-    // blur region to be off on X11. The frame region is not translated, so it is used instead.
-    const auto isX11WithCSD = effectwindow()->isX11Client() &&
-                              !effectwindow()->hasDecoration() &&
-                              effectwindow()->frameGeometry() != effectwindow()->bufferGeometry();
-    if (!isX11WithCSD) {
-        // empty QRegion -> full window
-        content = KWin::RegionF();
+    // We'll push both content and frame through the "raw" frame
+    // geometry for full control over the blurred region.
+    // 
+    // content gets a single dummy pixel to make BlurEffect::blurRegion() happy
+    // (TODO: remove it entirely from here and adjust getFinalBlurRegion())
+    content |= KWin::Rect{0, 0, 1, 1};
 
-        // only decorations in this case
-        if (m_windowManager->blurDecorations() && m_effectwindow->decoration()) {
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 7)
-            frame = KWin::Region(KWin::Rect(effectwindow()->decoration()->rect().toAlignedRect())) - effectwindow()->contentsRect().toRect();
-#else
-            frame = KWin::RegionF(effectwindow()->decoration()->rect()) - effectwindow()->contentsRect();
-#endif
+    // frameGeometry rounded in to avoid leaking "blur stripes" around window
+    frame |= BBDX::rectRoundedIn(
+        m_effectwindow->frameGeometry()
+            .translated(-m_effectwindow->frameGeometry().topLeft())
+    );
+
+    if (!m_windowManager->blurDecorations() && m_effectwindow->decoration()) {
+        // frame has content + decorations so to just get the decorations clip the contents
+        const auto decorationRegion = frame - BBDX::rectRoundedOut(m_effectwindow->contentsRect());
+
+        for (const auto &rect : decorationRegion.rects()) {
+            frame -= rect;
         }
-    } else {
-        // frame is full window
-#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 7)
-        frame = KWin::Region(KWin::Rect(m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()).toRect()));
-#else
-        frame = KWin::RegionF(m_effectwindow->frameGeometry().translated(-m_effectwindow->x(), -m_effectwindow->y()));
-#endif
     }
 
     // unchanged

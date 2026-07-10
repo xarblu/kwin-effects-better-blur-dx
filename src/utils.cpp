@@ -67,3 +67,21 @@ QString BBDX::shaderFilePath(const char *path) {
     qCDebug(BBDX_UTILS) << "Loading shader file:" << shader;
     return shader;
 }
+
+KWin::Rect BBDX::rectRoundedIn(KWin::RectF rect) {
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+    return KWin::Rect(QPoint(std::ceil(rect.left()), std::ceil(rect.top())),
+                      QPoint(std::floor(rect.right()), std::floor(rect.bottom())));
+#else
+    return rect.roundedIn();
+#endif
+}
+
+KWin::Rect BBDX::rectRoundedOut(KWin::RectF rect) {
+#if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
+    return KWin::Rect(QPoint(std::floor(rect.left()), std::floor(rect.top())),
+                      QPoint(std::ceil(rect.right()), std::ceil(rect.bottom())));
+#else
+    return rect.roundedIn();
+#endif
+}

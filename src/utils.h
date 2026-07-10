@@ -65,4 +65,10 @@ void clearGLScissor();
  */
 QString shaderFilePath(const char *path);
 
+/**
+ * Version agnostic roundedIn/roundedOut helper for RectF
+ */
+KWin::Rect rectRoundedIn(KWin::RectF rect);
+KWin::Rect rectRoundedOut(KWin::RectF rect);
+
 }
