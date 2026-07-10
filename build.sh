@@ -26,7 +26,7 @@ done
 # Common building part of both regular and fedora kinoite versions
 rm -fr build
 mkdir -p build
-cd build || exit 1
+cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr $X11_FLAG
 make -j$(nproc)
 
