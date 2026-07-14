@@ -1009,7 +1009,11 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
             renderInfo.cache->invalidate(static_cast<uint>(BlurCacheInvalidationFlag::FULL), "New framebuffers required");
         }
 
-        glClearColor(0, 0, 0, 0);
+        // BBDX: alpha 1.0
+        // unknown (yet-to-be-blitted) pixels should be black
+        // instead of transparent to avoid artifacts when dragging
+        // windows across screen borders
+        glClearColor(0.0, 0.0, 0.0, 1.0);
         for (size_t i = 0; i <= m_iterationCount; ++i) {
             auto texture = GLTexture::allocate(textureFormat, BBDX::getTextureSize(backgroundRect, i));
             if (!texture) {
@@ -1191,7 +1195,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                       0.5 / read->colorAttachment()->height());
             m_downsamplePass.shader->setUniform(m_downsamplePass.halfpixelLocation, halfpixel);
 
-            BBDX::setTextureSwizzle(read->colorAttachment());
             read->colorAttachment()->bind();
 
             GLFramebuffer::pushFramebuffer(draw.get());
@@ -1220,7 +1223,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                       0.5 / read->colorAttachment()->height());
             m_upsamplePass.shader->setUniform(m_upsamplePass.halfpixelLocation, halfpixel);
 
-            BBDX::setTextureSwizzle(read->colorAttachment());
             read->colorAttachment()->bind();
 
             BBDX::setGLScissor(dirtyRegion, backgroundRect);
@@ -1307,7 +1309,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         m_onscreenPass.shader->setUniform(m_onscreenPass.offsetLocation, float(m_offset));
         } // indent intentional for KWin diff
 
-        BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
 #if BBDX_NOT_NEEDED

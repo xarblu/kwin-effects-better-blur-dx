@@ -85,7 +85,7 @@ std::unique_ptr<BBDX::BlurCacheEntry> BBDX::BlurCacheEntry::create(const KWin::R
                         << "Size:" << backgroundRect;
 
     // allocate new cached texture + framebuffer for the blurred texture
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     entry->m_cachedTexture = KWin::GLTexture::allocate(internalFormat, backgroundRect.size());
     if (!entry->m_cachedTexture) {
         qCWarning(BLUR_CACHE) << BBDX::LOG_PREFIX << "Failed to allocate an offscreen texture";

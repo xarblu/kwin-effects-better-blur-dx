@@ -26,18 +26,6 @@ static const char LOG_PREFIX[]{"better_blur_dx:"};
 QSize getTextureSize(const QRect &backgroundRect, const size_t i);
 
 /**
- * When reading textures make the alpha channel a constant 1.
- *
- * At screen edges KWin seems to give us textures where (I'm assuming)
- * all RGBA values are 0.
- * This results in weird blur artifacts around screen edges.
- *
- * This workaround sort of replaces the artifacts with a dark gradient, which
- * technically isn't correct either but better than looking completely broken.
- */
-void setTextureSwizzle(KWin::GLTexture *texture);
-
-/**
  * Enable GL_SCISSOR_TEST and set an appropriate
  * scissor rect for the given dirtyRegion, backgroundRect
  *

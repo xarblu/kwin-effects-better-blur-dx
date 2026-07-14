@@ -87,7 +87,6 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
 #endif
         m_shader->setUniform(m_cornerRadiusLocation, cornerRadius.toVector());
 
-        BBDX::setTextureSwizzle(read->colorAttachment());
         read->colorAttachment()->bind();
 
         blurCache->drawToCache(renderInfo.cache.get(), vbo);

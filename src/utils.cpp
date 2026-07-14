@@ -18,10 +18,6 @@ QSize BBDX::getTextureSize(const QRect &backgroundRect, const size_t i) {
                  std::max(1, backgroundRect.height() / (1 << i)));
 }
 
-void BBDX::setTextureSwizzle(KWin::GLTexture *texture) {
-    texture->setSwizzle(GL_RED, GL_GREEN, GL_BLUE, GL_ONE);
-}
-
 void BBDX::setGLScissor(const KWin::Region &dirtyRegion, const KWin::Rect &backgroundRect) {
     const auto fbo = KWin::GLFramebuffer::currentFramebuffer();
     if (!fbo) {
