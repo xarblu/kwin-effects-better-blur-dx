@@ -208,6 +208,7 @@ When building under normal conditions, simply clone the repo and run the include
 ```sh
 git clone https://github.com/xarblu/kwin-effects-better-blur-dx
 cd kwin-effects-better-blur-dx
+chmod +x build.sh
 ./build.sh
 ```
 
@@ -224,6 +225,7 @@ To build a version for KWin X11, run the script with the `--x11` flag.
   # enter container
   git clone https://github.com/xarblu/kwin-effects-better-blur-dx
   cd kwin-effects-better-blur-dx
+  chmod +x build.sh
   ./build.sh --kinoite
   exit # exit container
   sudo rpm-ostree install kwin-effects-better-blur-dx/build/kwin-better-blur-dx.rpm
