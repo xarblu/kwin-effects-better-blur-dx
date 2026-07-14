@@ -9,5 +9,6 @@ out vec4 fragColor;
 
 void main(void)
 {
-    fragColor = texture(texUnit, uv) * modulation;
+    vec4 color = texture(texUnit, uv);
+    fragColor = vec4(color.rgb, color.a * modulation);
 }

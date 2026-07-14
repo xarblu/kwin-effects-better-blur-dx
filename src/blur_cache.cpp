@@ -384,8 +384,23 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
     m_texturePass.shader->setUniform(m_texturePass.modulationLocation, modulation);
     read->bind();
 
+    /**
+     * modulation is applied to alpha in the shader (i.e. affects GL_SRC_ALPHA)
+     * RGB on either side (blur/scene) is *not* pre-multiplied
+     * 
+     * ff the shader returns alpha...
+     * ... 1.0 (e.g. opaque window surface)
+     *   -> blend sfactor=1.0, dfactor=0.0
+     *     -> full blur
+     * ... 0.5 (e.g. plasma applauncher animation)
+     *   -> blend sfactor=0.5, dfactor=0.5
+     *     -> mixed blur + scene
+     * ... 0.0 (e.g. within rounded corners)
+     *   -> blend sfactor=0.0, dfactor=1.0
+     *     -> full scene
+     */
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     vbo->draw(GL_TRIANGLES, vboStartScreen(), vertexCount);
 
