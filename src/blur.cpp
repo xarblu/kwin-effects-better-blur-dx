@@ -267,12 +267,16 @@ BlurEffect::BlurEffect()
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
 #endif
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
-    QDBusConnection::systemBus().connect(
-        QStringLiteral("org.freedesktop.login1"),
-        QStringLiteral("/org/freedesktop/login1"),
-        QStringLiteral("org.freedesktop.login1.Manager"),
-        QStringLiteral("PrepareForSleep"),
-        this, SLOT(slotPrepareForSleep(bool)));
+    if (!QDBusConnection::systemBus().connect(
+            QStringLiteral("org.freedesktop.login1"),
+            QStringLiteral("/org/freedesktop/login1"),
+            QStringLiteral("org.freedesktop.login1.Manager"),
+            QStringLiteral("PrepareForSleep"),
+            this, SLOT(slotPrepareForSleep(bool)))) {
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX
+                             << "Failed to connect to logind PrepareForSleep,"
+                             << "render data will not be invalidated on resume";
+    }
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
@@ -570,14 +574,15 @@ void BlurEffect::slotPrepareForSleep(bool start)
         return;
     }
 
-    // GPU memory is powered down across suspend/hibernate - cached blur
-    // textures and texture compare query results may hold garbage afterwards,
-    // permanently wedging the conditional render / dirty region tracking.
-    // Drop all render data so everything is rebuilt on the next paint.
-    effects->makeOpenGLContextCurrent();
-    for (auto &[window, data] : m_windows) {
-        data.render.clear();
-    }
+    // logind emits PrepareForSleep(false) early in the resume path, before KWin
+    // has restored the GPU context and reconfigured its outputs. Dropping the
+    // render data from this D-Bus callback would therefore both touch GL outside
+    // the paint pipeline and rebuild the cache from the not-yet-settled output
+    // geometry - which the texture compare then latches as "unchanged" for good,
+    // leaving the blur drawn offset from where the window actually is.
+    // Defer to the next prePaintScreen(), which runs inside the paint pipeline
+    // with a current context and the final geometry.
+    m_invalidateRenderDataOnNextPaint = true;
 }
 
 void BlurEffect::slotPropertyNotify(EffectWindow *w, long atom)
@@ -725,6 +730,20 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data)
 #else
     m_currentView = data.view;
 #endif
+
+    if (m_invalidateRenderDataOnNextPaint) {
+        m_invalidateRenderDataOnNextPaint = false;
+
+        // GPU memory is powered down across suspend/hibernate, so cached blur
+        // textures and the TextureComparer's counter buffers / query objects can
+        // come back holding garbage. Drop all per-window render data so textures,
+        // framebuffers, cache entries and compare state are rebuilt from scratch.
+        // The context is already current here, hence no makeOpenGLContextCurrent().
+        qCDebug(KWIN_BLUR) << BBDX::LOG_PREFIX << "Resumed from sleep, dropping render data";
+        for (auto &[window, windowData] : m_windows) {
+            windowData.render.clear();
+        }
+    }
 
     m_blurCache->flushAccumulatedDirtyRegions(data);
 

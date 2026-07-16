@@ -195,6 +195,8 @@ private:
     } m_noisePass;
 
     bool m_valid = false;
+    /// Set when resuming from sleep, acted on in the next prePaintScreen()
+    bool m_invalidateRenderDataOnNextPaint = false;
     long net_wm_blur_region = 0;
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 4)
     Region m_paintedDeviceArea; // keeps track of all painted areas (from bottom to top)
