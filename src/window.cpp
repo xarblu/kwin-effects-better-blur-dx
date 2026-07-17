@@ -9,6 +9,7 @@
 #include <effect/effecthandler.h>
 #include <effect/effectwindow.h>
 #include <effect/globals.h>
+#include <qloggingcategory.h>
 #include <scene/borderradius.h>
 #include <wayland/surface.h>
 #include <window.h>
@@ -221,7 +222,7 @@ void BBDX::Window::updateForceBlurRegion() {
     // to avoid bleeding into CSD shadows which are sometimes
     // part of frameGeometry
     if (frame.isEmpty()) {
-        KWin::RegionF opaque;
+        KWin::RegionF opaque{};
         if (const auto surface = m_effectwindow->surface()) {
             opaque = surface->opaque();
         } else if (const auto x11window = qobject_cast<KWin::X11Window *>(m_effectwindow->window())) {
@@ -229,6 +230,7 @@ void BBDX::Window::updateForceBlurRegion() {
         }
 
         if (!opaque.isEmpty()) {
+            qCDebug(BBDX_WINDOW) << "Clipping with opaque region:" << opaque;
             content &= opaque.boundingRect();
         }
     }
