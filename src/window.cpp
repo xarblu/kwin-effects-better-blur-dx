@@ -228,9 +228,10 @@ void BBDX::Window::updateForceBlurRegion() {
         } else if (const auto x11window = qobject_cast<KWin::X11Window *>(m_effectwindow->window())) {
             opaque = x11window->opaqueRegion();
         }
+        
+        qCDebug(BBDX_WINDOW) << "opaque region:" << opaque;
 
         if (!opaque.isEmpty()) {
-            qCDebug(BBDX_WINDOW) << "Clipping with opaque region:" << opaque;
             content &= opaque.boundingRect();
         }
     }
