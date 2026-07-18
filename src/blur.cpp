@@ -1369,9 +1369,8 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
         glDisable(GL_BLEND);
     }
 
-    if (const BorderRadius cornerRadius = m_windowManager->getEffectiveBorderRadius(w); !cornerRadius.isNull()) {
-        m_roundedCornersPass->apply(cornerRadius, backgroundRect, renderInfo, w, data, vbo, m_blurCache.get());
-    }
+    // BBDX:
+    m_roundedCornersPass->apply(m_windowManager.get(), backgroundRect, w, data, vbo, m_blurCache.get(), renderInfo.cache.get());
 
     // BBDX:
     BBDX::clearGLScissor();

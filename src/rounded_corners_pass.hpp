@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kwin_compat.hpp"
+#include "window_manager.hpp"
 
 #include <opengl/glshader.h>
 
@@ -23,6 +24,7 @@ namespace KWin {
 
 namespace BBDX {
     class BlurCache;
+    class BlurCacheEntry;
 }
 
 namespace BBDX {
@@ -45,16 +47,18 @@ public:
     static std::unique_ptr<RoundedCornersPass> create();
 
     /**
-     * Apply rounded corners with a mask from renderInfo.framebuffer[0]
-     * which should contain the raw un-blurred pixels of the blur area.
+     * Apply rounded corners by setting their alpha channel to 0.0
+     *
+     * and set texture swizzle accordingly
+     * (rounded -> alpha=alpha; square -> alpha=1.0)
      */
-    void apply(const KWin::BorderRadius &cornerRadius,
+    void apply(const BBDX::WindowManager *windowManager,
                const KWin::Rect &backgroundRect,
-               BBDX::BlurRenderData &renderInfo,
                const KWin::EffectWindow *w,
                const KWin::WindowPaintData &data,
                KWin::GLVertexBuffer *vbo,
-               const BBDX::BlurCache *blurCache) const;
+               const BBDX::BlurCache *blurCache,
+               BBDX::BlurCacheEntry *cacheEntry) const;
 };
 
 } // namespace BBDX

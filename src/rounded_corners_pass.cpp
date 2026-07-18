@@ -47,13 +47,26 @@ std::unique_ptr<BBDX::RoundedCornersPass> BBDX::RoundedCornersPass::create() {
     return pass;
 }
 
-void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
+void BBDX::RoundedCornersPass::apply(const WindowManager *windowManager,
                                      const KWin::Rect &backgroundRect,
-                                     BBDX::BlurRenderData &renderInfo,
                                      const KWin::EffectWindow *w,
                                      const KWin::WindowPaintData &data,
                                      KWin::GLVertexBuffer *vbo,
-                                     const BBDX::BlurCache *blurCache) const {
+                                     const BBDX::BlurCache *blurCache,
+                                     BBDX::BlurCacheEntry *cacheEntry) const {
+        const auto cornerRadius = windowManager->getEffectiveBorderRadius(w);
+
+        if (cornerRadius.isNull()) {
+            // without rounded corners swizzle alpha
+            // channel to 1.0 for future reads
+            // as it may contain garbage otherwise (bad blit or whatever)
+            cacheEntry->cachedTexture()->setSwizzle(GL_RED, GL_GREEN, GL_BLUE, GL_ONE);
+            return;
+        }
+        
+        // with rounded corners the shader will properly override the alpha channel
+        cacheEntry->cachedTexture()->setSwizzle(GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA);
+
         KWin::ShaderManager::instance()->pushShader(m_shader.get());
 
         /**
@@ -64,7 +77,7 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
         projectionMatrix.ortho(QRectF(0.0, 0.0, backgroundRect.width(), backgroundRect.height()));
 
         // we want to mask the corners of what is already cached
-        const auto &read = renderInfo.cache.get()->cachedFramebuffer();
+        const auto &read = cacheEntry->cachedFramebuffer();
 
         const KWin::RectF transformedRect = KWin::RectF{
             w->frameGeometry().x() + data.xTranslation() / data.xScale(),
@@ -89,7 +102,7 @@ void BBDX::RoundedCornersPass::apply(const KWin::BorderRadius &cornerRadius,
 
         read->colorAttachment()->bind();
 
-        blurCache->drawToCache(renderInfo.cache.get(), vbo);
+        blurCache->drawToCache(cacheEntry, vbo);
 
         KWin::ShaderManager::instance()->popShader();
 }
