@@ -399,12 +399,17 @@ void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::Blu
      *   -> blend sfactor=0.0, dfactor=1.0
      *     -> full scene
      */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (modulation < 1.0) {
+        glEnable(GL_BLEND);
+        glBlendColor(0, 0, 0, modulation);
+        glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+    }
 
     vbo->draw(GL_TRIANGLES, vboStartScreen(), vertexCount);
 
-    glDisable(GL_BLEND);
+    if (modulation < 1.0) {
+        glDisable(GL_BLEND);
+    }
 
     KWin::ShaderManager::instance()->popShader();
 }
