@@ -626,6 +626,11 @@ bool BlurEffect::supported()
         return false;
     }
 
+    if (!context->supportsTextureSwizzle()) {
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX << "Effect unsupported: OpenGL context does not support texture swizzle (GL_ARB_texture_swizzle)";
+        return false;
+    }
+
     qCInfo(KWIN_BLUR) << BBDX::LOG_PREFIX << "Effect supported";
     return true;
 }
