@@ -1371,9 +1371,6 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
 
     // BBDX:
     m_roundedCornersPass->apply(m_windowManager.get(), backgroundRect, w, data, vbo, m_blurCache.get(), renderInfo.cache.get());
-
-    // BBDX:
-    BBDX::clearGLScissor();
     m_blurCache->drawCached(viewport, renderInfo, vbo, vertexCount, modulation);
 
     vbo->unbindArrays();

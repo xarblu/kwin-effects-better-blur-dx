@@ -362,6 +362,9 @@ void BBDX::BlurCache::preparePaintData(const KWin::RenderTarget *renderTarget,
 }
 
 void BBDX::BlurCache::drawCached(const KWin::RenderViewport &viewport, BBDX::BlurRenderData &renderInfo, KWin::GLVertexBuffer *vbo, const int vertexCount, const float modulation) const {
+    // clear early so it applies even on bail
+    BBDX::clearGLScissor();
+
     const auto &scaledBackgroundRect = *m_paintData.scaledBackgroundRect;
 
     KWin::ShaderManager::instance()->pushShader(m_texturePass.shader.get());
