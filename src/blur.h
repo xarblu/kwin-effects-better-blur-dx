@@ -130,6 +130,7 @@ public Q_SLOTS:
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotViewRemoved(KWin::RenderView *view);
     void slotPrepareForSleep(bool start);
+    void slotScreenLayoutChanged();
     void slotPropertyNotify(KWin::EffectWindow *w, long atom);
     void setupDecorationConnections(EffectWindow *w);
 

@@ -267,6 +267,10 @@ BlurEffect::BlurEffect()
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
 #endif
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
+    // Bound through argument-dropping lambdas, as the screen signal's parameter
+    // type differs across the KWin versions we build against.
+    connect(effects, &EffectsHandler::screenAdded, this, [this]() { slotScreenLayoutChanged(); });
+    connect(effects, &EffectsHandler::virtualScreenGeometryChanged, this, [this]() { slotScreenLayoutChanged(); });
     if (!QDBusConnection::systemBus().connect(
             QStringLiteral("org.freedesktop.login1"),
             QStringLiteral("/org/freedesktop/login1"),
@@ -585,6 +589,18 @@ void BlurEffect::slotPrepareForSleep(bool start)
     m_invalidateRenderDataOnNextPaint = true;
 }
 
+void BlurEffect::slotScreenLayoutChanged()
+{
+    // Adding or removing an output re-lays out the virtual screen, so outputs that
+    // were not themselves touched still move in global coordinates - plugging in a
+    // monitor to the left shifts the internal panel sideways by its full width.
+    // The cached blur is keyed to the old geometry while KWin's input regions follow
+    // the new one, which draws windows offset from where they actually are.
+    // Defer for the same reason as the resume path: the layout is not necessarily
+    // settled when this fires, and prePaintScreen() runs with a current context.
+    m_invalidateRenderDataOnNextPaint = true;
+}
+
 void BlurEffect::slotPropertyNotify(EffectWindow *w, long atom)
 {
     if (w && atom == net_wm_blur_region && net_wm_blur_region != XCB_ATOM_NONE) {
@@ -734,12 +750,14 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data)
     if (m_invalidateRenderDataOnNextPaint) {
         m_invalidateRenderDataOnNextPaint = false;
 
-        // GPU memory is powered down across suspend/hibernate, so cached blur
-        // textures and the TextureComparer's counter buffers / query objects can
-        // come back holding garbage. Drop all per-window render data so textures,
-        // framebuffers, cache entries and compare state are rebuilt from scratch.
+        // Requested either by a resume from sleep - GPU memory is powered down
+        // across suspend/hibernate, so cached blur textures and the compare state
+        // can come back holding garbage - or by a screen layout change, which
+        // invalidates the geometry the cache was built for. Either way, drop all
+        // per-window render data so textures, framebuffers and cache entries are
+        // rebuilt from scratch.
         // The context is already current here, hence no makeOpenGLContextCurrent().
-        qCDebug(KWIN_BLUR) << BBDX::LOG_PREFIX << "Resumed from sleep, dropping render data";
+        qCDebug(KWIN_BLUR) << BBDX::LOG_PREFIX << "Dropping render data";
         for (auto &[window, windowData] : m_windows) {
             windowData.render.clear();
         }
