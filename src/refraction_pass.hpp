@@ -4,6 +4,7 @@
 
 #include <QMatrix4x4>
 #include <QVector2D>
+#include <QVector3D>
 #include <QVector4D>
 #include <QtNumeric>
 
@@ -28,6 +29,10 @@ private:
     int m_refractionRGBFringingLocation;
     int m_refractionTextureRepeatModeLocation;
     int m_refractionModeLocation;
+    // mica parameters
+    int m_micaTintLocation;
+    int m_micaStrengthLocation;
+    int m_micaLuminosityLocation;
 
     bool m_enabled{false};
 
@@ -74,7 +79,10 @@ public:
                        const QMatrix4x4 &colorMatrix,
                        const QVector2D &halfpixel,
                        const float offset,
-                       const QRect &scaledBackgroundRect) const;
+                       const QRect &scaledBackgroundRect,
+                       const QVector3D &micaTint,
+                       const float micaStrength,
+                       const float micaLuminosity) const;
 };
 
 } // namespace BBDX

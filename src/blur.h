@@ -17,6 +17,9 @@
 #include "settings.hpp"
 
 #include <memory>
+#include <QColor>
+#include <QVector3D>
+#include <KConfigWatcher>
 #include <opengl/glframebuffer.h>
 
 #if KWIN_VERSION >= KWIN_VERSION_CODE(6, 5, 80)
@@ -139,6 +142,7 @@ private:
     bool decorationSupportsBlurBehind(const EffectWindow *w) const;
     bool shouldBlur(const EffectWindow *w, int mask, const WindowPaintData &data) const;
     void updateBlurRegion(EffectWindow *w);
+    void updateMicaTint();
     void blur(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const Region &deviceRegion, WindowPaintData &data);
     GLTexture *ensureNoiseTexture();
 
@@ -150,6 +154,9 @@ private:
         int colorMatrixLocation;
         int offsetLocation;
         int halfpixelLocation;
+        int micaTintLocation;
+        int micaStrengthLocation;
+        int micaLuminosityLocation;
     } m_onscreenPass;
 
 #if BBDX_NOT_NEEDED
@@ -203,6 +210,13 @@ private:
     RenderView *m_currentView = nullptr;
 
     QMatrix4x4 m_colorMatrix;
+    QVector3D m_micaTint;
+    float m_micaStrength = 0.0f;
+    float m_micaLuminosity = 1.0f;
+    QColor m_micaTintLight;
+    QColor m_micaTintDark;
+    bool m_micaTintFollowScheme = false;
+    KConfigWatcher::Ptr m_colorSchemeWatcher;
     size_t m_iterationCount; // number of times the texture will be downsized to half size
     int m_offset;
     int m_expandSize;

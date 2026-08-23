@@ -115,6 +115,20 @@ void BlurEffectConfig::setupSpinboxSliderSync() {
             if (ui.spinboxContrast->value() != value) ui.spinboxContrast->setValue(value); });
     connect(ui.spinboxContrast, &QSpinBox::valueChanged, this, [this](int value) {
             if (ui.kcfg_Contrast->value() != value) ui.kcfg_Contrast->setValue(value); });
+
+    // Mica overall strength
+    ui.spinboxMicaStrength->setValue(ui.kcfg_MicaStrength->value());
+    connect(ui.kcfg_MicaStrength, &QSlider::valueChanged, this, [this](int value) {
+            if (ui.spinboxMicaStrength->value() != value) ui.spinboxMicaStrength->setValue(value); });
+    connect(ui.spinboxMicaStrength, &QSpinBox::valueChanged, this, [this](int value) {
+            if (ui.kcfg_MicaStrength->value() != value) ui.kcfg_MicaStrength->setValue(value); });
+
+    // Mica luminosity effect
+    ui.spinboxMicaLuminosity->setValue(ui.kcfg_MicaLuminosity->value());
+    connect(ui.kcfg_MicaLuminosity, &QSlider::valueChanged, this, [this](int value) {
+            if (ui.spinboxMicaLuminosity->value() != value) ui.spinboxMicaLuminosity->setValue(value); });
+    connect(ui.spinboxMicaLuminosity, &QSpinBox::valueChanged, this, [this](int value) {
+            if (ui.kcfg_MicaLuminosity->value() != value) ui.kcfg_MicaLuminosity->setValue(value); });
 }
 
 void BlurEffectConfig::setupConstraints() {
@@ -142,6 +156,15 @@ void BlurEffectConfig::setupConstraints() {
     };
     connect(ui.kcfg_BlitMode, &QComboBox::currentIndexChanged, this, slotBlitModeChanged);
     slotBlitModeChanged(ui.kcfg_BlitMode->currentIndex());
+
+    // the dark tint is relevant when following color scheme
+    auto slotMicaFollowSchemeChanged = [this](bool checked) {
+        ui.kcfg_MicaTintDark->setEnabled(checked);
+        ui.labelMicaTintDark->setEnabled(checked);
+        ui.labelMicaTint->setText(checked ? i18n("Mica Tint (Light):") : i18n("Mica Tint:"));
+    };
+    connect(ui.kcfg_MicaTintFollowScheme, &QCheckBox::toggled, this, slotMicaFollowSchemeChanged);
+    slotMicaFollowSchemeChanged(ui.kcfg_MicaTintFollowScheme->isChecked());
 }
 
 void BlurEffectConfig::slotRefractionModeChanged(int index) {

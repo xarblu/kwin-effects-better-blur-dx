@@ -45,6 +45,9 @@ std::unique_ptr<BBDX::RefractionPass> BBDX::RefractionPass::create() {
         pass->m_refractionRGBFringingLocation = pass->m_shader->uniformLocation("refractionRGBFringing");
         pass->m_refractionTextureRepeatModeLocation = pass->m_shader->uniformLocation("refractionTextureRepeatMode");
         pass->m_refractionModeLocation = pass->m_shader->uniformLocation("refractionMode");
+        pass->m_micaTintLocation = pass->m_shader->uniformLocation("micaTint");
+        pass->m_micaStrengthLocation = pass->m_shader->uniformLocation("micaStrength");
+        pass->m_micaLuminosityLocation = pass->m_shader->uniformLocation("micaLuminosity");
     }
 
     return pass;
@@ -106,7 +109,10 @@ bool BBDX::RefractionPass::setParameters(const QMatrix4x4 &projectionMatrix,
                                          const QMatrix4x4 &colorMatrix,
                                          const QVector2D &halfpixel,
                                          const float offset,
-                                         const QRect &scaledBackgroundRect) const {
+                                         const QRect &scaledBackgroundRect,
+                                         const QVector3D &micaTint,
+                                         const float micaStrength,
+                                         const float micaLuminosity) const {
     if (!enabled())
         return false;
 
@@ -128,6 +134,10 @@ bool BBDX::RefractionPass::setParameters(const QMatrix4x4 &projectionMatrix,
     m_shader->setUniform(m_refractionRGBFringingLocation, static_cast<float>(m_RGBFringing));
     m_shader->setUniform(m_refractionTextureRepeatModeLocation, m_textureRepeatMode);
     m_shader->setUniform(m_refractionModeLocation, m_mode);
+    // mica parameters
+    m_shader->setUniform(m_micaTintLocation, micaTint);
+    m_shader->setUniform(m_micaStrengthLocation, micaStrength);
+    m_shader->setUniform(m_micaLuminosityLocation, micaLuminosity);
 
     return true;
 }

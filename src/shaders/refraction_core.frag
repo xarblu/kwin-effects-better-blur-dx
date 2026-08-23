@@ -14,9 +14,43 @@ uniform float refractionRGBFringing;
 uniform int refractionTextureRepeatMode;
 uniform int refractionMode; // 0: Basic, 1: Concave
 
+uniform vec3 micaTint;
+uniform float micaStrength;
+uniform float micaLuminosity;
+
 in vec2 uv;
 
 out vec4 fragColor;
+
+// The mica effect is the wallpaper's luminosity blended onto
+// the tint. The values of .3, .59, .11 are from the spec itself for blend model
+float bbdxLum(vec3 c)
+{
+    return dot(c, vec3(0.3, 0.59, 0.11));
+}
+
+vec3 bbdxClipColor(vec3 c)
+{
+    float l = bbdxLum(c);
+    float n = min(min(c.r, c.g), c.b);
+    float x = max(max(c.r, c.g), c.b);
+
+    // using max calls here and below to guard against a fully achromatic pixel
+    // as that'd be a divide by zero
+    if (n < 0.0) {
+        c = l + ((c - l) * l) / max(l - n, 1e-5);
+    }
+    if (x > 1.0) {
+        c = l + ((c - l) * (1.0 - l)) / max(x - l, 1e-5);
+    }
+
+    return c;
+}
+
+vec3 bbdxSetLum(vec3 c, float l)
+{
+    return bbdxClipColor(c + (l - bbdxLum(c)));
+}
 
 vec2 applyTextureRepeatMode(vec2 coord)
 {
@@ -157,5 +191,14 @@ void main(void)
         sum /= weightSum;
     }
 
-    fragColor = sum * colorMatrix;
+    vec4 color = sum * colorMatrix;
+
+    if (micaStrength > 0.0) {
+        // Anchor the surface's lightness to the tint instead of taking it
+        // wholesale from the backdrop, the way Fluent's luminosity opacity does.
+        float micaL = mix(bbdxLum(micaTint), bbdxLum(color.rgb), micaLuminosity);
+        color.rgb = mix(color.rgb, bbdxSetLum(micaTint, micaL), micaStrength);
+    }
+
+    fragColor = color;
 }

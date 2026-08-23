@@ -23,10 +23,27 @@
         </entry>
         <entry name="ForceContrastParams" type="Bool">
             <default>false</default>
-        </entry>
+        </entry>        
         <entry name="CornerRadius" type="Double">
             <default>0.0</default>
         </entry>
+        <!-- Mica effect controls -->
+        <entry name="MicaStrength" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="MicaTint" type="Color">
+            <default>#f3f3f3</default>
+        </entry>
+        <entry name="MicaTintFollowScheme" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="MicaTintDark" type="Color">
+            <default>#31313a</default>
+        </entry>
+        <entry name="MicaLuminosity" type="Int">
+            <default>100</default>
+        </entry>
+
         <!-- Force Blur -->
         <entry name="WindowClasses" type="String">
             <default>class1
