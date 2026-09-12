@@ -8,6 +8,7 @@ Better Blur DX is a loose continuation of [Better Blur](https://github.com/taj-n
 - Adjustable blur brightness, contrast and saturation
 - Adjustable corner radius
 - Refraction
+- Mica effect
 
 You may notice these are *less* features than the original Better Blur.
 Notably ["Static Blur" is currently missing](https://github.com/xarblu/kwin-effects-better-blur-dx/issues/16)

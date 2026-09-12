@@ -400,6 +400,190 @@
          </item>
         </layout>
        </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="labelMicaStrength">
+         <property name="text">
+          <string>Mica Strength:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <layout class="QHBoxLayout" name="sliderMicaStrength">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayoutMicaStrength">
+           <item>
+            <widget class="QSlider" name="kcfg_MicaStrength">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>5</number>
+             </property>
+             <property name="pageStep">
+              <number>5</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TickPosition::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayoutMicaStrength">
+             <item>
+              <widget class="QLabel" name="labelMicaStrengthNone">
+               <property name="text">
+                <string>Off</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelMicaStrengthFull">
+               <property name="text">
+                <string>Full tint</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinboxMicaStrength">
+           <property name="suffix">
+            <string> %</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="labelMicaTint">
+         <property name="text">
+          <string>Mica Tint:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <layout class="QVBoxLayout" name="verticalLayoutMicaTint">
+         <item>
+          <widget class="KColorButton" name="kcfg_MicaTint"/>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="labelMicaTintFollowScheme">
+         <property name="text">
+          <string>Follow System Color Scheme:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="kcfg_MicaTintFollowScheme">
+         <property name="text">
+          <string>Switch tint automatically when the system color scheme changes</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QLabel" name="labelMicaTintDark">
+         <property name="text">
+          <string>Mica Tint (Dark):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <layout class="QVBoxLayout" name="verticalLayoutMicaTintDark">
+         <item>
+          <widget class="KColorButton" name="kcfg_MicaTintDark"/>
+         </item>
+        </layout>
+       </item>
+       <item row="12" column="0">
+        <widget class="QLabel" name="labelMicaLuminosity">
+         <property name="text">
+          <string>Mica Luminosity:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <layout class="QHBoxLayout" name="sliderMicaLuminosity">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayoutMicaLuminosity">
+           <item>
+            <widget class="QSlider" name="kcfg_MicaLuminosity">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>5</number>
+             </property>
+             <property name="pageStep">
+              <number>5</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TickPosition::TicksBelow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayoutMicaLuminosity">
+             <item>
+              <widget class="QLabel" name="labelMicaLuminosityFlat">
+               <property name="text">
+                <string>Flat tint</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelMicaLuminosityFull">
+               <property name="text">
+                <string>Full wallpaper</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinboxMicaLuminosity">
+           <property name="suffix">
+            <string> %</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget">

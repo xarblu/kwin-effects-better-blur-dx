@@ -46,6 +46,48 @@ This is mainly useful to work around the infamous "korners" bug
 > This setting is ignored for windows that provide their own blur region (e.g. Plasma surfaces).
 > We expect these to be set correctly by the window (and usually they are).
 
+### Mica Strength
+
+Blends the blurred background in a Mica effect by using a luminosity blend.
+
+At `0%` (the default) no blend is used. 
+At higher values the background keeps the luminosity of what is
+behind the window while taking the hue and saturation from the tint color.
+
+### Mica Tint
+
+The color that Mica Strength blends towards. Only its hue and saturation are
+used, its luminosity is supplied by the blurred background.
+
+Has no effect while Mica strength is 0%
+
+Pair this with`Blur Source Mode: Wallpaper` on the Performance tab for
+a more faithful effect.
+
+### Mica Luminosity
+
+How much of the backdrop's 'lightness' reaches the blended result.
+
+At '100%' (the default) the surface takes its lightness entirely from whatever is
+behind the window, so a dark region of wallpaper produces a dark surface even
+when the tint is nearly white. Lower values instead lean more towards the tint's
+own.
+
+This keeps the material reliably dark and light regardless of what is behind it. 
+
+### Follow Color Scheme
+
+Switch between a light and a dark tint automatically following the system's
+setting. 
+
+The scheme's `Colors:Window` background decides which tint applies, using the
+same luma weights as the shader.
+
+### Mica Tint (Dark)
+
+The tint used while 'Follow Color Scheme' is enabled and the active color
+scheme is dark.
+
 # Force blur
 
 ### Classes of windows to force blur:

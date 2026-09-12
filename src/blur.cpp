@@ -43,6 +43,8 @@
 #if KWIN_VERSION < KWIN_VERSION_CODE(6, 6, 90)
 #include <wayland/blur.h>
 #include <wayland/contrast.h>
+#include <KConfigGroup>
+#include <KSharedConfig>
 #endif
 #include <wayland/display.h>
 #include <wayland/surface.h>
@@ -143,6 +145,9 @@ BlurEffect::BlurEffect()
         m_onscreenPass.colorMatrixLocation = m_onscreenPass.shader->uniformLocation("colorMatrix");
         m_onscreenPass.offsetLocation = m_onscreenPass.shader->uniformLocation("offset");
         m_onscreenPass.halfpixelLocation = m_onscreenPass.shader->uniformLocation("halfpixel");
+        m_onscreenPass.micaTintLocation = m_onscreenPass.shader->uniformLocation("micaTint");
+        m_onscreenPass.micaStrengthLocation = m_onscreenPass.shader->uniformLocation("micaStrength");
+        m_onscreenPass.micaLuminosityLocation = m_onscreenPass.shader->uniformLocation("micaLuminosity");
     }
 
 #if BBDX_NOT_NEEDED
@@ -270,6 +275,18 @@ BlurEffect::BlurEffect()
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
 
+    // Resolve the Mica tint when the color scheme changes so that
+    // system-level dark and light mode swapping gets handled
+    m_colorSchemeWatcher = KConfigWatcher::create(KSharedConfig::openConfig(QStringLiteral("kdeglobals")));
+    connect(m_colorSchemeWatcher.data(), &KConfigWatcher::configChanged, this,
+            [this](const KConfigGroup &group, const QByteArrayList &) {
+                if (!m_micaTintFollowScheme || !group.name().startsWith(QLatin1String("Colors:"))) {
+                    return;
+                }
+                updateMicaTint();
+                effects->addRepaintFull();
+            });
+
     // Fetch the blur regions for all windows
     const auto stackingOrder = effects->stackingOrder();
     for (EffectWindow *window : stackingOrder) {
@@ -353,6 +370,36 @@ void BlurEffect::initBlurStrengthValues()
     }
 }
 
+/**
+ * Resolves the active Mica tint
+ *
+ * The color scheme's window background decides whether the light or the 
+ * dark tint applies. The same luma weights as the shader are used so the 
+ * two use the same concept of what light or dark is
+ */
+void BlurEffect::updateMicaTint()
+{
+    QColor tint = m_micaTintLight;
+
+    if (m_micaTintFollowScheme) {
+
+        auto config = KSharedConfig::openConfig(QStringLiteral("kdeglobals"));
+        config->reparseConfiguration();
+
+        const configGroup = KConfigGroup(config, QStringLiteral("Colors:Window"));
+
+        const QColor window = configGroup.readEntry("BackgroundNormal", QColor(239, 240, 241));
+        const qreal luma = 0.3 * window.redF() + 0.59 * window.greenF() + 0.11 * window.blueF();
+
+        // we can determine light or dark based on the luma
+        if (luma < 0.5) {
+            tint = m_micaTintDark;
+        }
+    }
+
+    m_micaTint = QVector3D(tint.redF(), tint.greenF(), tint.blueF());
+}
+
 void BlurEffect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags);
@@ -370,6 +417,12 @@ void BlurEffect::reconfigure(ReconfigureFlags flags)
     m_colorMatrix = colorTransformMatrix(BlurConfig::saturation() / 100.0,
                                          BlurConfig::contrast() / 100.0,
                                          BlurConfig::brightness() / 100.0);
+    m_micaStrength = BlurConfig::micaStrength() / 100.0f;
+    m_micaLuminosity = BlurConfig::micaLuminosity() / 100.0f;
+    m_micaTintLight = BlurConfig::micaTint();
+    m_micaTintDark = BlurConfig::micaTintDark();
+    m_micaTintFollowScheme = BlurConfig::micaTintFollowScheme();
+    updateMicaTint();
 #if KWIN_VERSION >= KWIN_VERSION_CODE(6, 6, 4)
     for (auto &[window, data] : m_windows) {
         data.blurItem->setPixelsToExpandRepaintsBelowOpaqueRegions(m_expandSize);
@@ -1318,11 +1371,17 @@ void BlurEffect::blur(const RenderTarget &renderTarget, const RenderViewport &vi
                                              colorMatrix,
                                              halfpixel,
                                              float(m_offset),
-                                             backgroundRect)) {
+                                             backgroundRect,
+                                             m_micaTint,
+                                             m_micaStrength,
+                                             m_micaLuminosity)) {
         m_onscreenPass.shader->setUniform(m_onscreenPass.mvpMatrixLocation, projectionMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.colorMatrixLocation, colorMatrix);
         m_onscreenPass.shader->setUniform(m_onscreenPass.halfpixelLocation, halfpixel);
         m_onscreenPass.shader->setUniform(m_onscreenPass.offsetLocation, float(m_offset));
+        m_onscreenPass.shader->setUniform(m_onscreenPass.micaTintLocation, m_micaTint);
+        m_onscreenPass.shader->setUniform(m_onscreenPass.micaStrengthLocation, m_micaStrength);
+        m_onscreenPass.shader->setUniform(m_onscreenPass.micaLuminosityLocation, m_micaLuminosity);
         } // indent intentional for KWin diff
 
         read->colorAttachment()->bind();
