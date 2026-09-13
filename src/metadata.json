@@ -19,9 +19,11 @@
         ],
         "Category": "Appearance",
         "Description": "Fork of the KWin Blur effect for KDE Plasma 6 with force blur and more",
+        "Description[zh_CN]": "KDE Plasma 6的KWin模糊效果的分支，增加了强制模糊以及更多",
         "EnabledByDefault": false,
         "License": "GPL",
-        "Name": "Better Blur DX"
+        "Name": "Better Blur DX",
+        "Name[zh_CN]": "更好的模糊DX"
     },
     "X-KDE-ConfigModule": "kwin_better_blur_dx_config"
 }
