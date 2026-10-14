@@ -54,6 +54,7 @@
 #include <wayland_server.h>
 #endif
 
+#include <QDBusConnection>
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QScreen>
@@ -266,6 +267,20 @@ BlurEffect::BlurEffect()
     connect(effects, &EffectsHandler::viewRemoved, this, &BlurEffect::slotViewRemoved);
 #endif
     connect(effects, &EffectsHandler::propertyNotify, this, &BlurEffect::slotPropertyNotify);
+    // Bound through argument-dropping lambdas, as the screen signal's parameter
+    // type differs across the KWin versions we build against.
+    connect(effects, &EffectsHandler::screenAdded, this, [this]() { slotScreenLayoutChanged(); });
+    connect(effects, &EffectsHandler::virtualScreenGeometryChanged, this, [this]() { slotScreenLayoutChanged(); });
+    if (!QDBusConnection::systemBus().connect(
+            QStringLiteral("org.freedesktop.login1"),
+            QStringLiteral("/org/freedesktop/login1"),
+            QStringLiteral("org.freedesktop.login1.Manager"),
+            QStringLiteral("PrepareForSleep"),
+            this, SLOT(slotPrepareForSleep(bool)))) {
+        qCWarning(KWIN_BLUR) << BBDX::LOG_PREFIX
+                             << "Failed to connect to logind PrepareForSleep,"
+                             << "render data will not be invalidated on resume";
+    }
     connect(effects, &EffectsHandler::xcbConnectionChanged, this, [this]() {
         net_wm_blur_region = effects->announceSupportProperty(s_blurAtomName, this);
     });
@@ -557,6 +572,35 @@ void BlurEffect::slotViewRemoved(KWin::RenderView *view)
     m_blurCache->dropWallpaper(view);
 }
 
+void BlurEffect::slotPrepareForSleep(bool start)
+{
+    if (start) {
+        return;
+    }
+
+    // logind emits PrepareForSleep(false) early in the resume path, before KWin
+    // has restored the GPU context and reconfigured its outputs. Dropping the
+    // render data from this D-Bus callback would therefore both touch GL outside
+    // the paint pipeline and rebuild the cache from the not-yet-settled output
+    // geometry - which the texture compare then latches as "unchanged" for good,
+    // leaving the blur drawn offset from where the window actually is.
+    // Defer to the next prePaintScreen(), which runs inside the paint pipeline
+    // with a current context and the final geometry.
+    m_invalidateRenderDataOnNextPaint = true;
+}
+
+void BlurEffect::slotScreenLayoutChanged()
+{
+    // Adding or removing an output re-lays out the virtual screen, so outputs that
+    // were not themselves touched still move in global coordinates - plugging in a
+    // monitor to the left shifts the internal panel sideways by its full width.
+    // The cached blur is keyed to the old geometry while KWin's input regions follow
+    // the new one, which draws windows offset from where they actually are.
+    // Defer for the same reason as the resume path: the layout is not necessarily
+    // settled when this fires, and prePaintScreen() runs with a current context.
+    m_invalidateRenderDataOnNextPaint = true;
+}
+
 void BlurEffect::slotPropertyNotify(EffectWindow *w, long atom)
 {
     if (w && atom == net_wm_blur_region && net_wm_blur_region != XCB_ATOM_NONE) {
@@ -710,6 +754,22 @@ void BlurEffect::prePaintScreen(ScreenPrePaintData &data)
 #else
     m_currentView = data.view;
 #endif
+
+    if (m_invalidateRenderDataOnNextPaint) {
+        m_invalidateRenderDataOnNextPaint = false;
+
+        // Requested either by a resume from sleep - GPU memory is powered down
+        // across suspend/hibernate, so cached blur textures and the compare state
+        // can come back holding garbage - or by a screen layout change, which
+        // invalidates the geometry the cache was built for. Either way, drop all
+        // per-window render data so textures, framebuffers and cache entries are
+        // rebuilt from scratch.
+        // The context is already current here, hence no makeOpenGLContextCurrent().
+        qCDebug(KWIN_BLUR) << BBDX::LOG_PREFIX << "Dropping render data";
+        for (auto &[window, windowData] : m_windows) {
+            windowData.render.clear();
+        }
+    }
 
     m_blurCache->flushAccumulatedDirtyRegions(data);
 
