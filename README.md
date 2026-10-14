@@ -131,7 +131,7 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
 
 ## Manual
 > [!NOTE]
-> On Fedora Kinoite and other distributions based on it, the effect must be built in a container.
+> On Fedora Kinoite and other distributions based on it, the effect must be built in a container. It is recommended to use Fedora-based containers for compiling.
 
 ### Dependencies
 - CMake
@@ -140,6 +140,8 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
 - Qt 6
 - KF6
 - KWin development packages
+- Vulkan
+- RPM Tools (For containers)
 
 <details>
   <summary>Arch Linux</summary>
@@ -147,12 +149,12 @@ KWin X11 doesn't see any API changes since version 6.5 meaning the Wayland and X
 
   Wayland:
   ```
-  sudo pacman -S base-devel git extra-cmake-modules qt6-tools kwin
+  sudo pacman -S base-devel git extra-cmake-modules vulkan-headers qt6-tools kwin
   ```
 
   X11:
   ```
-  sudo pacman -S base-devel git extra-cmake-modules qt6-tools kwin-x11
+  sudo pacman -S base-devel git extra-cmake-modules vulkan-headers qt6-tools kwin-x11
   ```
 </details>
 
