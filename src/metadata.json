@@ -19,9 +19,21 @@
         ],
         "Category": "Appearance",
         "Description": "Fork of the KWin Blur effect for KDE Plasma 6 with force blur and more",
+        "Description[zh_CN]": "KDE Plasma 6的KWin模糊效果的分支，增加了强制模糊以及更多",
+        "Description[zh_TW]": "KDE Plasma 6 的 KWin 模糊效果分支，增加了強制模糊與更多功能",
+        "Description[ja]": "KDE Plasma 6向けKWinブラーエフェクトのフォーク。強制ブラーなど追加機能",
+        "Description[fr]": "Fork de l'effet de flou KWin pour KDE Plasma 6 avec flou forcé et plus",
+        "Description[de]": "Fork des KWin-Unschärfeeffekts für KDE Plasma 6 mit erzwungener Unschärfe und mehr",
+        "Description[ko]": "KDE Plasma 6용 KWin 블러 효과 포크, 강제 블러 및 추가 기능 포함",
         "EnabledByDefault": false,
         "License": "GPL",
-        "Name": "Better Blur DX"
+        "Name": "Better Blur DX",
+        "Name[zh_CN]": "更好的模糊DX",
+        "Name[zh_TW]": "更好的模糊DX",
+        "Name[ja]": "ベター・ブラーDX",
+        "Name[fr]": "Better Blur DX",
+        "Name[de]": "Better Blur DX",
+        "Name[ko]": "베터 블러 DX"
     },
     "X-KDE-ConfigModule": "kwin_better_blur_dx_config"
 }

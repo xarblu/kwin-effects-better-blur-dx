@@ -28,7 +28,8 @@ if(BBDX_X11)
                                KWIN_VERSION_MAJOR=${KWin_VERSION_MAJOR}
                                KWIN_VERSION_MINOR=${KWin_VERSION_MINOR}
                                KWIN_VERSION_PATCH=${KWin_VERSION_PATCH}
-                               BBDX_X11)
+                               BBDX_X11
+                               TRANSLATION_DOMAIN="kwin_better_blur_dx")
     install(TARGETS better_blur_dx DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin-x11/effects/plugins)
 else()
     add_library(better_blur_dx MODULE ${better_blur_dx_SOURCES})
@@ -41,7 +42,8 @@ else()
     target_compile_definitions(better_blur_dx PRIVATE
                                KWIN_VERSION_MAJOR=${KWin_VERSION_MAJOR}
                                KWIN_VERSION_MINOR=${KWin_VERSION_MINOR}
-                               KWIN_VERSION_PATCH=${KWin_VERSION_PATCH})
+                               KWIN_VERSION_PATCH=${KWin_VERSION_PATCH}
+                               TRANSLATION_DOMAIN="kwin_better_blur_dx")
     install(TARGETS better_blur_dx DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)
 endif()
 

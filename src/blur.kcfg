@@ -7,19 +7,19 @@
     <group name="Effect-better-blur-dx">
         <!-- General -->
         <entry name="BlurStrength" type="Int">
-            <default>15</default>
+            <default>3</default>
         </entry>
         <entry name="NoiseStrength" type="Int">
-            <default>5</default>
+            <default>0</default>
         </entry>
         <entry name="Brightness" type="Int">
-            <default>100</default>
+            <default>105</default>
         </entry>
         <entry name="Saturation" type="Int">
-            <default>150</default>
+            <default>120</default>
         </entry>
         <entry name="Contrast" type="Int">
-            <default>100</default>
+            <default>115</default>
         </entry>
         <entry name="ForceContrastParams" type="Bool">
             <default>false</default>
@@ -29,9 +29,7 @@
         </entry>
         <!-- Force Blur -->
         <entry name="WindowClasses" type="String">
-            <default>class1
-class2
-class3</default>
+            <default></default>
         </entry>
         <entry name="BlurMatching" type="Bool">
             <default>true</default>
@@ -40,32 +38,32 @@ class3</default>
             <default>false</default>
         </entry>
         <entry name="BlurDecorations" type="Bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="BlurMenus" type="Bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="BlurDocks" type="Bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
         <!-- Refraction -->
         <entry name="RefractionStrength" type="Int">
-            <default>0</default>
+            <default>15</default>
         </entry>
         <entry name="RefractionMode" type="Int">
-            <default>0</default>
+            <default>1</default>
         </entry>
         <entry name="RefractionEdgeSize" type="Int">
-            <default>20</default>
+            <default>10</default>
         </entry>
         <entry name="RefractionNormalPow" type="Int">
-            <default>2</default>
+            <default>11</default>
         </entry>
         <entry name="RefractionCornerRadius" type="Int">
-            <default>8</default>
+            <default>117</default>
         </entry>
         <entry name="RefractionRGBFringing" type="Int">
-            <default>1</default>
+            <default>9</default>
         </entry>
         <entry name="RefractionTextureRepeatMode" type="Int">
             <default>0</default>

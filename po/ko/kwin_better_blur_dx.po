@@ -1,0 +1,203 @@
+# Korean translations for kwin_better_blur_dx package
+# kwin_better_blur_dx 패키지의 한국어 번역.
+# Copyright (C) 2026 THE kwin_better_blur_dx'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the kwin_better_blur_dx package.
+# KairikiFedora <13278297951@sina.cn>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: kwin_better_blur_dx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-24 11:28+0800\n"
+"PO-Revision-Date: 2026-08-29 12:00+0800\n"
+"Last-Translator: KairikiFedora <13278297951@sina.cn>\n"
+"Language-Team: KairikiFedora <13278297951@sina.cn>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: rc.cpp:3
+msgid "General"
+msgstr "일반"
+
+#: rc.cpp:6
+msgid "Blur strength:"
+msgstr "블러 강도:"
+
+#: rc.cpp:9 rc.cpp:18
+msgid "Light"
+msgstr "약"
+
+#: rc.cpp:12 rc.cpp:21 rc.cpp:30 rc.cpp:43 rc.cpp:56 rc.cpp:99 rc.cpp:144
+msgid "Strong"
+msgstr "강"
+
+#: rc.cpp:15
+msgid "Noise strength:"
+msgstr "노이즈 강도:"
+
+#: rc.cpp:24
+msgid "Brightness:"
+msgstr "밝기:"
+
+#: rc.cpp:27 rc.cpp:40 rc.cpp:53
+msgid "None"
+msgstr "없음"
+
+#: rc.cpp:34 rc.cpp:47 rc.cpp:60
+#, no-c-format
+msgid " %"
+msgstr " %"
+
+#: rc.cpp:37
+msgid "Saturation:"
+msgstr "채도:"
+
+#: rc.cpp:50
+msgid "Contrast:"
+msgstr "대비:"
+
+#: rc.cpp:63
+msgid "Force Contrast Parameters:"
+msgstr "강제 대비 매개변수:"
+
+#: rc.cpp:66
+msgid "Corner Radius:"
+msgstr "모서리 반경:"
+
+#: rc.cpp:69
+msgid "Force blur"
+msgstr "강제 블러"
+
+#: rc.cpp:72
+msgid "Classes of windows to force blur:"
+msgstr "강제 블러 적용 창 클래스:"
+
+#: rc.cpp:75
+msgid "Blur only matching"
+msgstr "일치하는 항목만 블러"
+
+#: rc.cpp:78
+msgid "Blur all except matching"
+msgstr "일치하지 않는 모든 항목 블러"
+
+#: rc.cpp:81
+msgid "Blur window decorations as well"
+msgstr "창 장식도 블러"
+
+#: rc.cpp:84
+msgid "Blur menus"
+msgstr "메뉴 블러"
+
+#: rc.cpp:87
+msgid "Blur docks"
+msgstr "독 블러"
+
+#: rc.cpp:90
+msgid "Refraction"
+msgstr "굴절"
+
+#: rc.cpp:93
+msgid "Refraction Strength:"
+msgstr "굴절 강도:"
+
+#: rc.cpp:96 rc.cpp:141
+msgid "Off"
+msgstr "끄기"
+
+#: rc.cpp:102
+msgid "Refraction Mode:"
+msgstr "굴절 모드:"
+
+#: rc.cpp:105
+msgid "Basic (Bulge)"
+msgstr "기본 (볼록)"
+
+#: rc.cpp:108
+msgid "Concave (Lens)"
+msgstr "오목 (렌즈)"
+
+#: rc.cpp:111
+msgid "Refraction Edge Size:"
+msgstr "굴절 가장자리 크기:"
+
+#: rc.cpp:114
+msgid "Small"
+msgstr "작게"
+
+#: rc.cpp:117
+msgid "Wide"
+msgstr "넓게"
+
+#: rc.cpp:120
+msgid "Refraction Falloff:"
+msgstr "굴절 감쇠:"
+
+#: rc.cpp:123
+msgid "Linear"
+msgstr "선형"
+
+#: rc.cpp:126 rc.cpp:135
+msgid "Round"
+msgstr "원형"
+
+#: rc.cpp:129
+msgid "Refraction Corner Radius:"
+msgstr "굴절 모서리 반경:"
+
+#: rc.cpp:132
+msgid "Square"
+msgstr "사각형"
+
+#: rc.cpp:138
+msgid "RGB Fringing Strength:"
+msgstr "RGB 프린징 강도:"
+
+#: rc.cpp:147
+msgid "Edge Behavior:"
+msgstr "가장자리 동작:"
+
+#: rc.cpp:150
+msgid "Clamp (extend edge pixels)"
+msgstr "클램프 (가장자리 픽셀 확장)"
+
+#: rc.cpp:153
+msgid "Flip (mirror texture)"
+msgstr "뒤집기 (텍스처 미러)"
+
+#: rc.cpp:156
+msgid "Performance"
+msgstr "성능"
+
+#: rc.cpp:159
+msgid "Blur Source Mode:"
+msgstr "블러 소스 모드:"
+
+#: rc.cpp:162
+msgid "Full"
+msgstr "전체"
+
+#: rc.cpp:165
+msgid "Wallpaper [EXPERIMENTAL]"
+msgstr "배경화면 [실험적]"
+
+#: rc.cpp:168
+msgid "Ignore Cache:"
+msgstr "캐시 무시:"
+
+#: rc.cpp:171
+msgid "Cache Rate Limit:"
+msgstr "캐시 속도 제한:"
+
+#: rc.cpp:174
+msgid " ms"
+msgstr " ms"
+
+#: rc.cpp:177
+msgid "About"
+msgstr "정보"
+
+#: rc.cpp:180
+msgid "Failed to load about.html"
+msgstr "about.html 로드 실패"

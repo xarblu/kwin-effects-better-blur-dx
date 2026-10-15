@@ -1,0 +1,203 @@
+# French translations for kwin_better_blur_dx package
+# Traduction française du paquet kwin_better_blur_dx.
+# Copyright (C) 2026 THE kwin_better_blur_dx'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the kwin_better_blur_dx package.
+# KairikiFedora <13278297951@sina.cn>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: kwin_better_blur_dx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-24 11:28+0800\n"
+"PO-Revision-Date: 2026-08-29 12:00+0800\n"
+"Last-Translator: KairikiFedora <13278297951@sina.cn>\n"
+"Language-Team: KairikiFedora <13278297951@sina.cn>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: rc.cpp:3
+msgid "General"
+msgstr "Général"
+
+#: rc.cpp:6
+msgid "Blur strength:"
+msgstr "Force du flou :"
+
+#: rc.cpp:9 rc.cpp:18
+msgid "Light"
+msgstr "Faible"
+
+#: rc.cpp:12 rc.cpp:21 rc.cpp:30 rc.cpp:43 rc.cpp:56 rc.cpp:99 rc.cpp:144
+msgid "Strong"
+msgstr "Fort"
+
+#: rc.cpp:15
+msgid "Noise strength:"
+msgstr "Force du bruit :"
+
+#: rc.cpp:24
+msgid "Brightness:"
+msgstr "Luminosité :"
+
+#: rc.cpp:27 rc.cpp:40 rc.cpp:53
+msgid "None"
+msgstr "Aucun"
+
+#: rc.cpp:34 rc.cpp:47 rc.cpp:60
+#, no-c-format
+msgid " %"
+msgstr " %"
+
+#: rc.cpp:37
+msgid "Saturation:"
+msgstr "Saturation :"
+
+#: rc.cpp:50
+msgid "Contrast:"
+msgstr "Contraste :"
+
+#: rc.cpp:63
+msgid "Force Contrast Parameters:"
+msgstr "Paramètres de contraste forcé :"
+
+#: rc.cpp:66
+msgid "Corner Radius:"
+msgstr "Rayon des coins :"
+
+#: rc.cpp:69
+msgid "Force blur"
+msgstr "Flou forcé"
+
+#: rc.cpp:72
+msgid "Classes of windows to force blur:"
+msgstr "Classes de fenêtres à flouter forcément :"
+
+#: rc.cpp:75
+msgid "Blur only matching"
+msgstr "Flouter uniquement les correspondances"
+
+#: rc.cpp:78
+msgid "Blur all except matching"
+msgstr "Flouter tout sauf les correspondances"
+
+#: rc.cpp:81
+msgid "Blur window decorations as well"
+msgstr "Flouter également les décorations de fenêtres"
+
+#: rc.cpp:84
+msgid "Blur menus"
+msgstr "Flouter les menus"
+
+#: rc.cpp:87
+msgid "Blur docks"
+msgstr "Flouter les docks"
+
+#: rc.cpp:90
+msgid "Refraction"
+msgstr "Réfraction"
+
+#: rc.cpp:93
+msgid "Refraction Strength:"
+msgstr "Force de réfraction :"
+
+#: rc.cpp:96 rc.cpp:141
+msgid "Off"
+msgstr "Désactivé"
+
+#: rc.cpp:102
+msgid "Refraction Mode:"
+msgstr "Mode de réfraction :"
+
+#: rc.cpp:105
+msgid "Basic (Bulge)"
+msgstr "Basique (renflement)"
+
+#: rc.cpp:108
+msgid "Concave (Lens)"
+msgstr "Concave (lentille)"
+
+#: rc.cpp:111
+msgid "Refraction Edge Size:"
+msgstr "Taille du bord de réfraction :"
+
+#: rc.cpp:114
+msgid "Small"
+msgstr "Petit"
+
+#: rc.cpp:117
+msgid "Wide"
+msgstr "Large"
+
+#: rc.cpp:120
+msgid "Refraction Falloff:"
+msgstr "Atténuation de la réfraction :"
+
+#: rc.cpp:123
+msgid "Linear"
+msgstr "Linéaire"
+
+#: rc.cpp:126 rc.cpp:135
+msgid "Round"
+msgstr "Arrondi"
+
+#: rc.cpp:129
+msgid "Refraction Corner Radius:"
+msgstr "Rayon des coins de réfraction :"
+
+#: rc.cpp:132
+msgid "Square"
+msgstr "Carré"
+
+#: rc.cpp:138
+msgid "RGB Fringing Strength:"
+msgstr "Force de frange RVB :"
+
+#: rc.cpp:147
+msgid "Edge Behavior:"
+msgstr "Comportement des bords :"
+
+#: rc.cpp:150
+msgid "Clamp (extend edge pixels)"
+msgstr "Bloquer (étendre les pixels de bord)"
+
+#: rc.cpp:153
+msgid "Flip (mirror texture)"
+msgstr "Retourner (miroir de texture)"
+
+#: rc.cpp:156
+msgid "Performance"
+msgstr "Performance"
+
+#: rc.cpp:159
+msgid "Blur Source Mode:"
+msgstr "Mode de source de flou :"
+
+#: rc.cpp:162
+msgid "Full"
+msgstr "Complet"
+
+#: rc.cpp:165
+msgid "Wallpaper [EXPERIMENTAL]"
+msgstr "Fond d'écran [EXPÉRIMENTAL]"
+
+#: rc.cpp:168
+msgid "Ignore Cache:"
+msgstr "Ignorer le cache :"
+
+#: rc.cpp:171
+msgid "Cache Rate Limit:"
+msgstr "Limite de taux de cache :"
+
+#: rc.cpp:174
+msgid " ms"
+msgstr " ms"
+
+#: rc.cpp:177
+msgid "About"
+msgstr "À propos"
+
+#: rc.cpp:180
+msgid "Failed to load about.html"
+msgstr "Échec du chargement de about.html"

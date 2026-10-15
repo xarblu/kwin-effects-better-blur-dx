@@ -11,6 +11,7 @@
 #include "blurconfig.h"
 
 #include <KPluginFactory>
+#include <KLocalizedString>
 #include "kwineffects_interface.h"
 #include "settings.hpp"
 
@@ -32,7 +33,9 @@ BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     if (about.open(QIODevice::ReadOnly)) {
         const auto html = about.readAll()
             .replace("${version}", ABOUT_VERSION_STRING)
-            .replace("${repo}", "https://github.com/xarblu/kwin-effects-better-blur-dx");
+            .replace("${repo}", "https://github.com/xarblu/kwin-effects-better-blur-dx")
+            .replace("${authors-label}", i18n("Authors:").toUtf8())
+            .replace("${config-docs-label}", i18n("Configuration documentation").toUtf8());
         ui.aboutText->setHtml(html);
     }
 
@@ -64,18 +67,18 @@ void BlurEffectConfig::setContextualHelp(
 void BlurEffectConfig::setupContextualHelp() {
     setContextualHelp(
         ui.windowClassesContextualHelp,
-        QStringLiteral("<p>Specify one window class pattern per line.</p>") +
+        i18n("<p>Specify one window class pattern per line.</p>") +
 
-        QStringLiteral("<p><strong>Exact match:</strong><br>") +
-        QStringLiteral("By default window classes are matched exactly.<br>") +
-        QStringLiteral("Example: <code>org.kde.dolphin</code> matches only Dolphin.</p>") +
+        i18n("<p><strong>Exact match:</strong><br>"
+             "By default window classes are matched exactly.<br>"
+             "Example: <code>org.kde.dolphin</code> matches only Dolphin.</p>") +
 
-        QStringLiteral("<p><strong>Regex match:</strong><br>") +
-        QStringLiteral("If wrapped with <code>/</code> window classes are matched by Perl compatible regular expression.<br>") +
-        QStringLiteral("Example: <code>/^org\\.kde\\..*/</code> matches all KDE applications.</p>") +
+        i18n("<p><strong>Regex match:</strong><br>"
+             "If wrapped with <code>/</code> window classes are matched by Perl compatible regular expression.<br>"
+             "Example: <code>/^org\\.kde\\..*/</code> matches all KDE applications.</p>") +
 
-        QStringLiteral("<p><strong>Empty match:</strong><br>") +
-        QStringLiteral("Use the special value <code>$blank</code> to match empty window classes.</p>"),
+        i18n("<p><strong>Empty match:</strong><br>"
+             "Use the special value <code>$blank</code> to match empty window classes.</p>"),
         ui.windowClassesBriefDescription
     );
 }

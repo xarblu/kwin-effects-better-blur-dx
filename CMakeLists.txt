@@ -94,4 +94,8 @@ endif()
 
 add_subdirectory(src)
 
+# Compile and install translation catalogs from po/<lang>/<domain>.po
+# into ${KDE_INSTALL_LOCALEDIR}/<lang>/LC_MESSAGES/<domain>.mo
+ki18n_install(po)
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

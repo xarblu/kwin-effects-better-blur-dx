@@ -1,0 +1,301 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the kwin_better_blur_dx package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kwin_better_blur_dx 2.5.1\n"
+"Report-Msgid-Bugs-To: https://github.com/xarblu/kwin-effects-better-blur-dx/"
+"issues\n"
+"POT-Creation-Date: 2026-01-01 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/kcm/blur_config.cpp:37
+#, no-c-format
+msgid "Authors:"
+msgstr ""
+
+#: src/kcm/blur_config.cpp:38
+#, no-c-format
+msgid "Configuration documentation"
+msgstr ""
+
+#: src/kcm/blur_config.cpp:70
+#, no-c-format
+msgid "<p>Specify one window class pattern per line.</p>"
+msgstr ""
+
+#: src/kcm/blur_config.cpp:72
+#, no-c-format
+msgid ""
+"<p><strong>Exact match:</strong><br>By default window classes are matched "
+"exactly.<br>Example: <code>org.kde.dolphin</code> matches only Dolphin.</p>"
+msgstr ""
+
+#: src/kcm/blur_config.cpp:76
+#, no-c-format
+msgid ""
+"<p><strong>Regex match:</strong><br>If wrapped with <code>/</code> window "
+"classes are matched by Perl compatible regular expression.<br>Example: "
+"<code>/^org\\.kde\\..*/</code> matches all KDE applications.</p>"
+msgstr ""
+
+#: src/kcm/blur_config.cpp:80
+#, no-c-format
+msgid ""
+"<p><strong>Empty match:</strong><br>Use the special value <code>$blank</"
+"code> to match empty window classes.</p>"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:1
+#, no-c-format
+msgid "General"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:2
+#, no-c-format
+msgid "Blur strength:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:3 /tmp/tmp.grIJ9Hzg0i/rc.cpp:6
+#, no-c-format
+msgid "Light"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:4 /tmp/tmp.grIJ9Hzg0i/rc.cpp:7
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:10 /tmp/tmp.grIJ9Hzg0i/rc.cpp:14
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:18 /tmp/tmp.grIJ9Hzg0i/rc.cpp:32
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:47
+#, no-c-format
+msgid "Strong"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:5
+#, no-c-format
+msgid "Noise strength:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:8
+#, no-c-format
+msgid "Brightness:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:9 /tmp/tmp.grIJ9Hzg0i/rc.cpp:13
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:17
+#, no-c-format
+msgid "None"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:11 /tmp/tmp.grIJ9Hzg0i/rc.cpp:15
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:19
+#, no-c-format
+msgid " %"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:12
+#, no-c-format
+msgid "Saturation:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:16
+#, no-c-format
+msgid "Contrast:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:20
+#, no-c-format
+msgid "Force Contrast Parameters:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:21
+#, no-c-format
+msgid "Corner Radius:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:22
+#, no-c-format
+msgid "Force blur"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:23
+#, no-c-format
+msgid "Classes of windows to force blur:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:24
+#, no-c-format
+msgid "Blur only matching"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:25
+#, no-c-format
+msgid "Blur all except matching"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:26
+#, no-c-format
+msgid "Blur window decorations as well"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:27
+#, no-c-format
+msgid "Blur menus"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:28
+#, no-c-format
+msgid "Blur docks"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:29
+#, no-c-format
+msgid "Refraction"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:30
+#, no-c-format
+msgid "Refraction Strength:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:31 /tmp/tmp.grIJ9Hzg0i/rc.cpp:46
+#, no-c-format
+msgid "Off"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:33
+#, no-c-format
+msgid "Refraction Mode:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:34
+#, no-c-format
+msgid "Basic (Bulge)"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:35
+#, no-c-format
+msgid "Concave (Lens)"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:36
+#, no-c-format
+msgid "Refraction Edge Size:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:37
+#, no-c-format
+msgid "Small"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:38
+#, no-c-format
+msgid "Wide"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:39
+#, no-c-format
+msgid "Refraction Falloff:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:40
+#, no-c-format
+msgid "Linear"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:41 /tmp/tmp.grIJ9Hzg0i/rc.cpp:44
+#, no-c-format
+msgid "Round"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:42
+#, no-c-format
+msgid "Refraction Corner Radius:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:43
+#, no-c-format
+msgid "Square"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:45
+#, no-c-format
+msgid "RGB Fringing Strength:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:48
+#, no-c-format
+msgid "Edge Behavior:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:49
+#, no-c-format
+msgid "Clamp (extend edge pixels)"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:50
+#, no-c-format
+msgid "Flip (mirror texture)"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:51
+#, no-c-format
+msgid "Performance"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:52
+#, no-c-format
+msgid "Blur Source Mode:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:53
+#, no-c-format
+msgid "Full"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:54
+#, no-c-format
+msgid "Wallpaper [EXPERIMENTAL]"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:55
+#, no-c-format
+msgid "Ignore Cache:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:56
+#, no-c-format
+msgid "Cache Rate Limit:"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:57
+#, no-c-format
+msgid " ms"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:58
+#, no-c-format
+msgid "About"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/rc.cpp:59
+#, no-c-format
+msgid "Failed to load about.html"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/json.cpp:1
+#, no-c-format
+msgid "Better Blur DX"
+msgstr ""
+
+#: /tmp/tmp.grIJ9Hzg0i/json.cpp:2
+#, no-c-format
+msgid "Fork of the KWin Blur effect for KDE Plasma 6 with force blur and more"
+msgstr ""

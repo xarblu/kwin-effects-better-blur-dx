@@ -1,0 +1,203 @@
+# Traditional Chinese translations for kwin_better_blur_dx package
+# kwin_better_blur_dx 軟體包的繁體中文翻譯。
+# Copyright (C) 2026 THE kwin_better_blur_dx'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the kwin_better_blur_dx package.
+# KairikiFedora <13278297951@sina.cn>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: kwin_better_blur_dx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-24 11:28+0800\n"
+"PO-Revision-Date: 2026-08-29 12:00+0800\n"
+"Last-Translator: KairikiFedora <13278297951@sina.cn>\n"
+"Language-Team: KairikiFedora <13278297951@sina.cn>\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: rc.cpp:3
+msgid "General"
+msgstr "一般"
+
+#: rc.cpp:6
+msgid "Blur strength:"
+msgstr "模糊強度:"
+
+#: rc.cpp:9 rc.cpp:18
+msgid "Light"
+msgstr "弱"
+
+#: rc.cpp:12 rc.cpp:21 rc.cpp:30 rc.cpp:43 rc.cpp:56 rc.cpp:99 rc.cpp:144
+msgid "Strong"
+msgstr "強"
+
+#: rc.cpp:15
+msgid "Noise strength:"
+msgstr "噪點強度:"
+
+#: rc.cpp:24
+msgid "Brightness:"
+msgstr "亮度:"
+
+#: rc.cpp:27 rc.cpp:40 rc.cpp:53
+msgid "None"
+msgstr "無"
+
+#: rc.cpp:34 rc.cpp:47 rc.cpp:60
+#, no-c-format
+msgid " %"
+msgstr " %"
+
+#: rc.cpp:37
+msgid "Saturation:"
+msgstr "飽和度:"
+
+#: rc.cpp:50
+msgid "Contrast:"
+msgstr "對比度:"
+
+#: rc.cpp:63
+msgid "Force Contrast Parameters:"
+msgstr "強制對比度參數:"
+
+#: rc.cpp:66
+msgid "Corner Radius:"
+msgstr "圓角半徑:"
+
+#: rc.cpp:69
+msgid "Force blur"
+msgstr "強制模糊"
+
+#: rc.cpp:72
+msgid "Classes of windows to force blur:"
+msgstr "強制模糊的視窗類別:"
+
+#: rc.cpp:75
+msgid "Blur only matching"
+msgstr "僅模糊匹配視窗"
+
+#: rc.cpp:78
+msgid "Blur all except matching"
+msgstr "模糊所有非匹配視窗"
+
+#: rc.cpp:81
+msgid "Blur window decorations as well"
+msgstr "同時模糊視窗裝飾"
+
+#: rc.cpp:84
+msgid "Blur menus"
+msgstr "模糊選單"
+
+#: rc.cpp:87
+msgid "Blur docks"
+msgstr "模糊停靠視窗"
+
+#: rc.cpp:90
+msgid "Refraction"
+msgstr "折射"
+
+#: rc.cpp:93
+msgid "Refraction Strength:"
+msgstr "折射強度:"
+
+#: rc.cpp:96 rc.cpp:141
+msgid "Off"
+msgstr "關"
+
+#: rc.cpp:102
+msgid "Refraction Mode:"
+msgstr "折射模式:"
+
+#: rc.cpp:105
+msgid "Basic (Bulge)"
+msgstr "基本 (凸起)"
+
+#: rc.cpp:108
+msgid "Concave (Lens)"
+msgstr "凹面 (透鏡)"
+
+#: rc.cpp:111
+msgid "Refraction Edge Size:"
+msgstr "折射邊緣大小:"
+
+#: rc.cpp:114
+msgid "Small"
+msgstr "窄"
+
+#: rc.cpp:117
+msgid "Wide"
+msgstr "寬"
+
+#: rc.cpp:120
+msgid "Refraction Falloff:"
+msgstr "折射衰減:"
+
+#: rc.cpp:123
+msgid "Linear"
+msgstr "線性"
+
+#: rc.cpp:126 rc.cpp:135
+msgid "Round"
+msgstr "圓形"
+
+#: rc.cpp:129
+msgid "Refraction Corner Radius:"
+msgstr "折射圓角半徑:"
+
+#: rc.cpp:132
+msgid "Square"
+msgstr "方形"
+
+#: rc.cpp:138
+msgid "RGB Fringing Strength:"
+msgstr "RGB 色邊強度:"
+
+#: rc.cpp:147
+msgid "Edge Behavior:"
+msgstr "邊緣行為:"
+
+#: rc.cpp:150
+msgid "Clamp (extend edge pixels)"
+msgstr "鉗制 (延伸邊緣像素)"
+
+#: rc.cpp:153
+msgid "Flip (mirror texture)"
+msgstr "翻轉 (鏡像紋理)"
+
+#: rc.cpp:156
+msgid "Performance"
+msgstr "性能"
+
+#: rc.cpp:159
+msgid "Blur Source Mode:"
+msgstr "模糊源模式:"
+
+#: rc.cpp:162
+msgid "Full"
+msgstr "完整"
+
+#: rc.cpp:165
+msgid "Wallpaper [EXPERIMENTAL]"
+msgstr "桌布 [實驗性]"
+
+#: rc.cpp:168
+msgid "Ignore Cache:"
+msgstr "忽略快取:"
+
+#: rc.cpp:171
+msgid "Cache Rate Limit:"
+msgstr "快取速率限制:"
+
+#: rc.cpp:174
+msgid " ms"
+msgstr " ms"
+
+#: rc.cpp:177
+msgid "About"
+msgstr "關於"
+
+#: rc.cpp:180
+msgid "Failed to load about.html"
+msgstr "載入 about.html 失敗"
