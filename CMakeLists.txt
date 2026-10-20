@@ -93,5 +93,6 @@ if(${KWin_VERSION} VERSION_LESS 6.4)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(po)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

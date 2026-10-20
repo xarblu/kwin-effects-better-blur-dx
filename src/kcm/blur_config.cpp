@@ -14,6 +14,7 @@
 #include "kwineffects_interface.h"
 #include "settings.hpp"
 
+#include <KLocalizedString>
 #include <QFileDialog>
 #include <QPushButton>
 
@@ -24,6 +25,7 @@ K_PLUGIN_CLASS(BlurEffectConfig)
 BlurEffectConfig::BlurEffectConfig(QObject *parent, const KPluginMetaData &data)
     : KCModule(parent, data)
 {
+    KLocalizedString::setApplicationDomain("kwin_better_blur_dx");
     ui.setupUi(widget());
     BlurConfig::instance("kwinrc");
     addConfig(BlurConfig::self(), widget());
