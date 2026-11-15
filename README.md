@@ -23,7 +23,7 @@ Fixes for blur-related Plasma bugs that haven't been patched yet.
 Better Blur DX should always work on the current stable version of Plasma.
 Older versions aren't tested much besides a basic "it compiles" and may or may not work.
 
-Currently supported versions: **6.5**, **6.6**, **6.7**
+Currently supported versions: **6.5**, **6.6**, **6.7**, **6.8**
 
 ### X11 Support
 While building the effect is supported for both X11 and Wayland, X11 is more or less deprecated and not tested much.
