@@ -316,7 +316,8 @@ bool BBDX::Window::neverForceBlur() const {
     const QString windowClass = effectwindow()->window()->resourceClass();
     const KWin::Layer layer = effectwindow()->window()->layer();
 
-    if (windowClass == QStringLiteral("xwaylandvideobridge"))
+    if (windowClass == QStringLiteral("xwaylandvideobridge")
+        || windowClass == QStringLiteral("lumine-capture"))
         return true;
 
     if ((windowClass == "spectacle" || windowClass == "org.kde.spectacle")
